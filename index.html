@@ -1661,6 +1661,7 @@
       let boss1Music = null;
       let boss2Music = null;
       let boss3Music = null;
+      let achievementSound = null;
       let currentMusicTarget = null;
       let loadingAssets = [];
 
@@ -1716,10 +1717,16 @@
           boss3Music.loop = true;
           boss3Music.preload = "auto";
         }
+        if (!achievementSound) {
+          achievementSound = new Audio("youachievedsomethinginlife.mp3");
+          achievementSound.loop = false;
+          achievementSound.preload = "auto";
+        }
         menuMusic.volume = getMenuMusicVolume();
         boss1Music.volume = getBossMusicVolume();
         boss2Music.volume = getBossMusicVolume();
         boss3Music.volume = getBossMusicVolume();
+        achievementSound.volume = state.settings.volume;
       }
 
       function refreshLoadingState() {
@@ -1795,6 +1802,7 @@
         trackAudioLoad("Architect Track", boss1Music);
         trackAudioLoad("Sovereign Track", boss2Music);
         trackAudioLoad("Monarch Track", boss3Music);
+        trackAudioLoad("Achievement Cue", achievementSound);
         const customDataUrl = state.profile.skin?.customDataUrl;
         if (customDataUrl) {
           const resolveAsset = registerLoadingAsset("Custom Hull Skin");
@@ -1912,6 +1920,7 @@
         if (boss1Music && state.mode !== "gameover") boss1Music.volume = getBossMusicVolume();
         if (boss2Music && state.mode !== "gameover") boss2Music.volume = getBossMusicVolume();
         if (boss3Music && state.mode !== "gameover") boss3Music.volume = getBossMusicVolume();
+        if (achievementSound) achievementSound.volume = state.settings.volume;
       }
 
       function playHoverCue() {
@@ -1958,38 +1967,14 @@
 
       function playAchievementCue() {
         ensureAudio();
-        const now = audioContext.currentTime;
-        const oscA = audioContext.createOscillator();
-        const oscB = audioContext.createOscillator();
-        const gain = audioContext.createGain();
-        const filter = audioContext.createBiquadFilter();
-
-        oscA.type = "triangle";
-        oscB.type = "sine";
-        oscA.frequency.setValueAtTime(740, now);
-        oscA.frequency.exponentialRampToValueAtTime(1110, now + 0.12);
-        oscA.frequency.exponentialRampToValueAtTime(1480, now + 0.26);
-        oscB.frequency.setValueAtTime(1480, now);
-        oscB.frequency.exponentialRampToValueAtTime(2220, now + 0.22);
-
-        filter.type = "highpass";
-        filter.frequency.setValueAtTime(320, now);
-        filter.Q.value = 0.7;
-
-        gain.gain.setValueAtTime(0.0001, now);
-        gain.gain.exponentialRampToValueAtTime(0.09, now + 0.025);
-        gain.gain.exponentialRampToValueAtTime(0.05, now + 0.12);
-        gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.42);
-
-        oscA.connect(filter);
-        oscB.connect(filter);
-        filter.connect(gain);
-        gain.connect(masterGain);
-
-        oscA.start(now);
-        oscB.start(now + 0.015);
-        oscA.stop(now + 0.42);
-        oscB.stop(now + 0.32);
+        ensureMusicPlayers();
+        if (!achievementSound) return;
+        try {
+          achievementSound.pause();
+          achievementSound.currentTime = 0;
+          achievementSound.volume = state.settings.volume;
+          achievementSound.play().catch(() => {});
+        } catch {}
       }
 
       function setScreenShake(enabled) {
