@@ -296,12 +296,13 @@
     }
 
     .menu-shell {
-      width: min(1120px, calc(100vw - 64px));
-      min-height: min(760px, calc(100vh - 64px));
+      width: min(1080px, calc(100vw - 56px));
+      min-height: min(700px, calc(100vh - 56px));
       display: grid;
       grid-template-rows: auto 1fr auto;
-      gap: 26px;
-      padding: 34px 36px;
+      gap: 20px;
+      padding: 28px 30px;
+      overflow: hidden;
       border: 1px solid rgba(255, 255, 255, 0.12);
       background:
         radial-gradient(circle at top, rgba(255, 215, 106, 0.06), transparent 30%),
@@ -342,12 +343,51 @@
       text-transform: uppercase;
     }
 
+    .menu-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 18px;
+    }
+
+    .menu-header-copy {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .compact-shell {
+      width: min(1140px, calc(100vw - 52px));
+      min-height: min(680px, calc(100vh - 52px));
+      gap: 18px;
+      padding: 24px 26px;
+    }
+
+    .compact-shell .menu-title,
+    .boss-select .menu-title {
+      text-align: left;
+      font-size: clamp(30px, 4.8vw, 62px);
+      letter-spacing: 0.14em;
+    }
+
+    .compact-shell .menu-subtitle,
+    .boss-select .menu-subtitle {
+      text-align: left;
+      font-size: 11px;
+      letter-spacing: 0.16em;
+    }
+
     .menu-stack {
       display: flex;
       flex-direction: column;
       justify-content: center;
       align-items: center;
       gap: 16px;
+    }
+
+    .main-menu-stack {
+      justify-content: flex-start;
+      width: 100%;
+      max-height: 100%;
     }
 
     .menu-button,
@@ -387,9 +427,9 @@
 
     .boss-select {
       display: grid;
-      grid-template-rows: auto 1fr auto;
-      gap: 22px;
-      min-height: 100%;
+      grid-template-rows: auto auto 1fr auto;
+      gap: 16px;
+      min-height: 0;
     }
 
     .boss-head {
@@ -407,35 +447,37 @@
       display: grid;
       grid-template-columns: auto 1fr auto;
       align-items: center;
-      gap: 18px;
+      gap: 14px;
     }
 
     .carousel-track {
       display: grid;
-      grid-template-columns: repeat(3, minmax(220px, 1fr));
-      gap: 18px;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 14px;
       align-items: stretch;
     }
 
     .boss-card {
       position: relative;
-      min-height: 360px;
-      padding: 20px 18px;
+      min-height: 320px;
+      padding: 18px 16px;
       border: 1px solid rgba(255, 255, 255, 0.14);
       background: linear-gradient(180deg, rgba(17, 11, 30, 0.9), rgba(9, 6, 16, 0.72));
       display: flex;
       flex-direction: column;
       justify-content: space-between;
-      gap: 18px;
+      gap: 14px;
       opacity: 0.55;
-      transform: scale(0.96);
+      transform: translateY(6px) scale(0.97);
       transition: opacity 140ms ease, transform 140ms ease, box-shadow 140ms ease;
     }
 
     .boss-card.focused {
       opacity: 1;
-      transform: scale(1);
-      box-shadow: 0 0 34px rgba(165, 76, 255, 0.18);
+      transform: translateY(0) scale(1);
+      box-shadow:
+        0 0 34px rgba(165, 76, 255, 0.18),
+        inset 0 0 22px rgba(255, 255, 255, 0.03);
     }
 
     .boss-card.active {
@@ -448,12 +490,57 @@
     }
 
     .boss-icon {
-      height: 170px;
+      height: 136px;
       display: grid;
       place-items: center;
       border: 1px solid rgba(255, 255, 255, 0.08);
       background: radial-gradient(circle, rgba(165, 76, 255, 0.14), rgba(0, 0, 0, 0));
       overflow: hidden;
+    }
+
+    .boss-card-copy {
+      text-align: left;
+      color: var(--ui-dim);
+      font-size: 11px;
+      line-height: 1.55;
+      letter-spacing: 0.1em;
+      text-transform: none;
+    }
+
+    .boss-card-select {
+      width: 100%;
+      min-width: 0;
+      margin-top: 8px;
+      padding: 12px 14px;
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      background: rgba(255, 255, 255, 0.04);
+      color: var(--ui);
+      font: inherit;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      cursor: pointer;
+    }
+
+    .boss-card-select.active {
+      border-color: rgba(255, 215, 106, 0.46);
+      box-shadow: 0 0 24px rgba(255, 215, 106, 0.12);
+    }
+
+    .boss-card-select:disabled {
+      opacity: 0.45;
+      cursor: default;
+    }
+
+    .carousel-nav {
+      min-width: 0;
+      width: 60px;
+      height: 60px;
+      padding: 0;
+      display: grid;
+      place-items: center;
+      font-size: 28px;
+      letter-spacing: 0;
+      border-radius: 50%;
     }
 
     .fractal-glyph {
@@ -514,12 +601,12 @@
     .config-grid {
       display: grid;
       grid-template-columns: 1.1fr 0.9fr;
-      gap: 22px;
+      gap: 18px;
       align-items: stretch;
     }
 
     .config-card {
-      padding: 20px;
+      padding: 16px;
       border: 1px solid rgba(255, 255, 255, 0.14);
       background: rgba(255, 255, 255, 0.03);
       text-align: left;
@@ -527,10 +614,10 @@
 
     .controls-diagram {
       display: grid;
-      gap: 12px;
-      margin-top: 16px;
+      gap: 10px;
+      margin-top: 12px;
       color: var(--ui);
-      font-size: 13px;
+      font-size: 12px;
       letter-spacing: 0.08em;
     }
 
@@ -554,7 +641,7 @@
     }
 
     .config-actions {
-      margin-top: 22px;
+      margin-top: 16px;
       display: flex;
       gap: 12px;
       flex-wrap: wrap;
@@ -770,16 +857,47 @@
       .menu-shell {
         width: calc(100vw - 28px);
         min-height: calc(100vh - 28px);
-        padding: 24px 20px;
+        padding: 20px 18px;
       }
 
-      .config-grid,
-      .carousel-track {
+      .config-grid {
         grid-template-columns: 1fr;
       }
 
       .carousel {
-        grid-template-columns: 1fr;
+        grid-template-columns: auto 1fr auto;
+        gap: 10px;
+      }
+
+      .menu-header {
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      .main-menu-stack {
+        overflow-y: auto;
+        padding-right: 4px;
+      }
+
+      .carousel-nav {
+        width: 48px;
+        height: 48px;
+        padding: 0;
+        border-radius: 50%;
+        font-size: 22px;
+      }
+
+      .carousel-track {
+        gap: 10px;
+      }
+
+      .boss-card {
+        min-height: 280px;
+        padding: 14px 12px;
+      }
+
+      .boss-icon {
+        height: 112px;
       }
 
       .menu-button,
@@ -871,11 +989,68 @@
         const b = int & 255;
         return `rgba(${r}, ${g}, ${b}, ${alpha})`;
       };
+      const normalizeHexColor = (value, fallback = "#ffd76a") => {
+        if (typeof value !== "string") return fallback;
+        const trimmed = value.trim();
+        if (!/^#([\da-f]{3}|[\da-f]{6})$/i.test(trimmed)) return fallback;
+        if (trimmed.length === 4) {
+          return `#${trimmed.slice(1).split("").map((char) => char + char).join("").toLowerCase()}`;
+        }
+        return trimmed.toLowerCase();
+      };
+      const mixHexColors = (base, target, amount) => {
+        const weight = clamp(amount, 0, 1);
+        const parseHex = (hex) => {
+          const normalized = normalizeHexColor(hex);
+          return {
+            r: Number.parseInt(normalized.slice(1, 3), 16),
+            g: Number.parseInt(normalized.slice(3, 5), 16),
+            b: Number.parseInt(normalized.slice(5, 7), 16)
+          };
+        };
+        const start = parseHex(base);
+        const end = parseHex(target);
+        const toChannel = (from, to) => Math.round(from + (to - from) * weight).toString(16).padStart(2, "0");
+        return `#${toChannel(start.r, end.r)}${toChannel(start.g, end.g)}${toChannel(start.b, end.b)}`;
+      };
       const roman = ["I", "II", "III", "IV", "V", "VI"];
       const bosses = [
-        { name: "Architect of the Void", active: true, status: "ACTIVE" },
-        { name: "The Protium Sovereign", active: true, status: "ACTIVE" },
-        { name: "Monarch Null", active: true, status: "ACTIVE" }
+        {
+          name: "Architect of the Void",
+          active: true,
+          status: "ACTIVE",
+          teaser: "The first breach vector is stable. Engage the architect and descend into the chrono-drift."
+        },
+        {
+          name: "The Protium Sovereign",
+          active: true,
+          status: "ACTIVE",
+          teaser: "A hydrogen sovereign nucleus wrapped in gold filigree. Survive equilibrium, then endure unstable fission."
+        },
+        {
+          name: "Monarch Null",
+          active: true,
+          status: "ACTIVE",
+          teaser: "A matte dark-brown fractal monarch now leans into your flight path, forcing the arena to tighten over time."
+        },
+        {
+          name: "Velvet Seraph",
+          active: false,
+          status: "COMING SOON",
+          teaser: "A cathedral-wing interceptor with mirrored lances and ribbon-light trails is forming beyond the veil."
+        },
+        {
+          name: "The Glass Leviathan",
+          active: false,
+          status: "COMING SOON",
+          teaser: "A colossal crystalline predator is gestating in the lower current, refracting whole attack fields into shards."
+        },
+        {
+          name: "Crown of Ash",
+          active: false,
+          status: "COMING SOON",
+          teaser: "A scorched regent wrapped in ember halos will arrive with collapsing rings and high-heat pursuit patterns."
+        }
       ];
       const storedVolume = Number.parseFloat(localStorage.getItem("aether_vortex_volume") || "0.65");
       const storedShake = localStorage.getItem("aether_vortex_screen_shake");
@@ -894,6 +1069,14 @@
         cyan: { name: "Aether Cyan", primary: "#6ef3ff", secondary: "#c5fbff", core: "#ffffff" },
         crimson: { name: "Crimson Halo", primary: "#ff7a7a", secondary: "#ffd0d0", core: "#fff4f4" }
       };
+      const bulletColorPresets = [
+        { name: "Gold", color: "#ffd76a" },
+        { name: "Violet", color: "#c179ff" },
+        { name: "Cyan", color: "#6ef3ff" },
+        { name: "Crimson", color: "#ff7a7a" },
+        { name: "Mint", color: "#7effc6" },
+        { name: "Ember", color: "#ff9b5e" }
+      ];
       const achievementDefs = {
         architect_down: { title: "Architect Down", desc: "Defeat the Architect of the Void." },
         sovereign_down: { title: "Sovereign Split", desc: "Defeat the Protium Sovereign." },
@@ -998,6 +1181,7 @@
           bestScore: Number.isFinite(storedProfile.bestScore) ? storedProfile.bestScore : 0,
           achievements: storedProfile.achievements || {},
           attackLoadout: storedProfile.attackLoadout || "graphic_reset",
+          bulletColor: normalizeHexColor(storedProfile.bulletColor, "#ffd76a"),
           skin: {
             preset: storedProfile.skin?.preset || "gold",
             customDataUrl: storedProfile.skin?.customDataUrl || null
@@ -1377,10 +1561,19 @@
         return skinPresets[presetKey] || skinPresets.gold;
       }
 
+      function getBulletColor() {
+        return normalizeHexColor(state.profile.bulletColor, "#ffd76a");
+      }
+
       function setSkinPreset(presetKey) {
         state.profile.skin.preset = presetKey;
         state.profile.skin.customDataUrl = null;
         customSkinImage = null;
+        saveProfile();
+      }
+
+      function setBulletColor(color) {
+        state.profile.bulletColor = normalizeHexColor(color, "#ffd76a");
         saveProfile();
       }
 
@@ -1470,9 +1663,10 @@
               <h1 class="menu-title">Aether-Vortex</h1>
               <div class="menu-subtitle">Chrono-Drift / Neo-Baroque Combat Interface</div>
             </div>
-            <div class="menu-stack">
+            <div class="menu-stack main-menu-stack">
               <button class="menu-button menu-hoverable" data-nav="boss_select">Enter the Vortex</button>
               <button class="menu-button menu-hoverable" data-nav="config">Configuration</button>
+              <button class="menu-button menu-hoverable" data-nav="achievements">Achievements</button>
               <button class="menu-button menu-hoverable" data-nav="edit_attacks">Edit Attacks</button>
               <button class="menu-button menu-hoverable" data-nav="severed">Sever Connection</button>
             </div>
@@ -1486,9 +1680,44 @@
         updateHudVisibility();
       }
 
+      function renderAchievements() {
+        state.mode = "achievements";
+        const unlocked = state.profile.achievements || {};
+        const cards = Object.entries(achievementDefs).map(([id, def]) => {
+          const entry = unlocked[id];
+          const unlockedAt = entry?.unlockedAt ? new Date(entry.unlockedAt).toLocaleDateString() : null;
+          return `
+            <article class="config-card">
+              <div class="title">${entry ? "Unlocked" : "Locked"}</div>
+              <div class="value" style="font-size: 20px; color: ${entry ? "var(--gold-hot)" : "rgba(255,255,255,0.45)"};">${def.title}</div>
+              <p class="boss-card-copy" style="margin-top: 10px;">${def.desc}</p>
+              <div class="menu-footer" style="text-align:left; margin-top:12px;">${entry ? `Decoded ${unlockedAt}` : "Signal not yet decoded."}</div>
+            </article>
+          `;
+        }).join("");
+        overlay.innerHTML = `
+          <div class="menu-shell compact-shell">
+            <div class="menu-header">
+              <div class="menu-header-copy">
+                <h1 class="menu-title">Achievements</h1>
+                <div class="menu-subtitle">Review every decoded combat milestone</div>
+              </div>
+              <button class="menu-button menu-hoverable" data-nav="menu">Back</button>
+            </div>
+            <div class="config-grid" style="grid-template-columns: repeat(2, minmax(0, 1fr));">
+              ${cards}
+            </div>
+          </div>
+        `;
+        overlay.classList.add("show");
+        updateHudVisibility();
+      }
+
       function renderBossSelect() {
         state.mode = "boss_select";
-        const cards = bosses.map((boss, index) => {
+        const windowStart = clamp(state.selectedBossIndex - 1, 0, Math.max(0, bosses.length - 3));
+        const cards = bosses.slice(windowStart, windowStart + 3).map((boss, offset) => {
+          const index = windowStart + offset;
           const focused = index === state.selectedBossIndex ? "focused" : "";
           if (boss.active) {
             const icon = index === 0
@@ -1507,11 +1736,6 @@
                   <div style="position:absolute; left:10px; top:82px; width:0; height:0; border-left:14px solid transparent; border-right:14px solid transparent; border-bottom:24px solid rgba(255,150,70,0.82); transform:rotate(-120deg); filter:drop-shadow(0 0 14px rgba(255,150,70,0.45));"></div>
                   <div style="position:absolute; right:10px; top:82px; width:0; height:0; border-left:14px solid transparent; border-right:14px solid transparent; border-bottom:24px solid rgba(255,150,70,0.82); transform:rotate(120deg); filter:drop-shadow(0 0 14px rgba(255,150,70,0.45));"></div>
                 </div>`;
-            const copy = index === 0
-              ? "The first breach vector is stable. Engage the architect and descend into the chrono-drift."
-              : index === 1
-              ? "A hydrogen sovereign nucleus wrapped in gold filigree. Survive equilibrium, then endure unstable fission."
-              : "A matte dark-brown fractal monarch wreathed in orange orbitals. Endure dormant chaos, then shatter the awakened null.";
             return `
               <article class="boss-card active ${focused}">
                 <div>
@@ -1521,7 +1745,8 @@
                 <div>
                   <div class="value" style="font-size: 20px;">${boss.name}</div>
                   <div class="status-active">STATUS: ${boss.status}</div>
-                  <p class="menu-footer" style="text-align:left; margin-top:14px;">${copy}</p>
+                  <p class="boss-card-copy" style="margin-top:14px;">${boss.teaser}</p>
+                  <button class="boss-card-select menu-hoverable ${focused ? "active" : ""}" data-boss-select="${index}">${focused ? "Selected" : "Inspect"}</button>
                 </div>
               </article>
             `;
@@ -1531,30 +1756,40 @@
               <div class="locked-cross">X</div>
               <div>
                 <div class="title">Containment Unit 0${index + 1}</div>
-                <div class="boss-icon"></div>
+                <div class="boss-icon">
+                  <div style="width:108px; height:108px; border:1px dashed rgba(255,255,255,0.22); border-radius:50%; display:grid; place-items:center; color:rgba(255,255,255,0.28); letter-spacing:0.18em; text-transform:uppercase;">Soon</div>
+                </div>
               </div>
               <div>
                 <div class="value" style="font-size: 18px; color: rgba(255,255,255,0.45);">${boss.name}</div>
-                <div class="locked-copy">ACCESS DENIED - COMING SOON</div>
+                <div class="locked-copy">ACCESS DENIED - ${boss.status}</div>
+                <p class="boss-card-copy" style="margin-top:14px;">${boss.teaser}</p>
+                <button class="boss-card-select ${focused ? "active" : ""}" data-boss-select="${index}" disabled>${focused ? "Queued" : "Inspect"}</button>
               </div>
             </article>
           `;
         }).join("");
 
         overlay.innerHTML = `
-          <div class="menu-shell boss-select">
+          <div class="menu-shell compact-shell boss-select">
+            <div class="menu-header">
+              <div class="menu-header-copy">
+                <h1 class="menu-title">Boss Selection</h1>
+                <div class="menu-subtitle">Three containment windows at a time. Advance with the on-screen arrows.</div>
+              </div>
+              <button class="menu-button menu-hoverable" data-nav="menu">Back</button>
+            </div>
             <div class="boss-head">
-              <span>Boss Selection</span>
+              <span>Window ${windowStart + 1}-${Math.min(windowStart + 3, bosses.length)}</span>
               <span>${state.selectedBossIndex + 1} / ${bosses.length}</span>
             </div>
             <div class="carousel">
-              <button class="carousel-nav menu-hoverable" data-carousel="prev">Previous</button>
+              <button class="carousel-nav menu-hoverable" data-carousel="prev" ${state.selectedBossIndex <= 0 ? "disabled" : ""} aria-label="Previous bosses">&#8249;</button>
               <div class="carousel-track">${cards}</div>
-              <button class="carousel-nav menu-hoverable" data-carousel="next">Next</button>
+              <button class="carousel-nav menu-hoverable" data-carousel="next" ${state.selectedBossIndex >= bosses.length - 1 ? "disabled" : ""} aria-label="Next bosses">&#8250;</button>
             </div>
             <div class="config-actions" style="justify-content:center;">
-              <button class="boss-launch menu-hoverable" data-boss-start ${!bosses[state.selectedBossIndex].active ? "disabled" : ""}>${bosses[state.selectedBossIndex].name}</button>
-              <button class="menu-button menu-hoverable" data-nav="menu">Back</button>
+              <button class="boss-launch menu-hoverable" data-boss-start ${!bosses[state.selectedBossIndex].active ? "disabled" : ""}>${bosses[state.selectedBossIndex].active ? `Enter ${bosses[state.selectedBossIndex].name}` : "Coming Soon"}</button>
             </div>
           </div>
         `;
@@ -1565,16 +1800,25 @@
       function renderConfig() {
         state.mode = "config";
         const currentPreset = state.profile.skin?.preset || "gold";
+        const currentBulletColor = getBulletColor();
         const skinMarkup = Object.entries(skinPresets).map(([key, skin]) => `
           <button class="skin-chip menu-hoverable ${currentPreset === key && !state.profile.skin?.customDataUrl ? "active" : ""}" data-skin-preset="${key}">
             <span class="skin-swatch" style="background:${skin.primary};"></span>${skin.name}
           </button>
         `).join("");
+        const bulletColorMarkup = bulletColorPresets.map(({ name, color }) => `
+          <button class="skin-chip menu-hoverable ${currentBulletColor === color ? "active" : ""}" data-bullet-color-preset="${color}">
+            <span class="skin-swatch" style="background:${color};"></span>${name}
+          </button>
+        `).join("");
         overlay.innerHTML = `
-          <div class="menu-shell">
-            <div>
-              <h1 class="menu-title" style="font-size: clamp(30px, 6vw, 70px);">Configuration</h1>
-              <div class="menu-subtitle">Calibrate the drift controls and sensory loadout</div>
+          <div class="menu-shell compact-shell">
+            <div class="menu-header">
+              <div class="menu-header-copy">
+                <h1 class="menu-title">Configuration</h1>
+                <div class="menu-subtitle">Calibrate the drift controls and sensory loadout</div>
+              </div>
+              <button class="menu-button menu-hoverable" data-nav="menu">Back</button>
             </div>
             <div class="config-grid">
               <section class="config-card">
@@ -1611,10 +1855,17 @@
                   <input id="skinUploadInput" type="file" accept="image/png" style="display:none;" />
                 </div>
                 <div class="menu-footer" style="text-align:left;">${state.profile.skin?.customDataUrl ? "Custom PNG active." : "Preset palette active."}</div>
+                <div class="title" style="margin-top:20px;">Player Bullet Color</div>
+                <div class="skin-grid">${bulletColorMarkup}</div>
+                <div class="color-picker-row">
+                  <input class="color-picker-input" id="bulletColorInput" type="color" value="${currentBulletColor}" aria-label="Player bullet color" />
+                  <div class="color-preview">
+                    <span class="color-preview-swatch" id="bulletColorPreview" style="background:${currentBulletColor}; color:${currentBulletColor};"></span>
+                    <span id="bulletColorValue">${currentBulletColor.toUpperCase()}</span>
+                  </div>
+                </div>
+                <div class="menu-footer" style="text-align:left;">Only player shots use this palette. Enemy bullets keep their original color language.</div>
               </section>
-            </div>
-            <div class="config-actions" style="justify-content:center;">
-              <button class="menu-button menu-hoverable" data-nav="menu">Back</button>
             </div>
           </div>
         `;
@@ -2339,18 +2590,12 @@
 
         const driftX = centerX + Math.cos(state.elapsed * 0.33) * width * 0.11;
         const driftY = height * 0.22 + Math.sin(state.elapsed * 0.41) * 28;
-        if (phaseTwo) {
-          const dx = player.x - n.x;
-          const dy = player.y - n.y;
-          const dist = Math.hypot(dx, dy) || 1;
-          n.x += (dx / dist) * 62 * dt;
-          n.y += (dy / dist) * 62 * dt;
-          n.x += (driftX - n.x) * dt * 0.45;
-          n.y += (driftY - n.y) * dt * 0.35;
-        } else {
-          n.x = driftX;
-          n.y = driftY;
-        }
+        const chaseWeight = phaseTwo ? 0.46 : 0.18;
+        const targetX = driftX + (player.x - driftX) * chaseWeight;
+        const targetY = driftY + (player.y - driftY) * (phaseTwo ? 0.52 : 0.2);
+        const followRate = phaseTwo ? 1.35 : 0.72;
+        n.x += (targetX - n.x) * dt * followRate;
+        n.y += (targetY - n.y) * dt * followRate;
 
         n.orbitAngle += dt * (phaseTwo ? 3.55 : 2.75);
         const triangleRadius = phaseTwo ? 118 : 96;
@@ -4076,18 +4321,21 @@
       function drawPlayerShots() {
         ctx.save();
         ctx.globalCompositeOperation = "lighter";
+        const bulletColor = getBulletColor();
+        const bulletGlowColor = mixHexColors(bulletColor, "#ffffff", 0.3);
+        const bulletCoreColor = mixHexColors(bulletColor, "#ffffff", 0.12);
         for (const shot of state.playerShots) {
           const alpha = clamp(shot.life, 0, 1);
           const gradient = ctx.createRadialGradient(shot.x, shot.y, 0, shot.x, shot.y, shot.size * 7);
           gradient.addColorStop(0, `rgba(255, 255, 255, ${alpha})`);
-          gradient.addColorStop(0.35, `rgba(255, 240, 168, ${alpha * 0.85})`);
-          gradient.addColorStop(1, "rgba(255, 215, 106, 0)");
+          gradient.addColorStop(0.35, hexToRgba(bulletGlowColor, alpha * 0.85));
+          gradient.addColorStop(1, hexToRgba(bulletColor, 0));
           ctx.fillStyle = gradient;
           ctx.beginPath();
           ctx.arc(shot.x, shot.y, shot.size * 7, 0, TAU);
           ctx.fill();
 
-          ctx.fillStyle = "#ffd76a";
+          ctx.fillStyle = bulletCoreColor;
           ctx.fillRect(shot.x - shot.size * 0.5, shot.y - 14, shot.size, 22);
         }
         ctx.restore();
@@ -4523,6 +4771,7 @@
           if (destination === "menu") renderMainMenu();
           if (destination === "boss_select") renderBossSelect();
           if (destination === "config") renderConfig();
+          if (destination === "achievements") renderAchievements();
           if (destination === "edit_attacks") renderEditAttacks();
           if (destination === "severed") renderSevered();
           return;
@@ -4538,7 +4787,14 @@
         const carousel = event.target.closest("[data-carousel]");
         if (carousel) {
           const direction = carousel.dataset.carousel === "next" ? 1 : -1;
-          state.selectedBossIndex = (state.selectedBossIndex + direction + bosses.length) % bosses.length;
+          state.selectedBossIndex = clamp(state.selectedBossIndex + direction, 0, bosses.length - 1);
+          renderBossSelect();
+          return;
+        }
+
+        const bossSelect = event.target.closest("[data-boss-select]");
+        if (bossSelect) {
+          state.selectedBossIndex = clamp(Number(bossSelect.dataset.bossSelect) || 0, 0, bosses.length - 1);
           renderBossSelect();
           return;
         }
@@ -4569,6 +4825,13 @@
         const skinPreset = event.target.closest("[data-skin-preset]");
         if (skinPreset) {
           setSkinPreset(skinPreset.dataset.skinPreset);
+          renderConfig();
+          return;
+        }
+
+        const bulletColorPreset = event.target.closest("[data-bullet-color-preset]");
+        if (bulletColorPreset) {
+          setBulletColor(bulletColorPreset.dataset.bulletColorPreset);
           renderConfig();
           return;
         }
@@ -4609,9 +4872,27 @@
           setVolume(Number(event.target.value) / 100);
           const readout = overlay.querySelector(".volume-readout");
           if (readout) readout.textContent = `Master output ${Math.round(state.settings.volume * 100)}%`;
+          return;
+        }
+
+        if (event.target.id === "bulletColorInput") {
+          setBulletColor(event.target.value);
+          const preview = overlay.querySelector("#bulletColorPreview");
+          const value = overlay.querySelector("#bulletColorValue");
+          const normalized = getBulletColor();
+          if (preview) {
+            preview.style.background = normalized;
+            preview.style.color = normalized;
+          }
+          if (value) value.textContent = normalized.toUpperCase();
         }
       });
       overlay.addEventListener("change", (event) => {
+        if (event.target.id === "bulletColorInput") {
+          renderConfig();
+          return;
+        }
+
         if (event.target.id !== "skinUploadInput") return;
         const [file] = event.target.files || [];
         if (!file) return;
@@ -4634,7 +4915,7 @@
 
         if (event.code === "Escape") {
           event.preventDefault();
-          if (["boss_select", "config", "edit_attacks", "severed"].includes(state.mode)) {
+          if (["boss_select", "config", "achievements", "edit_attacks", "severed"].includes(state.mode)) {
             renderMainMenu();
             return;
           }
