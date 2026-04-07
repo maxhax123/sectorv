@@ -266,7 +266,7 @@
       opacity: 0;
       transition: opacity 120ms linear;
       padding: 12px;
-      overflow: auto;
+      overflow: hidden;
       background:
         linear-gradient(135deg, rgba(255, 255, 255, 0.08), rgba(165, 76, 255, 0.06)),
         rgba(2, 0, 8, 0.15);
@@ -275,6 +275,21 @@
     .overlay.show {
       opacity: 1;
       pointer-events: auto;
+    }
+
+    .overlay.needs-scroll {
+      place-items: start center;
+      overflow-y: auto;
+      overflow-x: hidden;
+    }
+
+    .overlay.needs-scroll .message,
+    .overlay.needs-scroll .menu-shell,
+    .overlay.needs-scroll .compact-shell {
+      min-height: auto;
+      max-height: none;
+      overflow: visible;
+      margin-block: 12px;
     }
 
     .message {
@@ -337,7 +352,7 @@
       width: 100%;
       padding: 10px 12px;
       border: 1px solid rgba(255, 255, 255, 0.18);
-      background: linear-gradient(90deg, rgba(123, 47, 255, 0.34), rgba(255, 215, 106, 0.18));
+      background: rgba(255, 255, 255, 0.04);
       color: var(--ui);
       font: inherit;
       letter-spacing: 0.1em;
@@ -358,7 +373,7 @@
       grid-template-rows: auto 1fr auto;
       gap: 20px;
       padding: 28px 30px;
-      overflow: auto;
+      overflow: hidden;
       border: 1px solid rgba(255, 255, 255, 0.12);
       background:
         radial-gradient(circle at top, rgba(255, 215, 106, 0.06), transparent 30%),
@@ -447,6 +462,47 @@
       max-height: 100%;
     }
 
+    .menu-action-row {
+      width: min(420px, 100%);
+      display: flex;
+      align-items: stretch;
+      gap: 10px;
+    }
+
+    .menu-action-row .menu-button {
+      min-width: 0;
+      width: 100%;
+    }
+
+    .menu-side-badge {
+      min-width: 124px;
+      padding: 12px 14px;
+      border: 1px solid rgba(255, 215, 106, 0.18);
+      background: rgba(255, 215, 106, 0.08);
+      color: var(--gold-hot);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      font-size: 12px;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+    }
+
+    .menu-button-stack {
+      display: inline-flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      width: 100%;
+    }
+
+    .menu-button-meta {
+      font-size: 10px;
+      letter-spacing: 0.16em;
+      color: var(--ui-dim);
+    }
+
     .menu-button,
     .carousel-nav,
     .config-toggle,
@@ -460,18 +516,43 @@
       letter-spacing: 0.18em;
       text-transform: uppercase;
       cursor: pointer;
-      transition: transform 120ms ease, box-shadow 120ms ease, border-color 120ms ease;
+      transition: transform 160ms ease, box-shadow 160ms ease, border-color 160ms ease, background 160ms ease, filter 160ms ease;
     }
 
     .menu-button:hover,
+    .menu-button:focus-visible,
     .carousel-nav:hover,
+    .carousel-nav:focus-visible,
     .config-toggle:hover,
-    .boss-launch:hover {
+    .config-toggle:focus-visible,
+    .boss-launch:hover,
+    .boss-launch:focus-visible {
       transform: translateY(-2px);
       border-color: rgba(165, 76, 255, 0.72);
+      background: rgba(255, 255, 255, 0.07);
       box-shadow:
         0 0 26px rgba(165, 76, 255, 0.28),
-        0 0 14px rgba(165, 76, 255, 0.4);
+        0 0 14px rgba(165, 76, 255, 0.4),
+        inset 0 0 18px rgba(255, 255, 255, 0.04);
+      filter: brightness(1.05);
+    }
+
+    .menu-button:active,
+    .carousel-nav:active,
+    .config-toggle:active,
+    .boss-launch:active {
+      transform: translateY(0) scale(0.985);
+    }
+
+    .menu-button:focus-visible,
+    .carousel-nav:focus-visible,
+    .config-toggle:focus-visible,
+    .boss-launch:focus-visible {
+      outline: none;
+      box-shadow:
+        0 0 0 1px rgba(255,255,255,0.16),
+        0 0 0 3px rgba(165, 76, 255, 0.26),
+        0 0 28px rgba(165, 76, 255, 0.18);
     }
 
     .menu-footer {
@@ -655,7 +736,11 @@
 
     .boss-card-select.active {
       border-color: rgba(255, 215, 106, 0.46);
-      box-shadow: 0 0 24px rgba(255, 215, 106, 0.12);
+      box-shadow:
+        0 0 24px rgba(255, 215, 106, 0.12),
+        inset 0 0 18px rgba(255, 255, 255, 0.04);
+      background: linear-gradient(180deg, rgba(255, 215, 106, 0.1), rgba(255, 255, 255, 0.04));
+      filter: brightness(1.05);
     }
 
     .boss-card-select:disabled {
@@ -749,6 +834,345 @@
       border: 1px solid rgba(255, 255, 255, 0.14);
       background: rgba(255, 255, 255, 0.03);
       text-align: left;
+    }
+
+    .operations-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 16px;
+    }
+
+    .operations-layout {
+      display: grid;
+      grid-template-columns: 1.05fr 0.95fr;
+      gap: 18px;
+      min-height: 0;
+    }
+
+    .operations-shell {
+      background:
+        radial-gradient(circle at top right, rgba(120, 220, 255, 0.08), transparent 34%),
+        radial-gradient(circle at bottom left, rgba(255, 215, 106, 0.06), transparent 38%),
+        linear-gradient(180deg, rgba(8, 14, 22, 0.92), rgba(7, 10, 18, 0.86));
+    }
+
+    .operations-stat-row {
+      display: flex;
+      justify-content: space-between;
+      gap: 14px;
+      flex-wrap: wrap;
+      color: var(--ui-dim);
+      font-size: 12px;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+    }
+
+    .operations-feedback {
+      padding: 12px 14px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      background: rgba(255, 255, 255, 0.03);
+      color: var(--ui);
+      font-size: 12px;
+      letter-spacing: 0.08em;
+    }
+
+    .operations-station {
+      position: relative;
+      min-height: 220px;
+      padding: 16px;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      background: linear-gradient(180deg, rgba(18, 24, 34, 0.92), rgba(10, 12, 18, 0.86));
+      text-align: left;
+      color: var(--ui);
+      cursor: pointer;
+      opacity: 0.7;
+      transform: translateY(6px) scale(0.98);
+      transition: transform 140ms ease, opacity 140ms ease, box-shadow 140ms ease, border-color 140ms ease;
+      overflow: hidden;
+    }
+
+    .operations-station::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background:
+        linear-gradient(135deg, rgba(255,255,255,0.04), transparent 45%),
+        radial-gradient(circle at 85% 18%, rgba(120, 220, 255, 0.1), transparent 20%);
+      pointer-events: none;
+    }
+
+    .operations-station.selected {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+      border-color: rgba(120, 220, 255, 0.42);
+      box-shadow:
+        0 0 26px rgba(120, 220, 255, 0.14),
+        inset 0 0 24px rgba(255, 255, 255, 0.03);
+    }
+
+    .operations-station-title {
+      position: relative;
+      z-index: 1;
+      color: var(--gold-hot);
+      font-size: 18px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .operations-station-copy {
+      position: relative;
+      z-index: 1;
+      margin-top: 8px;
+      color: var(--ui-dim);
+      font-size: 11px;
+      line-height: 1.5;
+      letter-spacing: 0.08em;
+      text-transform: none;
+    }
+
+    .operations-station-meta {
+      position: relative;
+      z-index: 1;
+      margin-top: 10px;
+      color: rgba(120, 220, 255, 0.84);
+      font-size: 10px;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+    }
+
+    .operations-station-select {
+      position: relative;
+      z-index: 1;
+      margin-top: 12px;
+      width: 100%;
+      padding: 11px 12px;
+      border: 1px solid rgba(255,255,255,0.12);
+      background: rgba(255,255,255,0.04);
+      color: var(--ui);
+      font: inherit;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      cursor: pointer;
+    }
+
+    .operations-station.selected .operations-station-select {
+      border-color: rgba(255, 215, 106, 0.4);
+      box-shadow:
+        0 0 20px rgba(255, 215, 106, 0.1),
+        inset 0 0 18px rgba(255,255,255,0.04);
+      background: linear-gradient(180deg, rgba(255, 215, 106, 0.1), rgba(255, 255, 255, 0.04));
+      filter: brightness(1.05);
+    }
+
+    .operations-illustration {
+      position: relative;
+      height: 88px;
+      margin-bottom: 12px;
+      z-index: 1;
+    }
+
+    .operations-monitor,
+    .operations-paper,
+    .operations-mug,
+    .operations-folder,
+    .operations-phone,
+    .operations-stamp {
+      position: absolute;
+      display: block;
+    }
+
+    .operations-monitor {
+      left: 10px;
+      top: 8px;
+      width: 92px;
+      height: 54px;
+      border: 2px solid rgba(162, 240, 255, 0.38);
+      background: linear-gradient(180deg, rgba(24, 68, 78, 0.9), rgba(10, 24, 30, 0.95));
+      box-shadow: 0 0 20px rgba(120, 220, 255, 0.18);
+    }
+
+    .operations-monitor::before {
+      content: "";
+      position: absolute;
+      left: 12px;
+      right: 12px;
+      top: 12px;
+      height: 2px;
+      background: rgba(220, 255, 255, 0.48);
+      box-shadow: 0 10px 0 rgba(220, 255, 255, 0.2), 0 20px 0 rgba(220, 255, 255, 0.18);
+    }
+
+    .operations-monitor::after {
+      content: "";
+      position: absolute;
+      left: 34px;
+      bottom: -14px;
+      width: 24px;
+      height: 12px;
+      background: linear-gradient(180deg, rgba(110, 126, 140, 0.85), rgba(44, 52, 60, 0.95));
+      clip-path: polygon(20% 0%, 80% 0%, 100% 100%, 0% 100%);
+    }
+
+    .operations-paper {
+      right: 20px;
+      top: 14px;
+      width: 56px;
+      height: 66px;
+      background: linear-gradient(180deg, rgba(255,255,255,0.96), rgba(220,228,236,0.92));
+      box-shadow: 0 10px 20px rgba(0,0,0,0.18);
+      transform: rotate(7deg);
+    }
+
+    .operations-paper::before {
+      content: "";
+      position: absolute;
+      left: 10px;
+      right: 10px;
+      top: 14px;
+      height: 2px;
+      background: rgba(70, 100, 120, 0.28);
+      box-shadow: 0 10px 0 rgba(70, 100, 120, 0.2), 0 20px 0 rgba(70, 100, 120, 0.18), 0 30px 0 rgba(70, 100, 120, 0.16);
+    }
+
+    .operations-folder {
+      left: 0;
+      bottom: 2px;
+      width: 112px;
+      height: 42px;
+      background: linear-gradient(180deg, rgba(245, 189, 96, 0.88), rgba(156, 108, 34, 0.94));
+      clip-path: polygon(0 18%, 24% 18%, 32% 0, 100% 0, 100% 100%, 0 100%);
+      box-shadow: 0 12px 22px rgba(0, 0, 0, 0.18);
+    }
+
+    .operations-mug {
+      right: 4px;
+      bottom: 8px;
+      width: 28px;
+      height: 32px;
+      border: 2px solid rgba(255, 215, 106, 0.48);
+      border-radius: 0 0 8px 8px;
+      background: linear-gradient(180deg, rgba(52, 34, 22, 0.95), rgba(26, 18, 12, 0.98));
+    }
+
+    .operations-mug::after {
+      content: "";
+      position: absolute;
+      right: -10px;
+      top: 7px;
+      width: 10px;
+      height: 12px;
+      border: 2px solid rgba(255, 215, 106, 0.38);
+      border-left: none;
+      border-radius: 0 8px 8px 0;
+    }
+
+    .operations-phone {
+      right: 0;
+      top: 10px;
+      width: 28px;
+      height: 58px;
+      border: 2px solid rgba(180, 190, 210, 0.28);
+      border-radius: 10px;
+      background: linear-gradient(180deg, rgba(24, 30, 38, 0.95), rgba(10, 12, 16, 0.98));
+      box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+    }
+
+    .operations-phone::before {
+      content: "";
+      position: absolute;
+      left: 6px;
+      right: 6px;
+      top: 10px;
+      bottom: 12px;
+      background: linear-gradient(180deg, rgba(116, 224, 255, 0.4), rgba(20, 42, 54, 0.8));
+    }
+
+    .operations-stamp {
+      left: 74px;
+      bottom: 6px;
+      width: 30px;
+      height: 30px;
+      border-radius: 8px 8px 6px 6px;
+      background: linear-gradient(180deg, rgba(255, 130, 130, 0.92), rgba(120, 24, 24, 0.96));
+      box-shadow: 0 8px 18px rgba(120, 24, 24, 0.28);
+      transform: rotate(-10deg);
+    }
+
+    .operations-detail {
+      display: grid;
+      grid-template-rows: auto auto 1fr;
+      gap: 14px;
+      min-height: 0;
+    }
+
+    .operations-task-pane {
+      display: grid;
+      gap: 14px;
+      align-content: start;
+    }
+
+    .operations-option-grid {
+      display: grid;
+      gap: 12px;
+    }
+
+    .operations-drag-layout {
+      display: grid;
+      gap: 12px;
+    }
+
+    .operations-drag-tray,
+    .operations-drop-grid {
+      display: grid;
+      gap: 12px;
+    }
+
+    .operations-drop-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .operations-dropzone {
+      min-height: 110px;
+      padding: 12px;
+      border: 1px dashed rgba(255, 255, 255, 0.16);
+      background: rgba(255, 255, 255, 0.03);
+      display: grid;
+      align-content: start;
+      gap: 10px;
+    }
+
+    .operations-dropzone-label {
+      color: var(--gold-hot);
+      font-size: 11px;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+    }
+
+    .operations-chip-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .operations-drag-chip {
+      padding: 10px 12px;
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      background: rgba(255, 255, 255, 0.05);
+      color: var(--ui);
+      font-size: 11px;
+      letter-spacing: 0.08em;
+      text-transform: none;
+      cursor: grab;
+    }
+
+    .operations-drag-chip:active {
+      cursor: grabbing;
+    }
+
+    .operations-task-actions {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
     }
 
     .controls-diagram {
@@ -962,7 +1386,11 @@
 
     .skin-chip.active {
       border-color: rgba(255, 215, 106, 0.45);
-      box-shadow: 0 0 20px rgba(255, 215, 106, 0.14);
+      box-shadow:
+        0 0 20px rgba(255, 215, 106, 0.14),
+        inset 0 0 16px rgba(255,255,255,0.04);
+      background: linear-gradient(180deg, rgba(255, 215, 106, 0.08), rgba(255,255,255,0.04));
+      filter: brightness(1.05);
     }
 
     .attack-option {
@@ -976,6 +1404,8 @@
       box-shadow:
         0 0 24px rgba(255, 215, 106, 0.12),
         inset 0 0 18px rgba(165, 76, 255, 0.06);
+      background: linear-gradient(180deg, rgba(255, 215, 106, 0.08), rgba(255,255,255,0.03));
+      filter: brightness(1.06);
     }
 
     .attack-option strong {
@@ -1172,8 +1602,18 @@
       }
 
       .main-menu-stack {
-        overflow-y: auto;
-        padding-right: 4px;
+        overflow: hidden;
+        padding-right: 0;
+      }
+
+      .menu-action-row {
+        width: 100%;
+        flex-direction: column;
+      }
+
+      .menu-side-badge {
+        width: 100%;
+        min-width: 0;
       }
 
       .carousel-nav {
@@ -1195,6 +1635,14 @@
 
       .boss-icon {
         height: 112px;
+      }
+
+      .operations-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .operations-layout {
+        grid-template-columns: 1fr;
       }
 
       .menu-button,
@@ -1376,7 +1824,7 @@
         const toChannel = (from, to) => Math.round(from + (to - from) * weight).toString(16).padStart(2, "0");
         return `#${toChannel(start.r, end.r)}${toChannel(start.g, end.g)}${toChannel(start.b, end.b)}`;
       };
-      const roman = ["I", "II", "III", "IV", "V", "VI"];
+      const roman = ["I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "X", "XI"];
       const isMobileClient = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent || "");
       const bosses = [
         {
@@ -1398,10 +1846,10 @@
           teaser: "A matte dark-brown fractal monarch now leans into your flight path, forcing the arena to tighten over time."
         },
         {
-          name: "Spot Reserved",
-          active: false,
-          status: "RESERVED",
-          teaser: "This containment slot is reserved for a future boss encounter."
+          name: "The Cesium Jim-Dandy Superficial",
+          active: true,
+          status: "ACTIVE",
+          teaser: "A rugged dark-yellow slab ringed by five bright cesium cones. Expect violent magnet pulls, cursor lanes, and a chaotic final fracture."
         },
         {
           name: "Spot Reserved",
@@ -1489,11 +1937,38 @@
         { name: "Mint", color: "#7effc6" },
         { name: "Ember", color: "#ff9b5e" }
       ];
+      const attackLoadoutDefs = {
+        graphic_reset: {
+          name: "Graphic Reset",
+          desc: "Collapse the field, delete enemy hazards, and tear away 20% of the boss's maximum health.",
+          priceCents: 0
+        },
+        bruteforce: {
+          name: "Bruteforce",
+          desc: "Overload your weapon systems for 6.5 seconds with larger shots, harder hits, and immunity to environmental interference.",
+          priceCents: 0
+        },
+        fps_unlock: {
+          name: "FPS Unlock",
+          desc: "For 8 seconds your ship glides smoothly, enemies slow into lag, the boss freezes, loses 30% max health, and hazards have a 30% chance every 1.6 seconds to blink out.",
+          priceCents: 0
+        },
+        macro_burst: {
+          name: "Macro Burst",
+          desc: "Execute a scripted hotkey chain: purge enemy hazards, chunk 26% of boss max health, and gain 6 seconds of faster fire, stronger shots, and tighter control.",
+          priceCents: 7099
+        },
+        root_override: {
+          name: "Root Override",
+          desc: "Inject privileged command access: purge hazards, cut 32% of boss max health, then gain 7.5 seconds of elite weapon output while the arena runs partially throttled.",
+          priceCents: 9999
+        }
+      };
       const achievementDefs = {
         architect_down: { title: "Architect Down", desc: "Defeat the Architect of the Void." },
         sovereign_down: { title: "Sovereign Split", desc: "Defeat the Protium Sovereign." },
         monarch_down: { title: "Null Shattered", desc: "Defeat Monarch Null." },
-        full_bloom: { title: "Full Bloom", desc: "Reach Evolution Level V." },
+        cesium_down: { title: "Cesium Cracked", desc: "Defeat The Cesium Jim-Dandy Superficial." },
         arsenal_tuned: { title: "Arsenal Tuned", desc: "Purchase your first shop upgrade." },
         score_2500: { title: "Signal Ascendant", desc: "Reach a score of 2500." },
         score_5000: { title: "Signal Unbroken", desc: "Reach a score of 5000." },
@@ -1505,16 +1980,48 @@
         survivor: { title: "Thread the Needle", desc: "Win with at least 1 health remaining." }
       };
 
+      const evolutionTierPrices = {
+        5: 5999,
+        6: 7999,
+        7: 9999,
+        8: 12999,
+        9: 16099,
+        10: 21999,
+        11: 39999
+      };
+
       function createDefaultProfile(source = {}) {
+        const achievements = { ...(source.achievements || {}) };
+        delete achievements.full_bloom;
+        const shop = {
+          ownedUltimates: {
+            graphic_reset: true,
+            bruteforce: true,
+            fps_unlock: true,
+            macro_burst: Boolean(source.shop?.ownedUltimates?.macro_burst),
+            root_override: Boolean(source.shop?.ownedUltimates?.root_override)
+          },
+          maxEvolutionTier: Number.isFinite(source.shop?.maxEvolutionTier)
+            ? clamp(Math.round(source.shop.maxEvolutionTier), 4, 11)
+            : 4
+        };
+        const selectedLoadout = shop.ownedUltimates[source.attackLoadout] ? source.attackLoadout : "graphic_reset";
         return {
           bestScore: Number.isFinite(source.bestScore) ? source.bestScore : 0,
-          achievements: source.achievements || {},
-          attackLoadout: source.attackLoadout || "graphic_reset",
+          achievements,
+          attackLoadout: selectedLoadout,
           bulletColor: normalizeHexColor(source.bulletColor, "#ffd76a"),
+          operations: {
+            cents: Number.isFinite(source.operations?.cents) ? Math.round(source.operations.cents) : 0,
+            wrongCount: Number.isFinite(source.operations?.wrongCount) ? Math.max(0, Math.round(source.operations.wrongCount)) : 0,
+            cooldownUntil: Number.isFinite(source.operations?.cooldownUntil) ? source.operations.cooldownUntil : 0
+          },
+          shop,
           bossRecords: {
             architect: Boolean(source.bossRecords?.architect),
             sovereign: Boolean(source.bossRecords?.sovereign),
-            monarch: Boolean(source.bossRecords?.monarch)
+            monarch: Boolean(source.bossRecords?.monarch),
+            cesium: Boolean(source.bossRecords?.cesium)
           },
           skin: {
             preset: source.skin?.preset || "gold",
@@ -1567,6 +2074,10 @@
         cutscenePulseCount: 0,
         ultimateCharge: 0,
         bruteforceTimer: 0,
+        fpsUnlockTimer: 0,
+        fpsUnlockGlitchTimer: 0,
+        macroBurstTimer: 0,
+        rootOverrideTimer: 0,
         ultimateFlash: 0,
         victoryTime: 0,
         victoryPulseCount: 0,
@@ -1577,6 +2088,12 @@
         loadingLoadedAssets: 0,
         loadingTotalAssets: 0,
         loadingFailedAssets: 0,
+        operationsFeedback: "",
+        operationsFeedbackTone: "neutral",
+        operationsTimerSecond: null,
+        operationsJobs: [],
+        operationsSelectedIndex: 0,
+        operationsDragItem: null,
         achievementToasts: [],
         impactFrames: {
           damage: 0,
@@ -1584,6 +2101,7 @@
           hit: 0
         },
         bossDamageFlash: 0,
+        bossDamageDealt: 0,
         sovereign: {
           x: 0,
           y: 0,
@@ -1613,6 +2131,27 @@
           reflections: [],
           shatter: []
         },
+        cesium: {
+          x: 0,
+          y: 0,
+          vx: 0,
+          vy: 0,
+          phase: 1,
+          rotation: 0,
+          targetX: 0,
+          targetY: 0,
+          retargetTimer: 0,
+          cursorTimer: 0,
+          spinnerTimer: 0,
+          magnetTimer: 0,
+          magnetDuration: 0,
+          activePullIndices: [],
+          activeBossPull: false,
+          conePulse: 0,
+          cursors: [],
+          spinners: [],
+          fragments: []
+        },
         settings: {
           volume: Number.isFinite(storedVolume) ? clamp(storedVolume, 0, 1) : 0.65,
           screenShake: storedShake === null ? true : storedShake === "true",
@@ -1632,6 +2171,8 @@
       const player = {
         x: 0,
         y: 0,
+        pullVx: 0,
+        pullVy: 0,
         hitRadius: 8,
         moveSpeed: 360,
         reverseSpeed: 220,
@@ -1639,7 +2180,7 @@
         weaponBaseCooldown: 0.15,
         evolutionLevel: 1,
         risk: 0,
-        riskCap: 700,
+        riskCap: 100,
         nearMissCharge: 0,
         angle: -Math.PI / 2,
         health: 3,
@@ -1681,7 +2222,10 @@
         if (!player.x || !player.y) {
           player.x = centerX;
           player.y = height * 0.82;
+          player.pullVx = 0;
+          player.pullVy = 0;
         }
+        updateOverlayScrollMode();
       }
 
       function ensureAudio() {
@@ -1816,6 +2360,7 @@
       function getActiveBossMusic() {
         if (state.currentBoss === "sovereign") return boss2Music;
         if (state.currentBoss === "monarch") return boss3Music;
+        if (state.currentBoss === "cesium") return boss3Music;
         return boss1Music;
       }
 
@@ -1858,6 +2403,8 @@
           menuMusic.pause();
           menuMusic.currentTime = 0;
           menuMusic.playbackRate = 1;
+          activeBossMusic.pause();
+          activeBossMusic.currentTime = 0;
           for (const inactiveBossMusic of inactiveBossTracks) {
             inactiveBossMusic.pause();
             inactiveBossMusic.currentTime = 0;
@@ -1903,7 +2450,7 @@
           return;
         }
 
-        if (["menu", "boss_select", "config", "edit_attacks", "severed"].includes(state.mode)) {
+        if (["menu", "operations", "boss_select", "config", "achievements", "edit_attacks", "severed"].includes(state.mode)) {
           if (currentMusicTarget !== "menu") playMusic("menu");
           fadeMusic(menuMusic, getMenuMusicVolume(), 1);
           return;
@@ -2044,7 +2591,7 @@
       }
 
       function getBossRecordKey(index) {
-        return index === 1 ? "sovereign" : index === 2 ? "monarch" : "architect";
+        return index === 1 ? "sovereign" : index === 2 ? "monarch" : index === 3 ? "cesium" : "architect";
       }
 
       function getBossStatusLabel(index, fallbackStatus) {
@@ -2100,7 +2647,53 @@
       }
 
       function setAttackLoadout(loadout) {
+        if (!state.profile.shop?.ownedUltimates?.[loadout]) return;
         state.profile.attackLoadout = loadout;
+        saveProfile();
+      }
+
+      function getAttackLoadoutMeta(loadout = state.profile.attackLoadout || "graphic_reset") {
+        return attackLoadoutDefs[loadout] || attackLoadoutDefs.graphic_reset;
+      }
+
+      function getOwnedUltimates() {
+        return state.profile.shop?.ownedUltimates || {};
+      }
+
+      function getMaxEvolutionTier() {
+        return clamp(state.profile.shop?.maxEvolutionTier || 4, 4, 11);
+      }
+
+      function spendOperationsFunds(costCents) {
+        if ((state.profile.operations?.cents || 0) < costCents) return false;
+        state.profile.operations.cents -= costCents;
+        return true;
+      }
+
+      function purchaseUltimate(loadout) {
+        const meta = attackLoadoutDefs[loadout];
+        if (!meta || meta.priceCents <= 0 || state.profile.shop.ownedUltimates[loadout]) return;
+        if (!spendOperationsFunds(meta.priceCents)) {
+          state.operationsFeedback = `Insufficient Operations funds for ${meta.name}.`;
+          state.operationsFeedbackTone = "negative";
+          return;
+        }
+        state.profile.shop.ownedUltimates[loadout] = true;
+        state.profile.attackLoadout = loadout;
+        awardAchievement("arsenal_tuned");
+        saveProfile();
+      }
+
+      function purchaseEvolutionTier(tier) {
+        const price = evolutionTierPrices[tier];
+        if (!price || tier !== getMaxEvolutionTier() + 1) return;
+        if (!spendOperationsFunds(price)) {
+          state.operationsFeedback = `Insufficient Operations funds for Evolution ${roman[tier - 1]}.`;
+          state.operationsFeedbackTone = "negative";
+          return;
+        }
+        state.profile.shop.maxEvolutionTier = tier;
+        awardAchievement("arsenal_tuned");
         saveProfile();
       }
 
@@ -2123,7 +2716,6 @@
         }
         if (state.score >= 2500) awardAchievement("score_2500");
         if (state.score >= 5000) awardAchievement("score_5000");
-        if (player.evolutionLevel >= 5) awardAchievement("full_bloom");
         if (state.ultimateCharge >= 100) awardAchievement("ultimate_ready");
         if (player.healthBufferBuys >= 5) awardAchievement("fully_buffered");
         if (player.damageUpgradeLevel >= 4) awardAchievement("max_matrix");
@@ -2138,6 +2730,547 @@
           const def = achievementDefs[id];
           return `<div class="menu-footer" style="text-align:left;">${def?.title || id} / ${def?.desc || ""}</div>`;
         }).join("");
+      }
+
+      function formatMoney(cents) {
+        const sign = cents < 0 ? "-" : "";
+        return `${sign}$${(Math.abs(cents) / 100).toFixed(2)}`;
+      }
+
+      function getOperationsCooldownRemainingMs(now = Date.now()) {
+        return Math.max(0, (state.profile.operations?.cooldownUntil || 0) - now);
+      }
+
+      function isOperationsLocked(now = Date.now()) {
+        return getOperationsCooldownRemainingMs(now) > 0;
+      }
+
+      function formatOperationsCountdown(ms) {
+        const totalSeconds = Math.ceil(ms / 1000);
+        const minutes = Math.floor(totalSeconds / 60);
+        const seconds = totalSeconds % 60;
+        return `${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
+      }
+
+      function pickWeightedCents(entries) {
+        const total = entries.reduce((sum, entry) => sum + entry.weight, 0);
+        let roll = Math.random() * total;
+        for (const entry of entries) {
+          roll -= entry.weight;
+          if (roll <= 0) return entry.cents;
+        }
+        return entries[entries.length - 1].cents;
+      }
+
+      function getOperationsRewardCents() {
+        return pickWeightedCents([
+          { cents: 50, weight: 60 },
+          { cents: 75, weight: 40 },
+          { cents: 100, weight: 35 },
+          { cents: 200, weight: 30 },
+          { cents: 400, weight: 25 },
+          { cents: 1000, weight: 20 },
+          { cents: 2000, weight: 15 },
+          { cents: 4000, weight: 10 }
+        ]);
+      }
+
+      function getOperationsPenaltyCents() {
+        return pickWeightedCents([
+          { cents: 50, weight: 60 },
+          { cents: 75, weight: 40 },
+          { cents: 100, weight: 35 },
+          { cents: 200, weight: 30 },
+          { cents: 400, weight: 25 },
+          { cents: 1000, weight: 20 }
+        ]);
+      }
+
+      function shuffleArray(items) {
+        const copy = [...items];
+        for (let i = copy.length - 1; i > 0; i--) {
+          const swapIndex = Math.floor(Math.random() * (i + 1));
+          [copy[i], copy[swapIndex]] = [copy[swapIndex], copy[i]];
+        }
+        return copy;
+      }
+
+      function makeOptions(correct, distractors) {
+        return shuffleArray([correct, ...distractors]).map((label) => ({ label, correct: label === correct }));
+      }
+
+      function generateOperationsJobs() {
+        const invoiceAmounts = [1240, 1860, 2425, 3180];
+        const invoice = invoiceAmounts[Math.floor(Math.random() * invoiceAmounts.length)];
+        const invoiceTax = Math.round(invoice * 0.04);
+        const invoiceTotal = invoice + invoiceTax;
+        const meetingStartHour = 9 + Math.floor(Math.random() * 5);
+        const meetingDuration = [30, 45, 60][Math.floor(Math.random() * 3)];
+        const meetingEndMinutes = meetingStartHour * 60 + meetingDuration;
+        const endHour = Math.floor(meetingEndMinutes / 60);
+        const endMinute = meetingEndMinutes % 60;
+        const sheetBase = 14 + Math.floor(Math.random() * 18);
+        const sheetGrowth = 6 + Math.floor(Math.random() * 8);
+        const sheetResult = sheetBase + sheetGrowth;
+        const mailboxNames = ["Jordan Pike", "Mina Torres", "Chris Dalton", "Avery Patel"];
+        const mailboxName = mailboxNames[Math.floor(Math.random() * mailboxNames.length)];
+
+        return [
+          {
+            id: "invoice",
+            title: "Invoice Coding",
+            prompt: `An office supply invoice is $${invoice.toFixed(2)} and tax is $${invoiceTax.toFixed(2)}. Which total should be logged?`,
+            options: makeOptions(`$${invoiceTotal.toFixed(2)}`, [
+              `$${(invoiceTotal - 40).toFixed(2)}`,
+              `$${invoice.toFixed(2)}`,
+              `$${(invoiceTotal + 25).toFixed(2)}`
+            ])
+          },
+          {
+            id: "calendar",
+            title: "Calendar Routing",
+            prompt: `A review starts at ${meetingStartHour}:00 and lasts ${meetingDuration} minutes. What end time belongs on the invite?`,
+            options: makeOptions(`${endHour}:${String(endMinute).padStart(2, "0")}`, [
+              `${meetingStartHour}:${String(meetingDuration).padStart(2, "0")}`,
+              `${endHour}:${String((endMinute + 15) % 60).padStart(2, "0")}`,
+              `${meetingStartHour + 1}:${String(endMinute).padStart(2, "0")}`
+            ])
+          },
+          {
+            id: "spreadsheet",
+            title: "Spreadsheet Check",
+            prompt: `Cell B12 is ${sheetBase}. Cell C12 adds ${sheetGrowth}. What should the summary cell display?`,
+            options: makeOptions(String(sheetResult), [
+              String(sheetBase * sheetGrowth),
+              String(sheetResult - 3),
+              String(sheetResult + 4)
+            ])
+          },
+          {
+            id: "mailroom",
+            title: "Inbox Triage",
+            prompt: `${mailboxName} wrote “Please send the finalized agenda before the 2 PM client call.” What is the best office action?`,
+            options: makeOptions("Reply with the final agenda attachment and confirm the send time.", [
+              "Archive the message because the call is already scheduled.",
+              "Forward it to payroll for filing.",
+              "Mark it spam and continue."
+            ])
+          }
+        ];
+      }
+
+      const pickRandom = (items) => items[Math.floor(Math.random() * items.length)];
+
+      function createOperationsMultipleChoice(prompt, options) {
+        return {
+          interaction: "multiple_choice",
+          prompt,
+          options
+        };
+      }
+
+      function createOperationsDragBins(prompt, bins, items) {
+        return {
+          interaction: "drag_bins",
+          prompt,
+          bins,
+          items,
+          placements: Object.fromEntries(items.map((item) => [item.id, "tray"]))
+        };
+      }
+
+      function getOperationsCurrentTask() {
+        return state.operationsJobs[state.operationsSelectedIndex]?.task || null;
+      }
+
+      function areOperationsDragItemsPlaced(task) {
+        return task.items.every((item) => (task.placements[item.id] || "tray") !== "tray");
+      }
+
+      function moveOperationsDragItem(itemId, binId) {
+        const task = getOperationsCurrentTask();
+        if (!task || task.interaction !== "drag_bins") return;
+        if (!(itemId in task.placements)) return;
+        task.placements[itemId] = binId;
+      }
+
+      function applyOperationsBatchOutcome(correctCount, wrongCount, processingFeeCents = 50) {
+        const ops = state.profile.operations;
+        if (isOperationsLocked()) return;
+
+        let rewardTotal = 0;
+        let penaltyTotal = 0;
+        for (let i = 0; i < correctCount; i++) {
+          rewardTotal += getOperationsRewardCents();
+        }
+        for (let i = 0; i < wrongCount; i++) {
+          penaltyTotal += getOperationsPenaltyCents();
+        }
+
+        const net = rewardTotal - penaltyTotal - processingFeeCents;
+        ops.cents += net;
+        ops.wrongCount += wrongCount;
+
+        const netLabel = formatMoney(Math.abs(net));
+        const rewardLabel = formatMoney(rewardTotal);
+        const penaltyLabel = formatMoney(penaltyTotal + processingFeeCents);
+        if (net > 0) {
+          state.operationsFeedback = `Batch cleared. ${correctCount} right, ${wrongCount} wrong. Earned ${rewardLabel}, fees ${penaltyLabel}, net ${netLabel}.`;
+          state.operationsFeedbackTone = "positive";
+        } else if (net < 0) {
+          state.operationsFeedback = `Batch processed. ${correctCount} right, ${wrongCount} wrong. Earned ${rewardLabel}, fees ${penaltyLabel}, net loss ${netLabel}.`;
+          state.operationsFeedbackTone = "negative";
+        } else {
+          state.operationsFeedback = `Batch balanced out. ${correctCount} right, ${wrongCount} wrong. Earned ${rewardLabel} and lost ${penaltyLabel}.`;
+          state.operationsFeedbackTone = "neutral";
+        }
+
+        if (ops.wrongCount >= 30) {
+          ops.wrongCount = 0;
+          ops.cooldownUntil = Date.now() + 60000;
+          state.operationsTimerSecond = null;
+          state.operationsFeedback = "Operations access revoked for 01:00 due to repeated mistakes.";
+          state.operationsFeedbackTone = "negative";
+        }
+        saveProfile();
+      }
+
+      function scoreOperationsCurrentTask() {
+        const task = getOperationsCurrentTask();
+        if (!task || task.interaction !== "drag_bins") return;
+        if (!areOperationsDragItemsPlaced(task)) {
+          state.operationsFeedback = "Place every item before submitting the workstation batch.";
+          state.operationsFeedbackTone = "neutral";
+          return;
+        }
+        const wrongCount = task.items.filter((item) => task.placements[item.id] !== item.targetBin).length;
+        const correctCount = task.items.length - wrongCount;
+        applyOperationsBatchOutcome(correctCount, wrongCount, 50);
+        if (isOperationsLocked()) renderMainMenu();
+        else renderOperations(true);
+      }
+
+      function makeInvoiceTaskFactories() {
+        const vendors = ["North Harbor Office", "Pine Ledger Co.", "Summit Supply", "Metro Stationery", "Clearline Print"];
+        const departments = ["Finance", "Legal", "Operations", "Facilities", "Sales"];
+        const factories = [];
+
+        for (let i = 0; i < 18; i++) {
+          factories.push(() => {
+            const amount = 820 + i * 73;
+            const rate = [0.04, 0.05, 0.06, 0.07][i % 4];
+            const total = amount + Math.round(amount * rate);
+            return createOperationsMultipleChoice(
+              `${pickRandom(vendors)} billed ${pickRandom(departments)} for $${amount.toFixed(2)} with ${(rate * 100).toFixed(0)}% tax. Which total should be posted?`,
+              makeOptions(`$${total.toFixed(2)}`, [
+                `$${amount.toFixed(2)}`,
+                `$${(total + 18).toFixed(2)}`,
+                `$${(total - 24).toFixed(2)}`
+              ])
+            );
+          });
+        }
+
+        for (let i = 0; i < 18; i++) {
+          factories.push(() => {
+            const amount = 1200 + i * 64;
+            const discount = 40 + (i % 5) * 15;
+            const net = amount - discount;
+            return createOperationsMultipleChoice(
+              `An invoice from ${pickRandom(vendors)} is $${amount.toFixed(2)} with an approved prompt-pay discount of $${discount.toFixed(2)}. What net amount should AP pay?`,
+              makeOptions(`$${net.toFixed(2)}`, [
+                `$${amount.toFixed(2)}`,
+                `$${(net + 20).toFixed(2)}`,
+                `$${(net - 25).toFixed(2)}`
+              ])
+            );
+          });
+        }
+
+        for (let i = 0; i < 18; i++) {
+          factories.push(() => {
+            const threshold = 1500 + (i % 6) * 250;
+            const docs = [
+              { id: `inv-a-${i}`, label: `Invoice ${4300 + i} · $${(threshold - 120).toFixed(2)}`, targetBin: "pay" },
+              { id: `inv-b-${i}`, label: `Invoice ${4400 + i} · Missing PO`, targetBin: "hold" },
+              { id: `inv-c-${i}`, label: `Invoice ${4500 + i} · Duplicate copy`, targetBin: "hold" },
+              { id: `inv-d-${i}`, label: `Invoice ${4600 + i} · Approved under $${threshold.toFixed(2)}`, targetBin: "pay" }
+            ];
+            return createOperationsDragBins(
+              "Drag each invoice into Pay Now or Hold. Missing PO numbers and duplicates must be held before release.",
+              [
+                { id: "pay", label: "Pay Now" },
+                { id: "hold", label: "Hold For Review" }
+              ],
+              shuffleArray(docs)
+            );
+          });
+        }
+
+        return factories;
+      }
+
+      function makeCalendarTaskFactories() {
+        const rooms = ["Mercury", "Atlas", "Cedar", "Blue Room", "Boardroom A"];
+        const factories = [];
+
+        for (let i = 0; i < 18; i++) {
+          factories.push(() => {
+            const startHour = 8 + (i % 7);
+            const startMinute = [0, 15, 30][i % 3];
+            const duration = [30, 45, 60, 90][i % 4];
+            const endMinutes = startHour * 60 + startMinute + duration;
+            return createOperationsMultipleChoice(
+              `A client call begins at ${startHour}:${String(startMinute).padStart(2, "0")} and lasts ${duration} minutes. What end time goes on the invite?`,
+              makeOptions(`${Math.floor(endMinutes / 60)}:${String(endMinutes % 60).padStart(2, "0")}`, [
+                `${startHour}:${String((startMinute + duration) % 60).padStart(2, "0")}`,
+                `${Math.floor((endMinutes + 15) / 60)}:${String((endMinutes + 15) % 60).padStart(2, "0")}`,
+                `${Math.floor((endMinutes - 15) / 60)}:${String((endMinutes - 15) % 60).padStart(2, "0")}`
+              ])
+            );
+          });
+        }
+
+        for (let i = 0; i < 18; i++) {
+          factories.push(() => {
+            const headcount = 4 + (i % 6) * 3;
+            const correctRoom = rooms[i % rooms.length];
+            return createOperationsMultipleChoice(
+              `A strategy meeting needs a room for ${headcount} people plus a display screen. Which room should you reserve from the approved list?`,
+              makeOptions(correctRoom, shuffleArray(rooms.filter((room) => room !== correctRoom)).slice(0, 3))
+            );
+          });
+        }
+
+        for (let i = 0; i < 18; i++) {
+          factories.push(() => {
+            const blocks = [
+              { id: `cal-a-${i}`, label: "Draft agenda", targetBin: "before" },
+              { id: `cal-b-${i}`, label: "Book room", targetBin: "before" },
+              { id: `cal-c-${i}`, label: "Send recap", targetBin: "after" },
+              { id: `cal-d-${i}`, label: "Post notes", targetBin: "after" }
+            ];
+            return createOperationsDragBins(
+              "Drag each calendar task into Before Meeting or After Meeting.",
+              [
+                { id: "before", label: "Before Meeting" },
+                { id: "after", label: "After Meeting" }
+              ],
+              shuffleArray(blocks)
+            );
+          });
+        }
+
+        return factories;
+      }
+
+      function makeShreddingTaskFactories() {
+        const sensitiveDocs = ["Payroll draft", "Signed contract copy", "Employee review notes", "Banking form", "Medical leave note"];
+        const harmlessDocs = ["Blank memo paper", "Lunch flyer", "Public event poster", "Office map", "Printer setup guide"];
+        const factories = [];
+
+        for (let i = 0; i < 24; i++) {
+          factories.push(() => {
+            const sensitive = pickRandom(sensitiveDocs);
+            return createOperationsMultipleChoice(
+              "Only confidential or obsolete paperwork should be destroyed. Which paper belongs in the shred bin right now?",
+              makeOptions(sensitive, shuffleArray(harmlessDocs).slice(0, 3))
+            );
+          });
+        }
+
+        for (let i = 0; i < 30; i++) {
+          factories.push(() => {
+            const items = [
+              { id: `shr-a-${i}`, label: pickRandom(sensitiveDocs), targetBin: "shred" },
+              { id: `shr-b-${i}`, label: pickRandom(harmlessDocs), targetBin: "keep" },
+              { id: `shr-c-${i}`, label: pickRandom(sensitiveDocs), targetBin: "shred" },
+              { id: `shr-d-${i}`, label: pickRandom(harmlessDocs), targetBin: "keep" }
+            ];
+            return createOperationsDragBins(
+              "Drag each document to Keep File or Shred Now based on whether it contains confidential material.",
+              [
+                { id: "keep", label: "Keep File" },
+                { id: "shred", label: "Shred Now" }
+              ],
+              shuffleArray(items)
+            );
+          });
+        }
+
+        return factories;
+      }
+
+      function makeInboxTaskFactories() {
+        const people = ["Jordan Pike", "Mina Torres", "Chris Dalton", "Avery Patel", "Lena Brooks"];
+        const factories = [];
+
+        for (let i = 0; i < 24; i++) {
+          factories.push(() => {
+            const person = people[i % people.length];
+            return createOperationsMultipleChoice(
+              `${person} emailed: "Please send the finalized deck before the 3 PM client review." What is the best office action?`,
+              makeOptions("Reply with the finished deck attached and confirm it was sent.", [
+                "Delete the message because the review is already on the calendar.",
+                "Forward it to facilities without comment.",
+                "Archive it for next week."
+              ])
+            );
+          });
+        }
+
+        for (let i = 0; i < 30; i++) {
+          factories.push(() => {
+            const items = [
+              { id: `inb-a-${i}`, label: "Client asks for invoice copy", targetBin: "reply" },
+              { id: `inb-b-${i}`, label: "Vendor request for updated W-9", targetBin: "forward" },
+              { id: `inb-c-${i}`, label: "Old company picnic photo", targetBin: "archive" },
+              { id: `inb-d-${i}`, label: "Manager asks for status update", targetBin: "reply" }
+            ];
+            return createOperationsDragBins(
+              "Drag each email into Reply, Forward, or Archive based on the best next action.",
+              [
+                { id: "reply", label: "Reply" },
+                { id: "forward", label: "Forward" },
+                { id: "archive", label: "Archive" }
+              ],
+              shuffleArray(items)
+            );
+          });
+        }
+
+        return factories;
+      }
+
+      function generateOperationsJobs() {
+        const invoiceFactories = makeInvoiceTaskFactories();
+        const calendarFactories = makeCalendarTaskFactories();
+        const shreddingFactories = makeShreddingTaskFactories();
+        const inboxFactories = makeInboxTaskFactories();
+
+        return [
+          {
+            id: "invoice",
+            title: "Invoice Coding",
+            subtitle: "Accounts payable and release queues",
+            task: pickRandom(invoiceFactories)()
+          },
+          {
+            id: "calendar",
+            title: "Calendar Routing",
+            subtitle: "Rooms, timings, and prep flow",
+            task: pickRandom(calendarFactories)()
+          },
+          {
+            id: "shredding",
+            title: "Shredding Desk",
+            subtitle: "Destroy the right paperwork only",
+            task: pickRandom(shreddingFactories)()
+          },
+          {
+            id: "mailroom",
+            title: "Inbox Triage",
+            subtitle: "Route messages to the right next step",
+            task: pickRandom(inboxFactories)()
+          }
+        ];
+      }
+
+      function getOperationsStationArt(jobId) {
+        if (jobId === "invoice") {
+          return `
+            <div class="operations-illustration">
+              <span class="operations-monitor"></span>
+              <span class="operations-paper"></span>
+              <span class="operations-folder"></span>
+            </div>
+          `;
+        }
+        if (jobId === "calendar") {
+          return `
+            <div class="operations-illustration">
+              <span class="operations-monitor"></span>
+              <span class="operations-phone"></span>
+              <span class="operations-mug"></span>
+            </div>
+          `;
+        }
+        if (jobId === "shredding") {
+          return `
+            <div class="operations-illustration">
+              <span class="operations-paper"></span>
+              <span class="operations-folder"></span>
+              <span class="operations-stamp"></span>
+            </div>
+          `;
+        }
+        return `
+          <div class="operations-illustration">
+            <span class="operations-paper"></span>
+            <span class="operations-phone"></span>
+            <span class="operations-mug"></span>
+          </div>
+        `;
+      }
+
+      function applyOperationsOutcome(correct) {
+        const ops = state.profile.operations;
+        if (isOperationsLocked()) return;
+        if (correct) {
+          const reward = getOperationsRewardCents();
+          ops.cents += reward;
+          state.operationsFeedback = `Task completed. You were paid ${formatMoney(reward)}.`;
+          state.operationsFeedbackTone = "positive";
+        } else {
+          const penalty = getOperationsPenaltyCents();
+          ops.cents -= penalty;
+          ops.wrongCount += 1;
+          state.operationsFeedback = `Task rejected. You were docked ${formatMoney(penalty)}. (${ops.wrongCount}/30 mistakes)`;
+          state.operationsFeedbackTone = "negative";
+          if (ops.wrongCount >= 30) {
+            ops.wrongCount = 0;
+            ops.cooldownUntil = Date.now() + 60000;
+            state.operationsTimerSecond = null;
+            state.operationsFeedback = "Operations access revoked for 01:00 due to repeated mistakes.";
+          }
+        }
+        saveProfile();
+      }
+
+      function returnOperationsFunds() {
+        const password = window.prompt("Enter Operations password to return funds:");
+        if (password === null) return;
+        if (password !== "808Passw0rd") {
+          state.operationsFeedback = "Return Funds denied. Password mismatch.";
+          state.operationsFeedbackTone = "negative";
+          return;
+        }
+        if ((state.profile.operations?.cents || 0) < 0) {
+          state.profile.operations.cents = 0;
+          state.operationsFeedback = "Debt cleared. Operations funds have been restored to $0.00.";
+          state.operationsFeedbackTone = "positive";
+          saveProfile();
+          return;
+        }
+        state.operationsFeedback = "No debt detected. Operations funds were left unchanged.";
+        state.operationsFeedbackTone = "neutral";
+      }
+
+      function isLikelyFullscreen() {
+        if (document.fullscreenElement) return true;
+        const widthDelta = Math.abs((window.outerWidth || width) - (window.screen?.availWidth || width));
+        const heightDelta = Math.abs((window.outerHeight || height) - (window.screen?.availHeight || height));
+        return widthDelta <= 16 && heightDelta <= 16;
+      }
+
+      function updateOverlayScrollMode() {
+        overlay.classList.remove("needs-scroll");
+        if (!overlay.classList.contains("show")) return;
+        const shell = overlay.firstElementChild;
+        if (!shell) return;
+        const viewportHeight = Math.max(0, height - 24);
+        const needsScroll = shell.scrollHeight > viewportHeight;
+        overlay.classList.toggle("needs-scroll", !isLikelyFullscreen() && needsScroll);
       }
 
       function updateHudVisibility() {
@@ -2160,6 +3293,7 @@
         for (const button of mobileControls.querySelectorAll("[data-mobile-control='ultimate']")) {
           button.classList.toggle("ultimate-ready", state.ultimateCharge >= 100);
         }
+        updateOverlayScrollMode();
       }
 
       function renderLoadingScreen() {
@@ -2189,8 +3323,11 @@
 
       function renderMainMenu() {
         state.mode = "menu";
-        playMusic("menu");
+        if (currentMusicTarget !== "menu") playMusic("menu");
         const unlockedCount = Object.keys(state.profile.achievements).length;
+        const operationsMoney = formatMoney(state.profile.operations?.cents || 0);
+        const operationsLocked = isOperationsLocked();
+        const operationsTimer = operationsLocked ? formatOperationsCountdown(getOperationsCooldownRemainingMs()) : "";
         overlay.innerHTML = `
           <div class="menu-shell">
             <div>
@@ -2198,14 +3335,127 @@
               <div class="menu-subtitle">Chrono-Drift / Neo-Baroque Combat Interface</div>
             </div>
             <div class="menu-stack main-menu-stack">
-              <button class="menu-button menu-hoverable" data-nav="boss_select">Enter the Vortex</button>
+              <button class="menu-button menu-hoverable" data-nav="boss_select">Boss Battles</button>
+              <div class="menu-action-row">
+                <button class="menu-button menu-hoverable" data-nav="operations" ${operationsLocked ? "disabled" : ""}>
+                  <span class="menu-button-stack">
+                    <span>Operations</span>
+                    <span class="menu-button-meta">${operationsLocked ? `Locked ${operationsTimer}` : "Office side work"}</span>
+                  </span>
+                </button>
+                <div class="menu-side-badge">${operationsMoney}</div>
+              </div>
               <button class="menu-button menu-hoverable" data-nav="config">Configuration</button>
               <button class="menu-button menu-hoverable" data-nav="achievements">Achievements</button>
-              <button class="menu-button menu-hoverable" data-nav="edit_attacks">Edit Attacks</button>
+              <button class="menu-button menu-hoverable" data-nav="edit_attacks">Shop</button>
             </div>
             <div>
               <div class="menu-footer">Best Score ${String(Math.floor(state.profile.bestScore)).padStart(6, "0")} / Achievements ${unlockedCount}/${Object.keys(achievementDefs).length}</div>
               <div style="margin-top:12px;">${getAchievementMarkup()}</div>
+            </div>
+          </div>
+        `;
+        overlay.classList.add("show");
+        updateHudVisibility();
+      }
+
+      function renderOperations(forceRefresh = false) {
+        state.mode = "operations";
+        if (isOperationsLocked()) {
+          renderMainMenu();
+          return;
+        }
+        if (forceRefresh || !state.operationsJobs.length) {
+          state.operationsJobs = generateOperationsJobs();
+        }
+        state.operationsSelectedIndex = clamp(state.operationsSelectedIndex, 0, Math.max(0, state.operationsJobs.length - 1));
+        const jobs = state.operationsJobs;
+        const ops = state.profile.operations;
+        const selectedJob = jobs[state.operationsSelectedIndex];
+        const selectedTask = selectedJob.task;
+        const cards = jobs.map((job, index) => `
+          <article class="operations-station menu-hoverable ${index === state.operationsSelectedIndex ? "selected" : ""}">
+            ${getOperationsStationArt(job.id)}
+            <div class="operations-station-title">${job.title}</div>
+            <div class="operations-station-copy">${job.subtitle}</div>
+            <div class="operations-station-meta">Desk ${index + 1} · ${index === state.operationsSelectedIndex ? "Active Task" : "Standby"}</div>
+            <button class="operations-station-select ${index === state.operationsSelectedIndex ? "active" : ""}" data-operations-select="${index}">
+              ${index === state.operationsSelectedIndex ? "Selected" : "Inspect"}
+            </button>
+          </article>
+        `).join("");
+        const taskMarkup = selectedTask.interaction === "drag_bins"
+          ? `
+            <div class="operations-task-pane">
+              <p class="boss-card-copy" style="margin: 0;">${selectedTask.prompt}</p>
+              <div class="operations-drag-layout">
+                <div class="operations-drag-tray">
+                  <div class="operations-dropzone" data-operations-bin="tray">
+                    <div class="operations-dropzone-label">Tray</div>
+                    <div class="operations-chip-row">
+                      ${selectedTask.items.filter((item) => (selectedTask.placements[item.id] || "tray") === "tray").map((item) => `
+                        <button class="operations-drag-chip" draggable="true" data-operations-drag-item="${item.id}">${item.label}</button>
+                      `).join("") || `<div class="menu-footer" style="text-align:left;">All paperwork has been placed.</div>`}
+                    </div>
+                  </div>
+                </div>
+                <div class="operations-drop-grid">
+                  ${selectedTask.bins.map((bin) => `
+                    <div class="operations-dropzone" data-operations-bin="${bin.id}">
+                      <div class="operations-dropzone-label">${bin.label}</div>
+                      <div class="operations-chip-row">
+                        ${selectedTask.items.filter((item) => selectedTask.placements[item.id] === bin.id).map((item) => `
+                          <button class="operations-drag-chip" draggable="true" data-operations-drag-item="${item.id}">${item.label}</button>
+                        `).join("") || `<div class="menu-footer" style="text-align:left;">Drop items here.</div>`}
+                      </div>
+                    </div>
+                  `).join("")}
+                </div>
+                <div class="operations-task-actions">
+                  <button class="menu-button menu-hoverable" data-operations-submit-drag>Submit Work</button>
+                  <button class="config-toggle" data-operations-reset-drag>Reset Layout</button>
+                </div>
+              </div>
+            </div>
+          `
+          : `
+            <div class="operations-task-pane">
+              <p class="boss-card-copy" style="margin: 0;">${selectedTask.prompt}</p>
+              <div class="operations-option-grid">
+                ${selectedTask.options.map((option) => `
+                  <button class="attack-option" data-operations-answer="${option.correct ? "correct" : "wrong"}">
+                    <strong>${option.label}</strong>
+                  </button>
+                `).join("")}
+              </div>
+            </div>
+          `;
+        overlay.innerHTML = `
+          <div class="menu-shell compact-shell operations-shell">
+            <div class="menu-header">
+              <div class="menu-header-copy">
+                <h1 class="menu-title">Operations</h1>
+                <div class="menu-subtitle">Routine office work. Accuracy keeps the badge scanner happy.</div>
+              </div>
+              <button class="menu-button menu-hoverable" data-nav="menu">Back</button>
+            </div>
+            <div class="operations-stat-row">
+              <span>Operations Funds ${formatMoney(ops.cents)} <button class="config-toggle menu-hoverable" data-operations-return-funds style="min-width:0; margin-left:10px; padding:8px 12px;">Return Funds</button></span>
+              <span>Strike Count ${ops.wrongCount} / 30</span>
+            </div>
+            <div class="operations-feedback">${state.operationsFeedback || "Choose any office task below. Each answer pays out or docks cash immediately."}</div>
+            <div class="operations-layout">
+              <div class="operations-grid">
+                ${cards}
+              </div>
+              <section class="config-card operations-detail">
+                <div>
+                  <div class="title">Selected Workstation</div>
+                  <div class="value" style="font-size: 24px; margin-top: 6px;">${selectedJob.title}</div>
+                </div>
+                <p class="boss-card-copy" style="margin: 0;">${selectedJob.subtitle}</p>
+                ${taskMarkup}
+              </section>
             </div>
           </div>
         `;
@@ -2247,7 +3497,7 @@
       }
 
       function getBossPreviewMarkup(index, animated = false) {
-        if (index <= 2) {
+        if (index <= 3) {
           return `<div class="boss-preview ${animated ? "animated" : ""}"><canvas class="boss-preview-canvas" width="128" height="128" data-boss-preview="${index}" data-boss-animated="${animated ? "true" : "false"}"></canvas></div>`;
         }
         return `<div class="fractal-glyph"></div>`;
@@ -2409,39 +3659,86 @@
       function renderEditAttacks() {
         state.mode = "edit_attacks";
         const selected = state.profile.attackLoadout || "graphic_reset";
+        const selectedMeta = getAttackLoadoutMeta(selected);
+        const funds = state.profile.operations?.cents || 0;
+        const ownedUltimates = getOwnedUltimates();
+        const ultimateMarkup = Object.entries(attackLoadoutDefs).map(([id, meta]) => {
+          const owned = Boolean(ownedUltimates[id]);
+          const selectedClass = selected === id ? "active" : "";
+          const priceLabel = meta.priceCents > 0 ? formatMoney(meta.priceCents) : "Included";
+          const actionMarkup = owned
+            ? `<button class="config-toggle ${selected === id ? "active" : ""}" data-attack-loadout="${id}">${selected === id ? "Equipped" : "Equip"}</button>`
+            : `<button class="config-toggle" data-shop-buy-ultimate="${id}" ${funds < meta.priceCents ? "disabled" : ""}>Buy ${priceLabel}</button>`;
+          return `
+            <article class="config-card">
+              <div class="title">${meta.priceCents > 0 ? "Premium Ultimate" : "Core Ultimate"}</div>
+              <div class="value" style="font-size: 24px;">${meta.name}</div>
+              <p class="boss-card-copy" style="margin: 14px 0 18px;">${meta.desc}</p>
+              <div class="config-actions">
+                <button class="attack-option ${selectedClass}" data-attack-loadout="${id}" ${owned ? "" : "disabled"}>
+                  <strong>${owned ? (selected === id ? "Selected" : "Owned") : "Locked"}</strong>
+                </button>
+                ${actionMarkup}
+              </div>
+              <div class="menu-footer" style="text-align:left; margin-top:10px;">${owned ? "Owned and ready for boss deployment." : `Unlock price ${priceLabel}.`}</div>
+            </article>
+          `;
+        }).join("");
+        const evolutionMarkup = Array.from({ length: 8 }, (_, index) => {
+          const tier = index + 4;
+          const owned = tier <= getMaxEvolutionTier();
+          const nextTier = getMaxEvolutionTier() + 1;
+          const canBuy = tier === nextTier && tier <= 11;
+          const price = evolutionTierPrices[tier];
+          const priceLabel = price ? formatMoney(price) : "Included";
+          return `
+            <article class="config-card">
+              <div class="title">${tier <= 4 ? "Base Evolution" : canBuy ? "Next Upgrade" : owned ? "Owned Upgrade" : "Locked Upgrade"}</div>
+              <div class="value" style="font-size: 22px;">Evolution ${roman[tier - 1]}</div>
+              <p class="boss-card-copy" style="margin: 14px 0 18px;">Unlocks a higher in-battle plane evolution ceiling. Boss damage dealt now drives your evolution climb during fights.</p>
+              <div class="config-actions">
+                <button class="config-toggle ${owned ? "active" : ""}" ${owned ? "disabled" : ""}>${owned ? "Owned" : "Locked"}</button>
+                ${canBuy
+                  ? `<button class="menu-button menu-hoverable" data-shop-buy-evolution="${tier}" ${funds < price ? "disabled" : ""}>Buy ${priceLabel}</button>`
+                  : `<button class="menu-button" disabled>${owned ? "Unlocked" : "Buy Previous Tier"}</button>`}
+              </div>
+              <div class="menu-footer" style="text-align:left; margin-top:10px;">${tier <= 4 ? "Available from the start." : `Price ${priceLabel}.`}</div>
+            </article>
+          `;
+        }).join("");
         overlay.innerHTML = `
           <div class="menu-shell">
             <div>
-              <h1 class="menu-title" style="font-size: clamp(30px, 6vw, 70px);">Edit Attacks</h1>
-              <div class="menu-subtitle">Tune the ultimate rupture locked inside the kinetic well</div>
+              <h1 class="menu-title" style="font-size: clamp(30px, 6vw, 70px);">Shop</h1>
+              <div class="menu-subtitle">Purchase premium ultimates and raise your plane evolution ceiling</div>
             </div>
             <div class="config-grid">
               <section class="config-card">
-                <div class="title">Ultimate Selection</div>
+                <div class="title">Funds</div>
+                <div class="value" style="font-size: 28px;">${formatMoney(funds)}</div>
                 <div class="controls-diagram">
-                  <div class="diagram-row"><span>Q</span><span>Trigger the selected ultimate once the kinetic well is full</span></div>
-                  <div class="diagram-row"><span>Charge</span><span>Builds sluggishly from boss damage, surges by 30% when you take damage</span></div>
+                  <div class="diagram-row"><span>Q</span><span>Trigger the equipped ultimate once the kinetic well is full</span></div>
+                  <div class="diagram-row"><span>Charge</span><span>Builds from boss damage dealt, with a smaller surge when you take damage</span></div>
+                  <div class="diagram-row"><span>Evolve</span><span>Boss damage raises your plane from I toward your purchased cap</span></div>
                 </div>
-                <div class="shop-grid" style="margin-top:18px;">
-                  <button class="attack-option menu-hoverable ${selected === "graphic_reset" ? "active" : ""}" data-attack-loadout="graphic_reset">
-                    <strong>Graphic Reset</strong>
-                    <p>Force a localized reality collapse to purge threats and shatter boss armor.</p>
-                  </button>
-                  <button class="attack-option menu-hoverable ${selected === "bruteforce" ? "active" : ""}" data-attack-loadout="bruteforce">
-                    <strong>Bruteforce</strong>
-                    <p>Overload your weapon systems to bypass environmental defenses and maximize output.</p>
-                  </button>
-                </div>
-                <div class="coming-soon-block">New Bullet Types: Coming Soon</div>
+                <div class="menu-footer" style="text-align:left; margin-top:18px;">Operations balance is used for purchases. Upgrades unlock in strict order.</div>
               </section>
               <section class="config-card">
                 <div class="title">Current Armament</div>
-                <div class="value" style="font-size: 24px;">${selected === "graphic_reset" ? "Graphic Reset" : "Bruteforce"}</div>
+                <div class="value" style="font-size: 24px;">${selectedMeta.name}</div>
                 <p class="menu-footer" style="text-align:left; margin-top:16px;">
-                  ${selected === "graphic_reset"
-                    ? "When the well reaches 100%, collapse the field, delete every enemy hazard on screen, and rip away 20% of the boss's maximum health."
-                    : "When the well reaches 100%, enter a 6.5 second overload: larger shots, harder hits, and immunity to environmental interference."}
+                  ${selectedMeta.desc}
                 </p>
+              </section>
+            </div>
+            <div class="config-grid" style="margin-top: 20px;">
+              <section class="config-card">
+                <div class="title">Ultimates</div>
+                <div class="shop-grid">${ultimateMarkup}</div>
+              </section>
+              <section class="config-card">
+                <div class="title">Plane Evolutions</div>
+                <div class="shop-grid">${evolutionMarkup}</div>
               </section>
             </div>
             <div class="config-actions" style="justify-content:center;">
@@ -2516,24 +3813,49 @@
         };
       }
 
+      function resetCesiumState() {
+        state.cesium = {
+          x: centerX,
+          y: height * 0.22,
+          vx: 0,
+          vy: 0,
+          phase: 1,
+          rotation: 0,
+          targetX: centerX,
+          targetY: height * 0.22,
+          retargetTimer: 0.35,
+          cursorTimer: 0.6,
+          spinnerTimer: 2,
+          magnetTimer: 1.2,
+          magnetDuration: 0,
+          activePullIndices: [],
+          activeBossPull: false,
+          conePulse: 0,
+          cursors: [],
+          spinners: [],
+          fragments: []
+        };
+      }
+
       function startBossEncounter(index) {
         if (state.profile.bossRecords[getBossRecordKey(index)]) {
           awardAchievement("resurrected");
         }
-        state.currentBoss = index === 1 ? "sovereign" : index === 2 ? "monarch" : "architect";
+        state.currentBoss = index === 1 ? "sovereign" : index === 2 ? "monarch" : index === 3 ? "cesium" : "architect";
         if (state.currentBoss === "architect") {
           startArchitectCutscene();
           return;
         }
         resetGame("cutscene");
-        state.currentBoss = index === 2 ? "monarch" : "sovereign";
-        state.bossMaxHealth = state.currentBoss === "monarch" ? 2100 : 2400;
+        state.currentBoss = index === 3 ? "cesium" : index === 2 ? "monarch" : "sovereign";
+        state.bossMaxHealth = state.currentBoss === "monarch" ? 2100 : state.currentBoss === "cesium" ? 3200 : 2400;
         state.bossHealth = state.bossMaxHealth;
         state.bossPhase = 1;
         state.cutsceneTime = 0;
         state.cutscenePulseCount = 0;
         resetSovereignState();
         resetNullState();
+        resetCesiumState();
         playMusic("boss");
         overlay.innerHTML = `<div class="warning-shell"><div class="warning-text" id="warningText"></div></div>`;
         overlay.classList.add("show");
@@ -2554,7 +3876,7 @@
       }
 
       function restartCurrentEncounter() {
-        const bossIndex = state.currentBoss === "sovereign" ? 1 : state.currentBoss === "monarch" ? 2 : 0;
+        const bossIndex = state.currentBoss === "sovereign" ? 1 : state.currentBoss === "monarch" ? 2 : state.currentBoss === "cesium" ? 3 : 0;
         startBossEncounter(bossIndex);
       }
 
@@ -2586,11 +3908,19 @@
         state.bossDamageFlash = 0;
         state.ultimateCharge = 0;
         state.bruteforceTimer = 0;
+        state.fpsUnlockTimer = 0;
+        state.fpsUnlockGlitchTimer = 0;
+        state.macroBurstTimer = 0;
+        state.rootOverrideTimer = 0;
         state.ultimateFlash = 0;
+        state.bossDamageDealt = 0;
         resetSovereignState();
         resetNullState();
+        resetCesiumState();
         player.x = centerX;
         player.y = height * 0.82;
+        player.pullVx = 0;
+        player.pullVy = 0;
         player.evolutionLevel = 1;
         player.risk = 0;
         player.nearMissCharge = 0;
@@ -2709,37 +4039,157 @@
         state.nullBoss.beams.length = 0;
         state.nullBoss.monoliths.length = 0;
         state.nullBoss.reflections.length = 0;
+        state.cesium.cursors.length = 0;
+        state.cesium.spinners.length = 0;
+      }
+
+      function updateEvolutionProgressFromBossDamage() {
+        const maxTier = getMaxEvolutionTier();
+        const progress = clamp(state.bossDamageDealt / Math.max(1, state.bossMaxHealth), 0, 1);
+        player.evolutionLevel = Math.min(maxTier, 1 + Math.floor(progress * maxTier));
+        player.risk = progress * player.riskCap;
+      }
+
+      function vanishRandomEnemyThreat() {
+        const candidates = [];
+        if (state.currentBoss === "architect") {
+          if (state.bullets.length) {
+            const index = Math.floor(Math.random() * state.bullets.length);
+            const bullet = state.bullets[index];
+            candidates.push({
+              x: bullet.x,
+              y: bullet.y,
+              remove: () => state.bullets.splice(index, 1)
+            });
+          }
+        } else if (state.currentBoss === "sovereign") {
+          if (state.sovereign.stars.length) {
+            const index = Math.floor(Math.random() * state.sovereign.stars.length);
+            const star = state.sovereign.stars[index];
+            candidates.push({
+              x: star.x,
+              y: star.y,
+              remove: () => state.sovereign.stars.splice(index, 1)
+            });
+          }
+          if (state.sovereign.beams.length) {
+            const index = Math.floor(Math.random() * state.sovereign.beams.length);
+            const beam = state.sovereign.beams[index];
+            candidates.push({
+              x: width * 0.5,
+              y: beam.y,
+              remove: () => state.sovereign.beams.splice(index, 1)
+            });
+          }
+        } else if (state.currentBoss === "monarch") {
+          if (state.nullBoss.branches.length) {
+            const index = Math.floor(Math.random() * state.nullBoss.branches.length);
+            const branch = state.nullBoss.branches[index];
+            candidates.push({
+              x: branch.anchorX,
+              y: branch.anchorY,
+              remove: () => state.nullBoss.branches.splice(index, 1)
+            });
+          }
+          if (state.nullBoss.monoliths.length) {
+            const index = Math.floor(Math.random() * state.nullBoss.monoliths.length);
+            const monolith = state.nullBoss.monoliths[index];
+            candidates.push({
+              x: monolith.x,
+              y: monolith.y,
+              remove: () => state.nullBoss.monoliths.splice(index, 1)
+            });
+          }
+          if (state.nullBoss.reflections.length) {
+            const index = Math.floor(Math.random() * state.nullBoss.reflections.length);
+            const reflection = state.nullBoss.reflections[index];
+            candidates.push({
+              x: reflection.x,
+              y: reflection.y,
+              remove: () => state.nullBoss.reflections.splice(index, 1)
+            });
+          }
+        } else {
+          if (state.cesium.cursors.length) {
+            const index = Math.floor(Math.random() * state.cesium.cursors.length);
+            const cursor = state.cesium.cursors[index];
+            candidates.push({
+              x: cursor.x,
+              y: cursor.y,
+              remove: () => state.cesium.cursors.splice(index, 1)
+            });
+          }
+          if (state.cesium.spinners.length) {
+            const index = Math.floor(Math.random() * state.cesium.spinners.length);
+            const spinner = state.cesium.spinners[index];
+            candidates.push({
+              x: spinner.x,
+              y: spinner.y,
+              remove: () => state.cesium.spinners.splice(index, 1)
+            });
+          }
+        }
+        if (!candidates.length || Math.random() > 0.3) return;
+        const chosen = candidates[Math.floor(Math.random() * candidates.length)];
+        chosen.remove();
+        addFlash(chosen.x, chosen.y, "rgba(170, 240, 255, 0.6)", 46);
+        addSpark(chosen.x, chosen.y, "rgba(215, 250, 255, 0.92)", 12, 160);
       }
 
       function useUltimate() {
         if (state.mode !== "playing" || state.ultimateCharge < 100) return;
+        const loadout = state.profile.attackLoadout || "graphic_reset";
         state.ultimateCharge = 0;
         state.ultimateFlash = 0.32;
         triggerImpactFrame("special", 1);
         state.glitch = Math.max(state.glitch, 1);
         state.shake = Math.max(state.shake, 24);
 
-        if ((state.profile.attackLoadout || "graphic_reset") === "bruteforce") {
+        if (loadout === "bruteforce") {
           state.bruteforceTimer = 6.5;
           addFlash(player.x, player.y, "rgba(196, 123, 255, 0.82)", 170);
           addSpark(player.x, player.y, "rgba(215, 176, 255, 0.95)", 32, 220);
           return;
         }
 
+        if (loadout === "fps_unlock") {
+          state.fpsUnlockTimer = 8;
+          state.fpsUnlockGlitchTimer = 1.6;
+          damageBoss(state.bossMaxHealth * 0.3, { awardCharge: false });
+          addFlash(player.x, player.y, "rgba(145, 230, 255, 0.72)", 200);
+          addSpark(player.x, player.y, "rgba(214, 247, 255, 0.95)", 34, 240);
+          return;
+        }
+
+        if (loadout === "macro_burst") {
+          clearEnemyHazards();
+          state.macroBurstTimer = 6;
+          damageBoss(state.bossMaxHealth * 0.26, { awardCharge: false });
+          addFlash(player.x, player.y, "rgba(255, 189, 116, 0.74)", 210);
+          addSpark(player.x, player.y, "rgba(255, 225, 160, 0.96)", 40, 250);
+          return;
+        }
+
+        if (loadout === "root_override") {
+          clearEnemyHazards();
+          state.rootOverrideTimer = 7.5;
+          damageBoss(state.bossMaxHealth * 0.32, { awardCharge: false });
+          addFlash(player.x, player.y, "rgba(255, 236, 178, 0.78)", 240);
+          addSpark(player.x, player.y, "rgba(255, 245, 208, 0.98)", 48, 280);
+          return;
+        }
+
         clearEnemyHazards();
-        state.bossHealth = Math.max(0, state.bossHealth - state.bossMaxHealth * 0.2);
+        damageBoss(state.bossMaxHealth * 0.2, { awardCharge: false });
         addFlash(centerX, centerY, "rgba(255, 255, 255, 0.95)", Math.max(width, height) * 0.9);
         addSpark(centerX, centerY, "rgba(255, 255, 255, 0.95)", 80, 360);
-        if (state.bossHealth <= 0) {
-          triggerBossDefeat();
-        }
       }
 
       function damagePlayer(amount, reason = "impact") {
         if (state.mode !== "playing" || state.damageCooldown > 0) return;
         player.health = Math.max(0, player.health - amount);
         state.tookDamageThisRun = true;
-        state.ultimateCharge = clamp(state.ultimateCharge + 30, 0, 100);
+        state.ultimateCharge = clamp(state.ultimateCharge + 20, 0, 100);
         state.damageCooldown = 0.9;
         triggerImpactFrame("damage", reason === "strain" ? 0.8 : 1);
         state.shake = Math.max(state.shake, 14);
@@ -3276,6 +4726,289 @@
         applyThreatResponse(dt, nearest, closeCount);
       }
 
+      function getCesiumBossScale() {
+        return state.cesium.phase === 3 ? 1.22 : 1;
+      }
+
+      function getCesiumConeScale() {
+        return state.cesium.phase === 3 ? 1.23 : 1;
+      }
+
+      function getCesiumConeStates() {
+        const c = state.cesium;
+        const bossScale = getCesiumBossScale();
+        const coneScale = getCesiumConeScale();
+        const pulse = 1 + Math.sin(c.conePulse) * 0.16;
+        const states = [];
+        for (let i = 0; i < 5; i++) {
+          const angle = c.rotation + (i / 5) * TAU;
+          const travel = (96 + Math.sin(c.conePulse * 1.4 + i * 1.2) * 28) * pulse * bossScale;
+          states.push({
+            x: c.x + Math.cos(angle) * travel,
+            y: c.y + Math.sin(angle) * travel,
+            angle,
+            width: 24 * coneScale,
+            length: 46 * coneScale,
+            pullRadius: 540 * coneScale
+          });
+        }
+        return states;
+      }
+
+      function spawnCesiumCursor(side = "right", jitter = false) {
+        const speed = 220 + Math.random() * 110;
+        const fromRight = side === "right";
+        const fromLeft = side === "left";
+        const fromBottom = side === "bottom";
+        state.cesium.cursors.push({
+          x: fromBottom ? 60 + Math.random() * (width - 120) : fromRight ? width + 36 : -36,
+          y: fromBottom ? height + 36 : 60 + Math.random() * (height - 120),
+          vx: fromBottom ? 0 : fromRight ? -speed : fromLeft ? speed : -speed,
+          vy: fromBottom ? -speed : 0,
+          size: 14 + Math.random() * 4,
+          life: 6,
+          jitter,
+          phase: Math.random() * TAU
+        });
+      }
+
+      function spawnCesiumSpinner(targetX, targetY, indexOffset = 0) {
+        const angle = Math.atan2(targetY - state.cesium.y, targetX - state.cesium.x) + (indexOffset === 0 ? -0.16 : 0.16);
+        const speed = 230 + Math.random() * 70;
+        const widthValue = 11 + Math.random() * 3;
+        const heightValue = 22 + Math.random() * 5;
+        state.cesium.spinners.push({
+          x: state.cesium.x,
+          y: state.cesium.y,
+          vx: Math.cos(angle) * speed,
+          vy: Math.sin(angle) * speed,
+          angle: Math.random() * TAU,
+          spin: (Math.random() > 0.5 ? 1 : -1) * (6 + Math.random() * 4),
+          life: 4.2,
+          size: Math.max(widthValue, heightValue) * 0.5,
+          width: widthValue,
+          height: heightValue
+        });
+      }
+
+      function getCesiumMagnetPullAt(x, y, targetRadius = 8) {
+        const c = state.cesium;
+        if (c.magnetDuration <= 0) return null;
+        const coneStates = getCesiumConeStates();
+        const pullStrength = c.phase === 3 ? 3100 : c.phase === 2 ? 2450 : 1900;
+        let strongestPull = null;
+
+        for (const index of c.activePullIndices) {
+          const cone = coneStates[index];
+          if (!cone) continue;
+          const distanceToCone = Math.hypot(cone.x - x, cone.y - y);
+          const releaseDistance = targetRadius + cone.width * 0.92;
+          if (distanceToCone < releaseDistance) continue;
+          const useOuterTarget = distanceToCone > 170;
+          const targetX = useOuterTarget ? cone.x : cone.x - Math.cos(cone.angle) * cone.length * 0.3;
+          const targetY = useOuterTarget ? cone.y : cone.y - Math.sin(cone.angle) * cone.length * 0.3;
+          const dx = targetX - x;
+          const dy = targetY - y;
+          const distance = Math.max(16, Math.hypot(dx, dy));
+          if (distance < cone.pullRadius) {
+            const directionX = dx / distance;
+            const directionY = dy / distance;
+            const influence = 1 - distance / cone.pullRadius;
+            const nearTargetRelease = clamp((distanceToCone - releaseDistance) / 96, 0.12, 1);
+            const pullAccel = (influence * pullStrength + 380) * nearTargetRelease;
+            if (!strongestPull || pullAccel > strongestPull.pullAccel) {
+              strongestPull = {
+                directionX,
+                directionY,
+                pullAccel,
+                maxSpeed: c.phase === 3 ? 430 : c.phase === 2 ? 360 : 300,
+                targetX,
+                targetY
+              };
+            }
+          }
+        }
+
+        if (c.activeBossPull) {
+          const dx = c.x - x;
+          const dy = c.y - y;
+          const distance = Math.max(20, Math.hypot(dx, dy));
+          const bossRadius = 420;
+          const bossReleaseDistance = targetRadius + 72 * getCesiumBossScale();
+          if (distance < bossRadius && distance > bossReleaseDistance) {
+            const directionX = dx / distance;
+            const directionY = dy / distance;
+            const influence = 1 - distance / bossRadius;
+            const nearTargetRelease = clamp((distance - bossReleaseDistance) / 116, 0.16, 1);
+            const pullAccel = (influence * 1850 + 260) * nearTargetRelease;
+            if (!strongestPull || pullAccel > strongestPull.pullAccel) {
+              strongestPull = {
+                directionX,
+                directionY,
+                pullAccel,
+                maxSpeed: 390,
+                targetX: c.x,
+                targetY: c.y
+              };
+            }
+          }
+        }
+
+        return strongestPull;
+      }
+
+      function updateCesiumBoss(dt) {
+        const c = state.cesium;
+        const healthRatio = state.bossHealth / Math.max(1, state.bossMaxHealth);
+        const nextPhase = healthRatio <= 0.33 ? 3 : healthRatio <= 0.66 ? 2 : 1;
+        if (nextPhase !== c.phase) {
+          c.phase = nextPhase;
+          state.bossPhase = nextPhase;
+          addFlash(c.x, c.y, "rgba(255, 228, 118, 0.74)", 170 + nextPhase * 26);
+          addSpark(c.x, c.y, "rgba(255, 235, 160, 0.96)", 32 + nextPhase * 10, 220 + nextPhase * 30);
+        }
+
+        c.rotation += dt * (2.3 + c.phase * 0.85);
+        c.conePulse += dt * (2.2 + c.phase * 0.5);
+        c.retargetTimer -= dt;
+        if (c.retargetTimer <= 0) {
+          c.retargetTimer = 0.55 + Math.random() * (c.phase === 3 ? 0.45 : 0.8);
+          c.targetX = width * (0.2 + Math.random() * 0.6);
+          c.targetY = height * (0.18 + Math.random() * 0.44);
+        }
+        const driftStrength = c.phase === 3 ? 5.8 : c.phase === 2 ? 4.8 : 3.9;
+        c.vx += (c.targetX - c.x) * dt * driftStrength;
+        c.vy += (c.targetY - c.y) * dt * driftStrength;
+        c.vx += Math.cos(state.elapsed * (2.7 + c.phase * 0.4) + c.phase) * 12 * dt;
+        c.vy += Math.sin(state.elapsed * (3.1 + c.phase * 0.5) - c.phase) * 12 * dt;
+        c.vx *= 0.94;
+        c.vy *= 0.94;
+        c.x = clamp(c.x + c.vx * dt, 90, width - 90);
+        c.y = clamp(c.y + c.vy * dt, 80, height * 0.5);
+
+        c.magnetTimer -= dt;
+        c.magnetDuration = Math.max(0, c.magnetDuration - dt);
+        if (c.magnetTimer <= 0) {
+          if (c.phase === 1) {
+            c.activePullIndices = [Math.floor(Math.random() * 5)];
+            c.activeBossPull = false;
+            c.magnetTimer = 1 + Math.random() * 7;
+          } else if (c.phase === 2) {
+            const countRoll = Math.floor(Math.random() * 3) + 1;
+            const picks = shuffleArray([0, 1, 2, 3, 4]).slice(0, countRoll);
+            c.activePullIndices = picks;
+            c.activeBossPull = false;
+            c.magnetTimer = 1 + Math.random() * 5;
+          } else {
+            c.activePullIndices = [0, 1, 2, 3, 4];
+            c.activeBossPull = true;
+            c.magnetTimer = 1 + Math.random() * 4;
+          }
+          c.magnetDuration = 1.25 + Math.random() * 0.5;
+        }
+        const coneStates = getCesiumConeStates();
+        let nearest = Infinity;
+        let closeCount = 0;
+        if (c.magnetDuration > 0) {
+          const strongestPull = getCesiumMagnetPullAt(player.x, player.y, player.hitRadius);
+          if (strongestPull) {
+            player.pullVx += strongestPull.directionX * strongestPull.pullAccel * dt;
+            player.pullVy += strongestPull.directionY * strongestPull.pullAccel * dt;
+            const pullSpeed = Math.hypot(player.pullVx, player.pullVy);
+            if (pullSpeed > strongestPull.maxSpeed) {
+              const scale = strongestPull.maxSpeed / pullSpeed;
+              player.pullVx *= scale;
+              player.pullVy *= scale;
+            }
+            input.hasMouse = true;
+            input.mouseX += (strongestPull.targetX - input.mouseX) * 0.14;
+            input.mouseY += (strongestPull.targetY - input.mouseY) * 0.14;
+          }
+        } else {
+          c.activePullIndices = [];
+          c.activeBossPull = false;
+        }
+
+        c.cursorTimer -= dt;
+        if (c.cursorTimer <= 0) {
+          spawnCesiumCursor("right", c.phase >= 2);
+          if (c.phase === 1) {
+            spawnCesiumCursor("left", false);
+            if (Math.random() < 0.55) spawnCesiumCursor("left", true);
+          }
+          if (c.phase === 3) {
+            spawnCesiumCursor("left", true);
+            spawnCesiumCursor("bottom", true);
+          }
+          c.cursorTimer = c.phase === 3 ? 0.44 + Math.random() * 0.35 : c.phase === 2 ? 0.52 + Math.random() * 0.45 : 0.75 + Math.random() * 0.75;
+        }
+        if (c.phase >= 2) {
+          c.spinnerTimer -= dt;
+          if (c.spinnerTimer <= 0) {
+            const lastX = player.x;
+            const lastY = player.y;
+            spawnCesiumSpinner(lastX, lastY, 0);
+            spawnCesiumSpinner(lastX, lastY, 1);
+            c.spinnerTimer = 2;
+          }
+        }
+
+        const coreRadius = 48 * getCesiumBossScale();
+        for (const cone of coneStates) {
+          const dist = Math.hypot(player.x - cone.x, player.y - cone.y);
+          nearest = Math.min(nearest, dist);
+          if (dist < 120) closeCount++;
+          if (dist < player.hitRadius + cone.width * 0.7) {
+            damagePlayer(0.5, "impact");
+          }
+        }
+        const coreDistance = Math.hypot(player.x - c.x, player.y - c.y);
+        nearest = Math.min(nearest, coreDistance);
+        if (coreDistance < 130) closeCount++;
+        if (coreDistance < player.hitRadius + coreRadius * 0.88) {
+          damagePlayer(1, "impact");
+        }
+
+        for (let i = c.cursors.length - 1; i >= 0; i--) {
+          const cursor = c.cursors[i];
+          cursor.x += cursor.vx * dt;
+          cursor.y += (cursor.jitter ? Math.sin(state.elapsed * 12 + cursor.phase + cursor.x * 0.02) * 34 : 0) * dt;
+          cursor.life -= dt;
+          const dx = player.x - cursor.x;
+          const dy = player.y - cursor.y;
+          const dist = Math.hypot(dx, dy);
+          nearest = Math.min(nearest, dist);
+          if (dist < 100) closeCount++;
+          if (Math.abs(dx) < cursor.size * 1.15 && Math.abs(dy) < cursor.size * 1.35) {
+            damagePlayer(1, "impact");
+          }
+          if (cursor.life <= 0 || cursor.x < -80 || cursor.x > width + 80) {
+            c.cursors.splice(i, 1);
+          }
+        }
+
+        for (let i = c.spinners.length - 1; i >= 0; i--) {
+          const spinner = c.spinners[i];
+          spinner.x += spinner.vx * dt;
+          spinner.y += spinner.vy * dt;
+          spinner.angle += spinner.spin * dt;
+          spinner.life -= dt;
+          const dist = Math.hypot(player.x - spinner.x, player.y - spinner.y);
+          nearest = Math.min(nearest, dist);
+          if (dist < 110) closeCount++;
+          if (dist < player.hitRadius + Math.max(spinner.width || spinner.size, spinner.height || spinner.size) * 0.55) {
+            damagePlayer(0.5, "impact");
+          }
+          if (spinner.life <= 0 || spinner.x < -90 || spinner.x > width + 90 || spinner.y < -90 || spinner.y > height + 90) {
+            c.spinners.splice(i, 1);
+          }
+        }
+
+        player.x = clamp(player.x, 30, width - 30);
+        player.y = clamp(player.y, 30, height - 30);
+        applyThreatResponse(dt, nearest, closeCount);
+      }
+
       function addSpark(x, y, color, count, speed) {
         for (let i = 0; i < count; i++) {
           const angle = Math.random() * TAU;
@@ -3362,6 +5095,11 @@
               state.cutsceneTime > 1.65
                 ? "Section Three Breached... Monarch Null Unfurling."
                 : "Dormant Chaos Resonating...";
+          } else if (state.currentBoss === "cesium") {
+            warningText.textContent =
+              state.cutsceneTime > 1.65
+                ? "Containment 04 Splintering... Cesium Jim-Dandy Superficial Breaking Orbit."
+                : "Cesium Static Surging...";
           } else {
             warningText.textContent =
               state.cutsceneTime > 1.45
@@ -3387,9 +5125,10 @@
         state.sovereign.smoke.length = 0;
         state.sovereign.particles.length = 0;
         state.nullBoss.shatter.length = 0;
+        state.cesium.fragments.length = 0;
         overlay.innerHTML = `
           <div class="warning-shell">
-            <div class="warning-text" id="victoryText">${state.currentBoss === "architect" ? "Architect Disassembled. Neural Corridor Stabilizing." : state.currentBoss === "sovereign" ? "Protium Sovereign Destabilized. Fission Cascade Imminent." : "Monarch Null Shattering Across The Lattice."}</div>
+            <div class="warning-text" id="victoryText">${state.currentBoss === "architect" ? "Architect Disassembled. Neural Corridor Stabilizing." : state.currentBoss === "sovereign" ? "Protium Sovereign Destabilized. Fission Cascade Imminent." : state.currentBoss === "monarch" ? "Monarch Null Shattering Across The Lattice." : "Cesium Jim-Dandy Superficial Fracturing Into Hazardous Debris."}</div>
           </div>
         `;
         overlay.classList.add("show");
@@ -3403,7 +5142,9 @@
           ? getVortexPosition()
           : state.victoryBoss === "sovereign"
           ? { x: state.sovereign.x, y: state.sovereign.y }
-          : { x: state.nullBoss.x, y: state.nullBoss.y };
+          : state.victoryBoss === "monarch"
+          ? { x: state.nullBoss.x, y: state.nullBoss.y }
+          : { x: state.cesium.x, y: state.cesium.y };
 
         if (!state.victoryExplosionTriggered && state.victoryTime > 0.15) {
           if (state.victoryBoss === "architect") {
@@ -3441,7 +5182,7 @@
                 size: 30 + Math.random() * 34
               });
             }
-          } else {
+          } else if (state.victoryBoss === "monarch") {
             for (let i = 0; i < 18; i++) {
               const angle = (i / 18) * TAU + Math.random() * 0.2;
               state.nullBoss.shatter.push({
@@ -3453,6 +5194,40 @@
                 rotationSpeed: (Math.random() - 0.5) * 5,
                 life: 2.8 + Math.random() * 1.1,
                 size: 12 + Math.random() * 20
+              });
+            }
+          } else {
+            for (let i = 0; i < 5; i++) {
+              const angle = state.cesium.rotation + (i / 5) * TAU;
+              const coneX = vortex.x + Math.cos(angle) * 124;
+              const coneY = vortex.y + Math.sin(angle) * 124;
+              for (let shard = 0; shard < 6; shard++) {
+                const shardAngle = angle + (Math.random() - 0.5) * 0.8;
+                state.cesium.fragments.push({
+                  x: coneX,
+                  y: coneY,
+                  vx: Math.cos(shardAngle) * (110 + Math.random() * 220),
+                  vy: Math.sin(shardAngle) * (110 + Math.random() * 220),
+                  rotation: Math.random() * TAU,
+                  rotationSpeed: (Math.random() - 0.5) * 9,
+                  life: 2.3 + Math.random() * 1.2,
+                  size: 10 + Math.random() * 18,
+                  color: "rgba(255, 235, 118, 0.95)"
+                });
+              }
+            }
+            for (let i = 0; i < 24; i++) {
+              const angle = (i / 24) * TAU + Math.random() * 0.2;
+              state.cesium.fragments.push({
+                x: vortex.x,
+                y: vortex.y,
+                vx: Math.cos(angle) * (100 + Math.random() * 250),
+                vy: Math.sin(angle) * (100 + Math.random() * 250),
+                rotation: Math.random() * TAU,
+                rotationSpeed: (Math.random() - 0.5) * 8,
+                life: 2.8 + Math.random() * 1.1,
+                size: 14 + Math.random() * 26,
+                color: i % 3 === 0 ? "rgba(196, 164, 28, 0.94)" : "rgba(255, 242, 160, 0.98)"
               });
             }
           }
@@ -3474,6 +5249,8 @@
         if (victoryText) {
           if (state.victoryBoss === "monarch" && state.victoryTime > 3.2) {
             victoryText.textContent = "Monarch Null Shattered. Brown Fracture Signature Erased.";
+          } else if (state.victoryBoss === "cesium" && state.victoryTime > 3.2) {
+            victoryText.textContent = "Cesium Jim-Dandy Superficial Ruptured. Yellow Fragment Storm Dissipating.";
           } else if (state.victoryBoss === "sovereign" && state.victoryTime > 3.2) {
             victoryText.textContent = "Sovereign Fission Complete. Containment Restored.";
           } else if (state.victoryTime > 3.2) {
@@ -3483,13 +5260,17 @@
               ? "Architect Neutralized. Aether Gate Secured."
               : state.victoryBoss === "sovereign"
               ? "Protium Sovereign Split Across The Lattice."
-              : "Monarch Null Core Breaking Into Geometric Shards.";
+              : state.victoryBoss === "monarch"
+              ? "Monarch Null Core Breaking Into Geometric Shards."
+              : "Cesium Cones Shearing Free. Core Geometry Collapsing.";
           } else {
             victoryText.textContent = state.victoryBoss === "architect"
               ? "Architect Disassembled. Neural Corridor Stabilizing."
               : state.victoryBoss === "sovereign"
               ? "Protium Sovereign Destabilized. Fission Cascade Imminent."
-              : "Monarch Null Shuddering. Shatter Cascade Imminent.";
+              : state.victoryBoss === "monarch"
+              ? "Monarch Null Shuddering. Shatter Cascade Imminent."
+              : "Cesium Jim-Dandy Superficial Cracking. Cone Detachment Imminent.";
           }
           const fadeStart = 5.6;
           const fadeAlpha = state.victoryTime > fadeStart ? clamp(1 - (state.victoryTime - fadeStart) / 1.2, 0, 1) : 1;
@@ -3509,6 +5290,8 @@
           state.nullBoss.beams.length = 0;
           state.nullBoss.monoliths.length = 0;
           state.nullBoss.reflections.length = 0;
+          state.cesium.cursors.length = 0;
+          state.cesium.spinners.length = 0;
           state.victoryProjectilesCleared = true;
         }
 
@@ -3541,6 +5324,16 @@
           shard.vy *= 0.985;
           shard.life -= dt;
           if (shard.life <= 0) state.nullBoss.shatter.splice(i, 1);
+        }
+        for (let i = state.cesium.fragments.length - 1; i >= 0; i--) {
+          const frag = state.cesium.fragments[i];
+          frag.x += frag.vx * dt;
+          frag.y += frag.vy * dt;
+          frag.rotation += frag.rotationSpeed * dt;
+          frag.vx *= 0.986;
+          frag.vy *= 0.986;
+          frag.life -= dt;
+          if (frag.life <= 0) state.cesium.fragments.splice(i, 1);
         }
       }
 
@@ -3582,10 +5375,14 @@
           addFlash(state.sovereign.x, state.sovereign.y, "rgba(255, 215, 106, 0.82)", 200);
           addSpark(state.sovereign.x, state.sovereign.y, "rgba(255, 215, 106, 0.96)", 72, 280);
           awardAchievement("sovereign_down");
-        } else {
+        } else if (state.currentBoss === "monarch") {
           addFlash(state.nullBoss.x, state.nullBoss.y, "rgba(255, 165, 90, 0.82)", 220);
           addSpark(state.nullBoss.x, state.nullBoss.y, "rgba(190, 120, 70, 0.96)", 84, 260);
           awardAchievement("monarch_down");
+        } else {
+          addFlash(state.cesium.x, state.cesium.y, "rgba(255, 232, 106, 0.82)", 240);
+          addSpark(state.cesium.x, state.cesium.y, "rgba(255, 236, 138, 0.96)", 96, 320);
+          awardAchievement("cesium_down");
         }
         state.profile.bossRecords[state.currentBoss] = true;
         if (player.health >= 1) awardAchievement("survivor");
@@ -3594,11 +5391,15 @@
         startVictoryCutscene();
       }
 
-      function damageBoss(amount) {
+      function damageBoss(amount, options = {}) {
         if (state.mode !== "playing" || state.bossHealth <= 0) return;
+        const { awardCharge = true } = options;
         state.bossHealth = Math.max(0, state.bossHealth - amount);
-        state.ultimateCharge = clamp(state.ultimateCharge + (amount / Math.max(1, state.bossMaxHealth)) * 42, 0, 100);
-        player.risk = clamp(player.risk + amount * 4.2, 0, player.riskCap);
+        if (awardCharge) {
+          state.ultimateCharge = clamp(state.ultimateCharge + (amount / Math.max(1, state.bossMaxHealth)) * 42, 0, 100);
+        }
+        state.bossDamageDealt = clamp(state.bossDamageDealt + amount, 0, state.bossMaxHealth);
+        updateEvolutionProgressFromBossDamage();
         player.nearMissCharge = clamp(player.nearMissCharge + amount * 1.1, 0, 100);
         state.bossDamageFlash = Math.max(state.bossDamageFlash, 0.16);
         if (state.bossHealth <= 0) {
@@ -3686,21 +5487,39 @@
           2: [-0.08, 0.08],
           3: [0, -0.16, 0.16],
           4: [0, -0.12, 0.12, -0.24, 0.24],
-          5: [0, -0.1, 0.1, -0.2, 0.2, -0.32, 0.32]
+          5: [0, -0.1, 0.1, -0.2, 0.2, -0.32, 0.32],
+          6: [0, -0.08, 0.08, -0.16, 0.16, -0.26, 0.26, -0.38, 0.38],
+          7: [0, -0.07, 0.07, -0.14, 0.14, -0.22, 0.22, -0.31, 0.31, -0.42, 0.42],
+          8: [0, -0.06, 0.06, -0.12, 0.12, -0.19, 0.19, -0.27, 0.27, -0.36, 0.36, -0.46, 0.46],
+          9: [0, -0.05, 0.05, -0.1, 0.1, -0.16, 0.16, -0.23, 0.23, -0.31, 0.31, -0.4, 0.4, -0.5, 0.5],
+          10: [0, -0.045, 0.045, -0.09, 0.09, -0.135, 0.135, -0.19, 0.19, -0.255, 0.255, -0.33, 0.33, -0.415, 0.415, -0.51, 0.51],
+          11: [0, -0.04, 0.04, -0.08, 0.08, -0.12, 0.12, -0.17, 0.17, -0.23, 0.23, -0.3, 0.3, -0.38, 0.38, -0.47, 0.47, -0.57, 0.57]
         };
-        const baseOffsets = spreadPatterns[level] || spreadPatterns[5];
+        const baseOffsets = spreadPatterns[level] || spreadPatterns[11];
         const focusedFire = (input.mouseDown || input.mobileFocus) && level > 1;
         const focusRangeFactor = {
           2: 0.75,
           3: 0.62,
           4: 0.48,
-          5: 0.36
+          5: 0.36,
+          6: 0.33,
+          7: 0.31,
+          8: 0.29,
+          9: 0.27,
+          10: 0.25,
+          11: 0.23
         };
         const focusLife = {
           2: 1.02,
           3: 0.88,
           4: 0.74,
-          5: 0.58
+          5: 0.58,
+          6: 0.54,
+          7: 0.5,
+          8: 0.46,
+          9: 0.42,
+          10: 0.39,
+          11: 0.36
         };
         const shotOffsets = focusedFire
           ? baseOffsets.map((offset) => offset * (focusRangeFactor[level] || 0.5))
@@ -3708,7 +5527,10 @@
         const muzzleX = player.x + Math.cos(player.angle) * 18;
         const muzzleY = player.y + Math.sin(player.angle) * 18;
         const bruteforceActive = state.bruteforceTimer > 0;
-        const shotDamage = (1 + (level - 1) * 0.45) * player.damageMultiplier * (bruteforceActive ? 1.15 : 1);
+        const macroActive = state.macroBurstTimer > 0;
+        const rootActive = state.rootOverrideTimer > 0;
+        const codeBoost = rootActive ? 1.3 : macroActive ? 1.18 : 1;
+        const shotDamage = (1 + (level - 1) * 0.45) * player.damageMultiplier * (bruteforceActive ? 1.15 : 1) * codeBoost;
         const shotLife = focusedFire ? (focusLife[level] || 1.2) : 1.2;
         for (const offset of shotOffsets) {
           const angle = player.angle + offset;
@@ -3718,20 +5540,26 @@
             vx: Math.cos(angle) * 620,
             vy: Math.sin(angle) * 620,
             life: shotLife,
-            size: (3 + level * 0.32) * (bruteforceActive ? 1.1 : 1),
+            size: (3 + level * 0.32) * (bruteforceActive ? 1.1 : 1) * (rootActive ? 1.08 : 1),
             damage: shotDamage,
-            immuneEnvironmental: bruteforceActive
+            immuneEnvironmental: bruteforceActive || macroActive || rootActive
           });
         }
         addSpark(muzzleX, muzzleY, "rgba(255, 215, 106, 0.95)", 6 + level, 100);
       }
 
       function updatePlayer(dt) {
+        const fpsUnlockActive = state.fpsUnlockTimer > 0;
+        const macroActive = state.macroBurstTimer > 0;
+        const rootActive = state.rootOverrideTimer > 0;
         let thrust = 0;
-        if (input.keys.has("KeyA")) player.angle -= player.turnSpeed * dt;
-        if (input.keys.has("KeyD")) player.angle += player.turnSpeed * dt;
-        if (input.keys.has("KeyW")) thrust += player.moveSpeed;
-        if (input.keys.has("KeyS")) thrust -= player.reverseSpeed;
+        const turnSpeed = player.turnSpeed * (fpsUnlockActive ? 1.22 : rootActive ? 1.18 : macroActive ? 1.1 : 1);
+        const moveSpeed = player.moveSpeed * (fpsUnlockActive ? 1.15 : rootActive ? 1.12 : macroActive ? 1.08 : 1);
+        const reverseSpeed = player.reverseSpeed * (fpsUnlockActive ? 1.12 : rootActive ? 1.1 : macroActive ? 1.06 : 1);
+        if (input.keys.has("KeyA")) player.angle -= turnSpeed * dt;
+        if (input.keys.has("KeyD")) player.angle += turnSpeed * dt;
+        if (input.keys.has("KeyW")) thrust += moveSpeed;
+        if (input.keys.has("KeyS")) thrust -= reverseSpeed;
 
         if (thrust !== 0) {
           player.x += Math.cos(player.angle) * thrust * dt;
@@ -3743,13 +5571,19 @@
           const dy = input.mouseY - player.y;
           const distance = Math.hypot(dx, dy);
           if (distance > 1) {
-            const response = 5.2;
-            const maxStep = player.moveSpeed * dt;
+            const response = fpsUnlockActive ? 8.4 : 5.2;
+            const maxStep = moveSpeed * dt * (fpsUnlockActive ? 1.18 : 1);
             const step = Math.min(maxStep, distance * response * dt);
             player.x += (dx / distance) * step;
             player.y += (dy / distance) * step;
           }
         }
+
+        player.x += player.pullVx * dt;
+        player.y += player.pullVy * dt;
+        const pullDamping = Math.max(0, 1 - dt * 4.4);
+        player.pullVx *= pullDamping;
+        player.pullVy *= pullDamping;
 
         player.x = clamp(player.x, 30, width - 30);
         player.y = clamp(player.y, 30, height - 30);
@@ -3757,7 +5591,8 @@
         state.shotTimer -= dt;
         if (state.mode === "playing" && state.shotTimer <= 0) {
           spawnPlayerShots();
-          state.shotTimer = Math.max(0.055, player.weaponBaseCooldown - player.evolutionLevel * 0.01);
+          const fireRateBoost = rootActive ? 0.03 : macroActive ? 0.02 : 0;
+          state.shotTimer = Math.max(0.04, player.weaponBaseCooldown - player.evolutionLevel * 0.01 - fireRateBoost);
         }
       }
 
@@ -3793,16 +5628,10 @@
       }
 
       function applyThreatResponse(dt, nearest, closeCount) {
-        player.risk = clamp(player.risk - dt * 8, 0, player.riskCap);
         player.nearMissCharge = clamp(player.nearMissCharge - dt * 14 + closeCount * dt * 2, 0, 100);
         if (closeCount > 0) {
-          player.risk = clamp(player.risk + closeCount * dt * 3.6, 0, player.riskCap);
           player.nearMissCharge = clamp(player.nearMissCharge + closeCount * dt * 4.2, 0, 100);
         }
-        const riskProgress = clamp(player.risk / player.riskCap, 0, 1);
-        const timeProgress = clamp(state.elapsed / 280, 0, 1);
-        const evolutionProgress = clamp(riskProgress * 0.46 + timeProgress * 0.24, 0, 0.999);
-        player.evolutionLevel = 1 + Math.floor(evolutionProgress * 5);
         state.chronoScale = Number.isFinite(nearest) ? clamp(0.22 + nearest / 170, 0.2, 1) : 1;
         state.timeScale = clamp(state.chronoScale * state.manualScale, 0.15, 2.2);
       }
@@ -3831,7 +5660,6 @@
 
           if (distance < 110) {
             closeCount++;
-            player.risk = clamp(player.risk + (110 - distance) * dt * 0.38, 0, player.riskCap);
             player.nearMissCharge = clamp(player.nearMissCharge + dt * 45, 0, 100);
           }
 
@@ -3855,10 +5683,26 @@
           ? getVortexPosition()
           : state.currentBoss === "sovereign"
           ? { x: state.sovereign.x, y: state.sovereign.y }
-          : { x: state.nullBoss.x, y: state.nullBoss.y };
-        const bossHitRadius = state.currentBoss === "architect" ? 58 : state.currentBoss === "sovereign" ? 66 : 64;
+          : state.currentBoss === "monarch"
+          ? { x: state.nullBoss.x, y: state.nullBoss.y }
+          : { x: state.cesium.x, y: state.cesium.y };
+        const bossHitRadius = state.currentBoss === "architect" ? 58 : state.currentBoss === "sovereign" ? 66 : state.currentBoss === "monarch" ? 64 : 68;
         for (let i = state.playerShots.length - 1; i >= 0; i--) {
           const shot = state.playerShots[i];
+          if (state.currentBoss === "cesium") {
+            const shotPull = getCesiumMagnetPullAt(shot.x, shot.y, shot.size + 2);
+            if (shotPull) {
+              shot.vx += shotPull.directionX * shotPull.pullAccel * dt * 0.82;
+              shot.vy += shotPull.directionY * shotPull.pullAccel * dt * 0.82;
+              const shotSpeed = Math.hypot(shot.vx, shot.vy);
+              const maxShotSpeed = 760;
+              if (shotSpeed > maxShotSpeed) {
+                const scale = maxShotSpeed / shotSpeed;
+                shot.vx *= scale;
+                shot.vy *= scale;
+              }
+            }
+          }
           shot.x += shot.vx * dt;
           shot.y += shot.vy * dt;
           shot.life -= dt;
@@ -3995,6 +5839,7 @@
 
       function updateGame(rawDt) {
         const dt = clamp(rawDt, 0, 0.033);
+        const fpsUnlockWasActive = state.fpsUnlockTimer > 0;
         state.rawElapsed += dt;
         updateAchievementFeed(dt);
         updateImpactFrames(dt);
@@ -4007,7 +5852,19 @@
           return;
         }
 
-        if (["menu", "boss_select", "config", "edit_attacks", "severed"].includes(state.mode)) {
+        if (["menu", "operations", "boss_select", "config", "achievements", "edit_attacks", "severed"].includes(state.mode)) {
+          if (state.mode === "menu" && isOperationsLocked()) {
+            const seconds = Math.ceil(getOperationsCooldownRemainingMs() / 1000);
+            if (state.operationsTimerSecond !== seconds) {
+              state.operationsTimerSecond = seconds;
+              renderMainMenu();
+            }
+          } else if (state.mode === "menu" && state.operationsTimerSecond !== null) {
+            state.operationsTimerSecond = null;
+            renderMainMenu();
+          } else if (state.mode === "menu") {
+            state.operationsTimerSecond = null;
+          }
           return;
         }
 
@@ -4042,6 +5899,18 @@
         updateProfileStats();
         state.elapsed += dt * state.timeScale;
         state.bruteforceTimer = Math.max(0, state.bruteforceTimer - dt);
+        state.fpsUnlockTimer = Math.max(0, state.fpsUnlockTimer - dt);
+        state.macroBurstTimer = Math.max(0, state.macroBurstTimer - dt);
+        state.rootOverrideTimer = Math.max(0, state.rootOverrideTimer - dt);
+        if (fpsUnlockWasActive) {
+          state.fpsUnlockGlitchTimer -= dt;
+          while (state.fpsUnlockGlitchTimer <= 0 && state.fpsUnlockTimer > 0) {
+            state.fpsUnlockGlitchTimer += 1.6;
+            vanishRandomEnemyThreat();
+          }
+        } else {
+          state.fpsUnlockGlitchTimer = 0;
+        }
         state.ultimateFlash = Math.max(0, state.ultimateFlash - dt);
         state.shake = Math.max(0, state.shake - dt * 16);
         state.glitch = Math.max(0, state.glitch - dt * 1.8);
@@ -4054,13 +5923,18 @@
         }
 
         updatePlayer(dt);
+        const enemyTimeScale = state.fpsUnlockTimer > 0 ? 0.22 : state.rootOverrideTimer > 0 ? Math.min(state.timeScale, 0.52) : state.timeScale;
         if (state.currentBoss === "architect") {
-          updateSpawnLogic(dt * (0.95 + player.evolutionLevel * 0.05));
-          updateBullets(dt * state.timeScale);
+          if (state.fpsUnlockTimer <= 0) {
+            updateSpawnLogic(dt * (0.95 + player.evolutionLevel * 0.05));
+          }
+          updateBullets(dt * enemyTimeScale);
         } else if (state.currentBoss === "sovereign") {
-          updateSovereignBoss(dt * state.timeScale);
+          if (state.fpsUnlockTimer <= 0) updateSovereignBoss(dt * enemyTimeScale);
+        } else if (state.currentBoss === "monarch") {
+          if (state.fpsUnlockTimer <= 0) updateNullBoss(dt * enemyTimeScale);
         } else {
-          updateNullBoss(dt * state.timeScale);
+          if (state.fpsUnlockTimer <= 0) updateCesiumBoss(dt * enemyTimeScale);
         }
         if (state.mode !== "playing") return;
         updatePlayerShots(dt);
@@ -4204,6 +6078,20 @@
             const angle = (point / 5) * TAU - Math.PI * 0.5;
             const px = n.x + Math.cos(angle) * radius;
             const py = n.y + Math.sin(angle) * radius;
+            if (point === 0) ctx.moveTo(px, py);
+            else ctx.lineTo(px, py);
+          }
+          ctx.closePath();
+          ctx.fill();
+        } else if (state.currentBoss === "cesium") {
+          const radius = 56 * getCesiumBossScale();
+          ctx.fillStyle = `rgba(255, 64, 64, ${alpha})`;
+          ctx.beginPath();
+          for (let point = 0; point <= 8; point++) {
+            const angle = state.cesium.rotation + (point / 8) * TAU;
+            const r = point % 2 === 0 ? radius * 1.08 : radius * 0.82;
+            const px = state.cesium.x + Math.cos(angle) * r;
+            const py = state.cesium.y + Math.sin(angle) * r * 0.74;
             if (point === 0) ctx.moveTo(px, py);
             else ctx.lineTo(px, py);
           }
@@ -4467,6 +6355,62 @@
         }
       }
 
+      function drawCesiumPreview(ctxPreview, time) {
+        const x = 64;
+        const y = 64;
+        const rotation = time * 2.2;
+        const aura = ctxPreview.createRadialGradient(x, y, 0, x, y, 60);
+        aura.addColorStop(0, "rgba(120, 96, 10, 0.85)");
+        aura.addColorStop(0.35, "rgba(88, 68, 8, 0.46)");
+        aura.addColorStop(1, "rgba(255, 228, 108, 0)");
+        ctxPreview.fillStyle = aura;
+        ctxPreview.beginPath();
+        ctxPreview.arc(x, y, 60, 0, TAU);
+        ctxPreview.fill();
+
+        ctxPreview.save();
+        ctxPreview.translate(x, y);
+        ctxPreview.rotate(rotation);
+        ctxPreview.fillStyle = "rgba(128, 98, 18, 0.96)";
+        ctxPreview.strokeStyle = "rgba(255, 220, 98, 0.72)";
+        ctxPreview.lineWidth = 1.6;
+        ctxPreview.beginPath();
+        for (let point = 0; point <= 8; point++) {
+          const angle = (point / 8) * TAU;
+          const radius = point % 2 === 0 ? 28 : 22;
+          const px = Math.cos(angle) * radius;
+          const py = Math.sin(angle) * radius * 0.76;
+          if (point === 0) ctxPreview.moveTo(px, py);
+          else ctxPreview.lineTo(px, py);
+        }
+        ctxPreview.closePath();
+        ctxPreview.fill();
+        ctxPreview.stroke();
+        ctxPreview.restore();
+
+        for (let i = 0; i < 5; i++) {
+          const angle = rotation + (i / 5) * TAU;
+          const travel = 34 + Math.sin(time * 2.8 + i) * 10;
+          const cx = x + Math.cos(angle) * travel;
+          const cy = y + Math.sin(angle) * travel;
+          ctxPreview.save();
+          ctxPreview.translate(cx, cy);
+          ctxPreview.rotate(angle);
+          ctxPreview.fillStyle = "rgba(255, 232, 98, 0.96)";
+          ctxPreview.strokeStyle = "rgba(255, 248, 190, 0.65)";
+          ctxPreview.lineWidth = 1.1;
+          ctxPreview.beginPath();
+          ctxPreview.moveTo(14, 0);
+          ctxPreview.lineTo(-8, 8);
+          ctxPreview.lineTo(-3, 0);
+          ctxPreview.lineTo(-8, -8);
+          ctxPreview.closePath();
+          ctxPreview.fill();
+          ctxPreview.stroke();
+          ctxPreview.restore();
+        }
+      }
+
       function renderBossSelectPreviews() {
         if (state.mode !== "boss_select") return;
         const canvases = overlay.querySelectorAll("[data-boss-preview]");
@@ -4481,6 +6425,7 @@
           if (previewIndex === 0) drawArchitectPreview(previewCtx, time);
           else if (previewIndex === 1) drawSovereignPreview(previewCtx, time);
           else if (previewIndex === 2) drawMonarchPreview(previewCtx, time);
+          else if (previewIndex === 3) drawCesiumPreview(previewCtx, time);
         }
       }
 
@@ -5156,6 +7101,147 @@
         ctx.restore();
       }
 
+      function drawCesiumBoss() {
+        const c = state.cesium;
+        const coneStates = getCesiumConeStates();
+        const bossScale = getCesiumBossScale();
+        const coneScale = getCesiumConeScale();
+        const baseWidth = 84 * bossScale;
+        const baseHeight = 56 * bossScale;
+        const aura = ctx.createRadialGradient(c.x, c.y, 0, c.x, c.y, 180 * bossScale);
+        aura.addColorStop(0, "rgba(255, 232, 124, 0.18)");
+        aura.addColorStop(0.3, "rgba(164, 124, 24, 0.24)");
+        aura.addColorStop(1, "rgba(164, 124, 24, 0)");
+        ctx.fillStyle = aura;
+        ctx.beginPath();
+        ctx.arc(c.x, c.y, 180 * bossScale, 0, TAU);
+        ctx.fill();
+
+        if (c.magnetDuration > 0) {
+          ctx.save();
+          ctx.globalCompositeOperation = "lighter";
+          ctx.strokeStyle = "rgba(255, 241, 162, 0.22)";
+          ctx.lineWidth = 1.2;
+          for (const index of c.activePullIndices) {
+            const cone = coneStates[index];
+            if (!cone) continue;
+            ctx.beginPath();
+            for (let step = 0; step <= 1.001; step += 0.08) {
+              const swirl = step * 36;
+              const x = cone.x + (player.x - cone.x) * step + Math.cos(step * 14 + state.rawElapsed * 7) * swirl * 0.15;
+              const y = cone.y + (player.y - cone.y) * step + Math.sin(step * 14 + state.rawElapsed * 7) * swirl * 0.15;
+              if (step === 0) ctx.moveTo(x, y);
+              else ctx.lineTo(x, y);
+            }
+            ctx.stroke();
+          }
+          if (c.activeBossPull) {
+            ctx.beginPath();
+            for (let ring = 0; ring < 4; ring++) {
+              ctx.moveTo(c.x + 10 + ring * 10, c.y);
+              ctx.arc(c.x, c.y, 36 + ring * 12 + Math.sin(state.rawElapsed * 8 + ring) * 4, 0, TAU);
+            }
+            ctx.stroke();
+          }
+          ctx.restore();
+        }
+
+        ctx.save();
+        ctx.translate(c.x, c.y);
+        ctx.rotate(c.rotation);
+        ctx.globalCompositeOperation = "lighter";
+        ctx.fillStyle = "rgba(112, 88, 18, 0.98)";
+        ctx.strokeStyle = "rgba(255, 224, 92, 0.8)";
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        for (let point = 0; point <= 12; point++) {
+          const angle = (point / 12) * TAU;
+          const radius = point % 2 === 0 ? baseWidth * 0.58 : baseWidth * 0.42;
+          const px = Math.cos(angle) * radius;
+          const py = Math.sin(angle) * radius * (baseHeight / baseWidth);
+          if (point === 0) ctx.moveTo(px, py);
+          else ctx.lineTo(px, py);
+        }
+        ctx.closePath();
+        ctx.fill();
+        ctx.stroke();
+
+        ctx.strokeStyle = "rgba(255, 246, 194, 0.32)";
+        ctx.lineWidth = 1.2;
+        for (let slash = -1; slash <= 1; slash++) {
+          ctx.beginPath();
+          ctx.moveTo(-baseWidth * 0.3, slash * 10 - baseHeight * 0.25);
+          ctx.lineTo(baseWidth * 0.32, slash * 10 + baseHeight * 0.24);
+          ctx.stroke();
+        }
+        ctx.restore();
+
+        ctx.save();
+        ctx.globalCompositeOperation = "lighter";
+        for (let spark = 0; spark < 12; spark++) {
+          const angle = c.rotation * 0.7 + (spark / 12) * TAU;
+          const radius = baseWidth * 0.74 + (spark % 3) * 10;
+          ctx.fillStyle = spark % 2 === 0 ? "rgba(255, 236, 116, 0.22)" : "rgba(255, 255, 210, 0.16)";
+          ctx.beginPath();
+          ctx.arc(c.x + Math.cos(angle) * radius, c.y + Math.sin(angle) * radius * 0.8, 2 + (spark % 2), 0, TAU);
+          ctx.fill();
+        }
+        ctx.restore();
+
+        for (const cone of coneStates) {
+          ctx.save();
+          ctx.translate(cone.x, cone.y);
+          ctx.rotate(cone.angle);
+          ctx.globalCompositeOperation = "lighter";
+          ctx.fillStyle = "rgba(255, 232, 86, 0.98)";
+          ctx.strokeStyle = "rgba(255, 250, 210, 0.72)";
+          ctx.lineWidth = 1.4;
+          ctx.beginPath();
+          ctx.moveTo(cone.length * 0.5, 0);
+          ctx.lineTo(-cone.length * 0.35, cone.width * 0.55);
+          ctx.lineTo(-cone.length * 0.1, 0);
+          ctx.lineTo(-cone.length * 0.35, -cone.width * 0.55);
+          ctx.closePath();
+          ctx.fill();
+          ctx.stroke();
+          ctx.restore();
+        }
+
+        ctx.save();
+        ctx.globalCompositeOperation = "lighter";
+        for (const cursor of c.cursors) {
+          ctx.save();
+          ctx.translate(cursor.x, cursor.y);
+          const facing = Math.atan2(cursor.vy, cursor.vx);
+          ctx.rotate(facing);
+          ctx.scale(cursor.size / 14, cursor.size / 14);
+          ctx.fillStyle = "rgba(255, 244, 150, 0.96)";
+          ctx.beginPath();
+          ctx.moveTo(0, 0);
+          ctx.lineTo(0, 16);
+          ctx.lineTo(5, 12);
+          ctx.lineTo(8, 21);
+          ctx.lineTo(12, 19);
+          ctx.lineTo(8.5, 10);
+          ctx.lineTo(16, 10);
+          ctx.closePath();
+          ctx.fill();
+          ctx.restore();
+        }
+        for (const spinner of c.spinners) {
+          ctx.save();
+          ctx.translate(spinner.x, spinner.y);
+          ctx.rotate(spinner.angle);
+          ctx.fillStyle = "rgba(255, 232, 100, 0.95)";
+          ctx.fillRect(-(spinner.width || spinner.size) * 0.5, -(spinner.height || spinner.size) * 0.5, spinner.width || spinner.size, spinner.height || spinner.size);
+          ctx.strokeStyle = "rgba(255, 251, 218, 0.7)";
+          ctx.lineWidth = 1.3;
+          ctx.strokeRect(-(spinner.width || spinner.size) * 0.5, -(spinner.height || spinner.size) * 0.5, spinner.width || spinner.size, spinner.height || spinner.size);
+          ctx.restore();
+        }
+        ctx.restore();
+      }
+
       function drawBullets() {
         ctx.save();
         ctx.globalCompositeOperation = "lighter";
@@ -5336,6 +7422,7 @@
       }
 
       function drawHud() {
+        const attackMeta = getAttackLoadoutMeta();
         scoreValue.textContent = String(Math.floor(state.score)).padStart(6, "0");
         chronoValue.textContent = `${Math.round(state.timeScale * 100)}%`;
         chronoFill.style.width = `${Math.round(clamp(state.timeScale / 2.2, 0, 1) * 100)}%`;
@@ -5344,6 +7431,8 @@
           ? "Sovereign"
           : state.currentBoss === "monarch"
           ? "Monarch"
+          : state.currentBoss === "cesium"
+          ? "Cesium"
           : "Architect";
         bossValue.textContent = `${bossLabel} P${state.bossPhase} - ${bossPercent}%`;
         bossFill.style.width = `${bossPercent}%`;
@@ -5351,9 +7440,10 @@
         strainFill.style.width = `${Math.round((player.strain / player.maxStrain) * 100)}%`;
         healthValue.textContent = `${player.health % 1 === 0 ? player.health.toFixed(0) : player.health.toFixed(1)} / ${player.maxHealth}`;
         healthFill.style.width = `${Math.round((player.health / player.maxHealth) * 100)}%`;
-        evolutionValue.textContent = roman[player.evolutionLevel - 1] || "VI";
+        evolutionValue.textContent = roman[player.evolutionLevel - 1] || "XI";
         riskFill.style.width = `${Math.round((player.risk / player.riskCap) * 100)}%`;
-        ultimateValue.textContent = `${state.profile.attackLoadout === "bruteforce" ? "Bruteforce" : "Graphic Reset"} · ${Math.round(state.ultimateCharge)}%${state.bruteforceTimer > 0 ? " · ACTIVE" : ""}`;
+        const ultimateActive = state.rootOverrideTimer > 0 || state.macroBurstTimer > 0 || state.fpsUnlockTimer > 0 || state.bruteforceTimer > 0 ? " · ACTIVE" : "";
+        ultimateValue.textContent = `${attackMeta.name} · ${Math.round(state.ultimateCharge)}%${ultimateActive}`;
         ultimateFill.style.width = `${Math.round(clamp(state.ultimateCharge / 100, 0, 1) * 100)}%`;
       }
 
@@ -5424,6 +7514,8 @@
           drawSovereignBoss();
         } else if (state.currentBoss === "monarch" && ["playing", "paused", "gameover", "victory", "cutscene"].includes(state.mode)) {
           drawNullBoss();
+        } else if (state.currentBoss === "cesium" && ["playing", "paused", "gameover", "victory", "cutscene"].includes(state.mode)) {
+          drawCesiumBoss();
         } else {
           drawVortex();
         }
@@ -5439,6 +7531,8 @@
             drawSovereignSigil(progress);
           } else if (state.currentBoss === "monarch") {
             drawMonarchSigil(progress);
+          } else if (state.currentBoss === "cesium") {
+            drawCesiumBoss();
           } else {
             drawArchitectSigil(progress);
           }
@@ -5507,7 +7601,7 @@
               ctx.fill();
             }
             ctx.restore();
-          } else {
+          } else if (state.victoryBoss === "monarch") {
             const splitOffset = Math.min(138, state.victoryTime * 48);
             const pulse = 1 + Math.sin(state.victoryTime * 12) * 0.09;
             const coreRadius = 54 * pulse;
@@ -5577,6 +7671,32 @@
               ctx.fill();
             }
             ctx.restore();
+          } else {
+            ctx.save();
+            ctx.globalCompositeOperation = "lighter";
+            const burst = ctx.createRadialGradient(state.cesium.x, state.cesium.y, 0, state.cesium.x, state.cesium.y, 220);
+            burst.addColorStop(0, "rgba(255, 255, 220, 0.24)");
+            burst.addColorStop(0.35, "rgba(255, 232, 118, 0.22)");
+            burst.addColorStop(1, "rgba(255, 232, 118, 0)");
+            ctx.fillStyle = burst;
+            ctx.beginPath();
+            ctx.arc(state.cesium.x, state.cesium.y, 220, 0, TAU);
+            ctx.fill();
+            for (const frag of state.cesium.fragments) {
+              ctx.save();
+              ctx.translate(frag.x, frag.y);
+              ctx.rotate(frag.rotation);
+              ctx.fillStyle = frag.color || "rgba(255, 238, 132, 0.95)";
+              ctx.beginPath();
+              ctx.moveTo(frag.size * 0.7, 0);
+              ctx.lineTo(-frag.size * 0.4, frag.size * 0.34);
+              ctx.lineTo(-frag.size * 0.22, 0);
+              ctx.lineTo(-frag.size * 0.4, -frag.size * 0.34);
+              ctx.closePath();
+              ctx.fill();
+              ctx.restore();
+            }
+            ctx.restore();
           }
         } else if (["playing", "paused", "gameover"].includes(state.mode)) {
           drawChronoField();
@@ -5584,7 +7704,7 @@
             drawBullets();
           } else if (state.currentBoss === "monarch") {
             drawNullProjectiles();
-          } else {
+          } else if (state.currentBoss === "sovereign") {
             drawSovereignProjectiles();
           }
           drawPlayerShots();
@@ -5648,6 +7768,7 @@
         if (nav) {
           const destination = nav.dataset.nav;
           if (destination === "menu") renderMainMenu();
+          if (destination === "operations") renderOperations();
           if (destination === "boss_select") renderBossSelect();
           if (destination === "config") renderConfig();
           if (destination === "achievements") renderAchievements();
@@ -5674,6 +7795,13 @@
         if (bossSelect) {
           state.selectedBossIndex = clamp(Number(bossSelect.dataset.bossSelect) || 0, 0, bosses.length - 1);
           renderBossSelect();
+          return;
+        }
+
+        const operationsSelect = event.target.closest("[data-operations-select]");
+        if (operationsSelect) {
+          state.operationsSelectedIndex = clamp(Number(operationsSelect.dataset.operationsSelect) || 0, 0, Math.max(0, state.operationsJobs.length - 1));
+          renderOperations();
           return;
         }
 
@@ -5721,6 +7849,20 @@
           return;
         }
 
+        const shopUltimate = event.target.closest("[data-shop-buy-ultimate]");
+        if (shopUltimate) {
+          purchaseUltimate(shopUltimate.dataset.shopBuyUltimate);
+          renderEditAttacks();
+          return;
+        }
+
+        const shopEvolution = event.target.closest("[data-shop-buy-evolution]");
+        if (shopEvolution) {
+          purchaseEvolutionTier(Number(shopEvolution.dataset.shopBuyEvolution));
+          renderEditAttacks();
+          return;
+        }
+
         if (event.target.closest("[data-skin-disable]")) {
           disableCustomSkin();
           renderConfig();
@@ -5742,6 +7884,37 @@
 
         if (event.target.closest("[data-pause-continue]")) {
           togglePause();
+          return;
+        }
+
+        if (event.target.closest("[data-operations-return-funds]")) {
+          returnOperationsFunds();
+          renderOperations();
+          return;
+        }
+
+        const operationsAnswer = event.target.closest("[data-operations-answer]");
+        if (operationsAnswer) {
+          applyOperationsOutcome(operationsAnswer.dataset.operationsAnswer === "correct");
+          if (isOperationsLocked()) renderMainMenu();
+          else renderOperations(true);
+          return;
+        }
+
+        if (event.target.closest("[data-operations-submit-drag]")) {
+          scoreOperationsCurrentTask();
+          return;
+        }
+
+        if (event.target.closest("[data-operations-reset-drag]")) {
+          const task = getOperationsCurrentTask();
+          if (task?.interaction === "drag_bins") {
+            for (const item of task.items) {
+              task.placements[item.id] = "tray";
+            }
+            state.operationsDragItem = null;
+            renderOperations();
+          }
           return;
         }
 
@@ -5806,7 +7979,7 @@
 
         if (event.code === "Escape") {
           event.preventDefault();
-          if (["boss_select", "config", "achievements", "edit_attacks", "severed"].includes(state.mode)) {
+          if (["operations", "boss_select", "config", "achievements", "edit_attacks", "severed"].includes(state.mode)) {
             renderMainMenu();
             return;
           }
@@ -5892,7 +8065,34 @@
         event.preventDefault();
       });
       window.addEventListener("dragstart", (event) => {
+        const chip = event.target.closest?.("[data-operations-drag-item]");
+        if (!chip) {
+          event.preventDefault();
+          return;
+        }
+        state.operationsDragItem = chip.dataset.operationsDragItem || null;
+        if (event.dataTransfer && state.operationsDragItem) {
+          event.dataTransfer.effectAllowed = "move";
+          event.dataTransfer.setData("text/plain", state.operationsDragItem);
+        }
+      });
+      window.addEventListener("dragover", (event) => {
+        if (!event.target.closest?.("[data-operations-bin]")) return;
         event.preventDefault();
+        if (event.dataTransfer) event.dataTransfer.dropEffect = "move";
+      });
+      window.addEventListener("drop", (event) => {
+        const dropzone = event.target.closest?.("[data-operations-bin]");
+        if (!dropzone) return;
+        event.preventDefault();
+        const itemId = event.dataTransfer?.getData("text/plain") || state.operationsDragItem;
+        if (!itemId) return;
+        moveOperationsDragItem(itemId, dropzone.dataset.operationsBin);
+        state.operationsDragItem = null;
+        renderOperations();
+      });
+      window.addEventListener("dragend", () => {
+        state.operationsDragItem = null;
       });
 
       resize();
