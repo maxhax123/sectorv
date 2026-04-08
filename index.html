@@ -1257,6 +1257,75 @@
       border-bottom: 1px solid rgba(255, 255, 255, 0.08);
     }
 
+    .tutorial-demo {
+      margin: 16px 0 6px;
+      display: grid;
+      gap: 12px;
+      text-align: left;
+    }
+
+    .tutorial-demo-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 12px;
+    }
+
+    .tutorial-demo-card {
+      padding: 14px 16px;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      background:
+        radial-gradient(circle at top, rgba(255, 215, 106, 0.08), transparent 58%),
+        linear-gradient(180deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.02));
+      box-shadow:
+        inset 0 0 24px rgba(255, 255, 255, 0.02),
+        0 0 26px rgba(255, 215, 106, 0.06);
+      display: grid;
+      gap: 10px;
+    }
+
+    .tutorial-demo-card strong {
+      font-size: 12px;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: var(--gold-hot);
+    }
+
+    .tutorial-demo-copy {
+      color: var(--ui-dim);
+      font-size: 12px;
+      line-height: 1.55;
+      letter-spacing: 0.06em;
+    }
+
+    .tutorial-key-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .tutorial-key {
+      min-width: 34px;
+      padding: 8px 10px;
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      background: linear-gradient(180deg, rgba(255, 255, 255, 0.12), rgba(255, 255, 255, 0.04));
+      box-shadow:
+        inset 0 -2px 0 rgba(0, 0, 0, 0.22),
+        0 0 16px rgba(255, 215, 106, 0.08);
+      color: var(--ui);
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-align: center;
+      text-transform: uppercase;
+    }
+
+    .tutorial-arrow {
+      color: var(--gold-hot);
+      letter-spacing: 0.18em;
+      font-size: 12px;
+    }
+
     .slider-wrap {
       margin-top: 18px;
       display: grid;
@@ -2094,8 +2163,8 @@
     <div class="panel">
       <div class="title">Sector V: Chrono-Drift</div>
       <div class="value" id="scoreValue">000000</div>
-      <div style="margin-top: 8px; color: var(--ui-dim); font-size: 12px; letter-spacing: 0.12em;">
-        MOUSE MOVE / W-S THRUST / A-D TURN / Q FOCUS COMBINE / SHIFT SLOW / CTRL FAST / LEFT CLICK ULTIMATE
+      <div id="controlHint" style="margin-top: 8px; color: var(--ui-dim); font-size: 12px; letter-spacing: 0.12em;">
+        MOUSE MOVE / W-S THRUST / A-D TURN / SHIFT FOCUS / Q SLOW / E FAST / ESC PAUSE / LEFT CLICK ULTIMATE
       </div>
       <button class="pause-toggle inline" id="pauseButton" aria-label="Pause or continue">
         <span class="pause-toggle-bar"></span>
@@ -2377,9 +2446,152 @@
         11: 39999
       };
 
+      const defaultControlBindings = {
+        thrust_forward: "KeyW",
+        thrust_reverse: "KeyS",
+        turn_left: "KeyA",
+        turn_right: "KeyD",
+        focus: "ShiftLeft",
+        slow: "KeyQ",
+        fast: "KeyE",
+        pause: "Escape",
+        restart: "Space"
+      };
+
+      const controlBindingDefs = [
+        { id: "thrust_forward", label: "Forward Thrust", desc: "Move the plane forward." },
+        { id: "thrust_reverse", label: "Reverse Thrust", desc: "Move the plane backward." },
+        { id: "turn_left", label: "Turn Left", desc: "Rotate the plane left." },
+        { id: "turn_right", label: "Turn Right", desc: "Rotate the plane right." },
+        { id: "focus", label: "Focus Fire", desc: "Tighten later-evolution spreads into a stream." },
+        { id: "slow", label: "Slow Time", desc: "Chrono compression and strain drain." },
+        { id: "fast", label: "Fast Time", desc: "Chrono acceleration and strain recovery." },
+        { id: "pause", label: "Pause Menu", desc: "Open the in-fight pause menu." },
+        { id: "restart", label: "Restart After Death", desc: "Restart from the game over screen." }
+      ];
+
+      function normalizeControlBindings(source = {}) {
+        const normalized = {};
+        for (const [action, fallback] of Object.entries(defaultControlBindings)) {
+          normalized[action] = typeof source[action] === "string" && source[action] ? source[action] : fallback;
+        }
+        const usingLegacyTimeControls =
+          normalized.focus === "KeyQ" &&
+          (normalized.slow === "ShiftLeft" || normalized.slow === "ShiftRight") &&
+          (normalized.fast === "ControlLeft" || normalized.fast === "ControlRight");
+        if (usingLegacyTimeControls) {
+          normalized.focus = "ShiftLeft";
+          normalized.slow = "KeyQ";
+          normalized.fast = "KeyE";
+        }
+        return normalized;
+      }
+
+      function getControlBinding(action) {
+        return state.profile.controls?.[action] || defaultControlBindings[action];
+      }
+
+      function setControlBinding(action, code) {
+        state.profile.controls[action] = code;
+        saveProfile();
+      }
+
+      function resetControlBindings() {
+        state.profile.controls = { ...defaultControlBindings };
+        saveProfile();
+      }
+
+      function formatControlCode(code) {
+        if (!code) return "Unbound";
+        if (code.startsWith("Key")) return code.slice(3);
+        if (code.startsWith("Digit")) return code.slice(5);
+        const special = {
+          ShiftLeft: "L Shift",
+          ShiftRight: "R Shift",
+          ControlLeft: "L Ctrl",
+          ControlRight: "R Ctrl",
+          AltLeft: "L Alt",
+          AltRight: "R Alt",
+          Escape: "Esc",
+          Space: "Space",
+          ArrowUp: "Up",
+          ArrowDown: "Down",
+          ArrowLeft: "Left",
+          ArrowRight: "Right",
+          Backquote: "`",
+          Minus: "-",
+          Equal: "=",
+          BracketLeft: "[",
+          BracketRight: "]",
+          Semicolon: ";",
+          Quote: "'",
+          Comma: ",",
+          Period: ".",
+          Slash: "/",
+          Backslash: "\\"
+        };
+        return special[code] || code;
+      }
+
+      function actionPressed(action) {
+        const binding = getControlBinding(action);
+        return binding ? input.keys.has(binding) : false;
+      }
+
+      function createDefaultTutorialState() {
+        return {
+          active: false,
+          step: 0,
+          promptTitle: "",
+          promptBody: [],
+          promptButton: "Continue",
+          promptResumeStep: null,
+          sawMouseAim: false,
+          heldFocus: false,
+          usedSlow: false,
+          usedFast: false,
+          openedPauseMenu: false,
+          boughtPauseUpgrade: false,
+          usedUltimate: false,
+          movement: {
+            forward: false,
+            reverse: false,
+            left: false,
+            right: false
+          }
+        };
+      }
+
+      function isTutorialRequired() {
+        return !state.profile?.tutorialCompleted;
+      }
+
+      function getHudControlHint() {
+        return [
+          "MOUSE MOVE",
+          `${formatControlCode(getControlBinding("thrust_forward"))}-${formatControlCode(getControlBinding("thrust_reverse"))} THRUST`,
+          `${formatControlCode(getControlBinding("turn_left"))}-${formatControlCode(getControlBinding("turn_right"))} TURN`,
+          `${formatControlCode(getControlBinding("focus"))} FOCUS`,
+          `${formatControlCode(getControlBinding("slow"))} SLOW`,
+          `${formatControlCode(getControlBinding("fast"))} FAST`,
+          `${formatControlCode(getControlBinding("pause"))} PAUSE`,
+          "LEFT CLICK ULTIMATE"
+        ].join(" / ");
+      }
+
+      function updateControlHint() {
+        const hint = document.getElementById("controlHint");
+        if (hint) hint.textContent = getHudControlHint();
+      }
+
       function createDefaultProfile(source = {}) {
         const achievements = { ...(source.achievements || {}) };
         delete achievements.full_bloom;
+        const hasExistingProgress =
+          (Number.isFinite(source.bestScore) && source.bestScore > 0) ||
+          Object.keys(achievements).length > 0 ||
+          Object.values(source.bossRecords || {}).some(Boolean) ||
+          (Number.isFinite(source.operations?.cents) && source.operations.cents !== 0);
         const shop = {
           ownedUltimates: {
             graphic_reset: true,
@@ -2398,11 +2610,13 @@
           achievements,
           attackLoadout: selectedLoadout,
           bulletColor: normalizeHexColor(source.bulletColor, "#ffd76a"),
+          controls: normalizeControlBindings(source.controls),
           operations: {
             cents: Number.isFinite(source.operations?.cents) ? Math.round(source.operations.cents) : 0,
             wrongCount: Number.isFinite(source.operations?.wrongCount) ? Math.max(0, Math.round(source.operations.wrongCount)) : 0,
             cooldownUntil: Number.isFinite(source.operations?.cooldownUntil) ? source.operations.cooldownUntil : 0
           },
+          tutorialCompleted: typeof source.tutorialCompleted === "boolean" ? source.tutorialCompleted : hasExistingProgress,
           shop,
           bossRecords: {
             architect: Boolean(source.bossRecords?.architect),
@@ -2488,6 +2702,10 @@
         operationsJobs: [],
         operationsSelectedIndex: 0,
         operationsDragItem: null,
+        controlRebindAction: null,
+        controlRebindMessage: "",
+        menuNotice: "",
+        tutorial: createDefaultTutorialState(),
         menuAmbientBosses: [],
         menuAmbientSignature: "",
         menuAmbientLastTime: 0,
@@ -3196,6 +3414,290 @@
         return `${sign}$${(Math.abs(cents) / 100).toFixed(2)}`;
       }
 
+      function getTutorialMinibossName() {
+        return "Tutorial Boss";
+      }
+
+      function tutorialKeyCaps(...codes) {
+        return `
+          <div class="tutorial-key-row">
+            ${codes.map((code) => `<span class="tutorial-key">${code}</span>`).join('<span class="tutorial-arrow">+</span>')}
+          </div>
+        `;
+      }
+
+      function getTutorialShowcaseMarkup(step) {
+        if (step === 1) {
+          return `
+            <div class="tutorial-demo">
+              <div class="tutorial-demo-grid">
+                <div class="tutorial-demo-card">
+                  <strong>Thrust</strong>
+                  ${tutorialKeyCaps(formatControlCode(getControlBinding("thrust_forward")), formatControlCode(getControlBinding("thrust_reverse")))}
+                  <div class="tutorial-demo-copy">Press both thrust keys during this step so the tutorial can confirm forward and reverse movement.</div>
+                </div>
+                <div class="tutorial-demo-card">
+                  <strong>Turn</strong>
+                  ${tutorialKeyCaps(formatControlCode(getControlBinding("turn_left")), formatControlCode(getControlBinding("turn_right")))}
+                  <div class="tutorial-demo-copy">Tap each turning key to rotate your ship left and right before moving on.</div>
+                </div>
+              </div>
+            </div>
+          `;
+        }
+        if (step === 2) {
+          return `
+            <div class="tutorial-demo">
+              <div class="tutorial-demo-grid">
+                <div class="tutorial-demo-card">
+                  <strong>Mouse Aim</strong>
+                  ${tutorialKeyCaps("MOUSE")}
+                  <div class="tutorial-demo-copy">Move your cursor away from the ship so the drift assist visibly pulls you toward the aim point.</div>
+                </div>
+                <div class="tutorial-demo-card">
+                  <strong>Focus Fire</strong>
+                  ${tutorialKeyCaps(formatControlCode(getControlBinding("focus")))}
+                  <div class="tutorial-demo-copy">Hold this while firing to tighten your bullet spread and make the pattern visibly narrower.</div>
+                </div>
+              </div>
+            </div>
+          `;
+        }
+        if (step === 3) {
+          return `
+            <div class="tutorial-demo">
+              <div class="tutorial-demo-grid">
+                <div class="tutorial-demo-card">
+                  <strong>Slow Time</strong>
+                  ${tutorialKeyCaps(formatControlCode(getControlBinding("slow")))}
+                  <div class="tutorial-demo-copy">Press this to visibly drag the chrono meter downward and create more room around bullets.</div>
+                </div>
+                <div class="tutorial-demo-card">
+                  <strong>Speed Time</strong>
+                  ${tutorialKeyCaps(formatControlCode(getControlBinding("fast")))}
+                  <div class="tutorial-demo-copy">Press this to spike the chrono meter upward and reposition quickly.</div>
+                </div>
+              </div>
+            </div>
+          `;
+        }
+        if (step === 4) {
+          return `
+            <div class="tutorial-demo">
+              <div class="tutorial-demo-card">
+                <strong>Chrono Hold</strong>
+                ${tutorialKeyCaps(formatControlCode(getControlBinding("pause")))}
+                <div class="tutorial-demo-copy">This opens the in-fight pause/shop panel. The next screen will show the real menu and ask you to buy Damage Matrix with score.</div>
+              </div>
+            </div>
+          `;
+        }
+        if (step === 5) {
+          return `
+            <div class="tutorial-demo">
+              <div class="tutorial-demo-card">
+                <strong>${getTutorialMinibossName()}</strong>
+                <div class="tutorial-demo-copy">A compact training target with a bright core, stabilizer fins, and readable patterns. Keep moving, shoot constantly, and prepare to fire your ultimate when prompted.</div>
+              </div>
+            </div>
+          `;
+        }
+        if (step === 6) {
+          return `
+            <div class="tutorial-demo">
+              <div class="tutorial-demo-grid">
+                <div class="tutorial-demo-card">
+                  <strong>Kinetic Well Full</strong>
+                  ${tutorialKeyCaps("LEFT CLICK")}
+                  <div class="tutorial-demo-copy">Your ultimate is ready. Click once to discharge it into the boss.</div>
+                </div>
+                <div class="tutorial-demo-card">
+                  <strong>Finish The Drill</strong>
+                  ${tutorialKeyCaps("SHOOT")}
+                  <div class="tutorial-demo-copy">After the ultimate lands, keep firing until the training boss breaks apart and the full menu unlocks.</div>
+                </div>
+              </div>
+            </div>
+          `;
+        }
+        return `
+          <div class="tutorial-demo">
+            <div class="tutorial-demo-grid">
+              <div class="tutorial-demo-card">
+                <strong>Movement</strong>
+                ${tutorialKeyCaps(formatControlCode(getControlBinding("thrust_forward")), formatControlCode(getControlBinding("thrust_reverse")), formatControlCode(getControlBinding("turn_left")), formatControlCode(getControlBinding("turn_right")))}
+                <div class="tutorial-demo-copy">Move, reverse, and rotate to stay alive inside the arena.</div>
+              </div>
+              <div class="tutorial-demo-card">
+                <strong>Aim And Time</strong>
+                ${tutorialKeyCaps("MOUSE", formatControlCode(getControlBinding("focus")), formatControlCode(getControlBinding("slow")), formatControlCode(getControlBinding("fast")))}
+                <div class="tutorial-demo-copy">Aim with the mouse, tighten with focus, and bend time on demand.</div>
+              </div>
+            </div>
+          </div>
+        `;
+      }
+
+      function showTutorialPrompt(title, body, resumeStep = null, buttonLabel = "Continue") {
+        state.mode = "paused";
+        state.tutorial.promptTitle = title;
+        state.tutorial.promptBody = Array.isArray(body) ? body : [body];
+        state.tutorial.promptResumeStep = resumeStep;
+        state.tutorial.promptButton = buttonLabel;
+        const showcaseStep = resumeStep ?? state.tutorial.step;
+        overlay.innerHTML = `
+          <div class="message">
+            <h1>${title}</h1>
+            ${state.tutorial.promptBody.map((line) => `<p>${line}</p>`).join("")}
+            ${getTutorialShowcaseMarkup(showcaseStep)}
+            <div class="config-actions" style="justify-content:center;">
+              <button class="menu-button menu-hoverable" data-tutorial-continue>${buttonLabel}</button>
+            </div>
+          </div>
+        `;
+        overlay.classList.add("show");
+        updateHudVisibility();
+      }
+
+      function resetTutorialRunState() {
+        state.tutorial = createDefaultTutorialState();
+      }
+
+      function finishTutorial() {
+        state.profile.tutorialCompleted = true;
+        state.menuNotice = "Tutorial complete. All combat systems and menus are now unlocked.";
+        saveProfile();
+        resetTutorialRunState();
+        returnToMenu();
+      }
+
+      function beginTutorialCombat() {
+        state.tutorial.step = 5;
+        state.mode = "playing";
+        state.score = Math.max(state.score, 700);
+        state.elapsed = 0;
+        state.bossDamageDealt = 0;
+        state.ultimateCharge = 0;
+        state.spawnTimer = 0.9;
+        state.waveTimer = 2.2;
+        clearEnemyHazards();
+        overlay.classList.remove("show");
+        updateHudVisibility();
+      }
+
+      function startTutorial() {
+        resetGame("playing");
+        state.currentBoss = "architect";
+        state.bossMaxHealth = 560;
+        state.bossHealth = state.bossMaxHealth;
+        state.bossPhase = 1;
+        state.score = 0;
+        player.maxHealth = 5;
+        player.health = player.maxHealth;
+        player.damageUpgradeLevel = 0;
+        player.damageMultiplier = 1;
+        player.healthBufferBuys = 0;
+        player.strain = player.maxStrain;
+        player.evolutionLevel = 1;
+        player.angle = -Math.PI / 2;
+        input.keys.clear();
+        input.mouseDown = false;
+        input.hasMouse = false;
+        input.mouseX = player.x;
+        input.mouseY = player.y - 120;
+        state.menuNotice = "";
+        resetTutorialRunState();
+        state.tutorial.active = true;
+        state.tutorial.step = 0;
+        showTutorialPrompt(
+          "Tutorial / Systems Brief",
+          [
+            `Move with ${formatControlCode(getControlBinding("thrust_forward"))} and ${formatControlCode(getControlBinding("thrust_reverse"))}, rotate with ${formatControlCode(getControlBinding("turn_left"))} and ${formatControlCode(getControlBinding("turn_right"))}, and guide your ship by moving the mouse.`,
+            `Hold ${formatControlCode(getControlBinding("focus"))} to tighten your spread, press ${formatControlCode(getControlBinding("slow"))} to slow time, press ${formatControlCode(getControlBinding("fast"))} to surge faster, and click when your kinetic well is full to fire your ultimate.`,
+            `During boss fights, press ${formatControlCode(getControlBinding("pause"))} to open Chrono Hold and spend score. If you get destroyed, press ${formatControlCode(getControlBinding("restart"))} or click to retry.`
+          ],
+          1,
+          "Begin Tutorial"
+        );
+      }
+
+      function updateTutorial(dt) {
+        if (!state.tutorial.active || state.mode !== "playing") return;
+
+        if (state.currentBoss === "architect" && state.tutorial.step < 5) {
+          clearEnemyHazards();
+        }
+
+        if (state.tutorial.step === 1) {
+          if (actionPressed("thrust_forward")) state.tutorial.movement.forward = true;
+          if (actionPressed("thrust_reverse")) state.tutorial.movement.reverse = true;
+          if (actionPressed("turn_left")) state.tutorial.movement.left = true;
+          if (actionPressed("turn_right")) state.tutorial.movement.right = true;
+          if (Object.values(state.tutorial.movement).every(Boolean)) {
+            showTutorialPrompt(
+              "Aiming And Focus",
+              [
+                "Good. Move the mouse around to guide your ship while keeping your nose pointed for fire control.",
+                `While aiming, hold ${formatControlCode(getControlBinding("focus"))} to engage focus fire and tighten your spread for precision bursts.`
+              ],
+              2
+            );
+          }
+          return;
+        }
+
+        if (state.tutorial.step === 2) {
+          const mouseDistance = Math.hypot(input.mouseX - player.x, input.mouseY - player.y);
+          if (input.hasMouse && mouseDistance > 80) state.tutorial.sawMouseAim = true;
+          if (actionPressed("focus")) state.tutorial.heldFocus = true;
+          if (state.tutorial.sawMouseAim && state.tutorial.heldFocus) {
+            showTutorialPrompt(
+              "Chrono Control",
+              [
+                `Use ${formatControlCode(getControlBinding("slow"))} to slow time and create safe lanes through dense patterns.`,
+                `Use ${formatControlCode(getControlBinding("fast"))} to accelerate the timeline when you need to reposition or push damage faster.`
+              ],
+              3
+            );
+          }
+          return;
+        }
+
+        if (state.tutorial.step === 3) {
+          if (actionPressed("slow")) state.tutorial.usedSlow = true;
+          if (actionPressed("fast")) state.tutorial.usedFast = true;
+          if (state.tutorial.usedSlow && state.tutorial.usedFast) {
+            state.score = Math.max(state.score, 1200);
+            showTutorialPrompt(
+              "Chrono Hold",
+              [
+                `Next, open the in-fight boss menu with ${formatControlCode(getControlBinding("pause"))}.`,
+                "Inside Chrono Hold you can spend score on upgrades. Open it, then buy one Damage Matrix upgrade before continuing."
+              ],
+              4,
+              "Resume"
+            );
+          }
+          return;
+        }
+
+        if (state.tutorial.step === 5 && !state.tutorial.usedUltimate) {
+          if (state.ultimateCharge < 100 && (state.bossDamageDealt >= 150 || state.elapsed >= 10)) {
+            state.ultimateCharge = 100;
+          }
+          if (state.ultimateCharge < 100) return;
+          showTutorialPrompt(
+            "Ultimate Ready",
+            [
+              "Your kinetic well is full.",
+              "Resume, then click to discharge your equipped ultimate into the training core."
+            ],
+            6,
+            "Use Ultimate"
+          );
+        }
+      }
+
       function getOperationsCooldownRemainingMs(now = Date.now()) {
         return Math.max(0, (state.profile.operations?.cooldownUntil || 0) - now);
       }
@@ -3783,6 +4285,8 @@
         const unlockedCount = Object.keys(state.profile.achievements).length;
         const operationsLocked = isOperationsLocked();
         const operationsTimer = operationsLocked ? formatOperationsCountdown(getOperationsCooldownRemainingMs()) : "";
+        const tutorialRequired = isTutorialRequired();
+        const lockCopy = "Complete the tutorial to unlock this system.";
         overlay.innerHTML = `
           <div class="menu-shell">
             <div>
@@ -3790,38 +4294,45 @@
               <div class="menu-subtitle">Chrono-Drift / Neo-Baroque Combat Interface</div>
             </div>
             <div class="menu-stack main-menu-stack">
-              <button class="menu-button menu-hoverable" data-nav="boss_select">
+              <button class="menu-button menu-hoverable" data-nav="boss_select" ${tutorialRequired ? "disabled" : ""}>
                 <span class="menu-button-stack">
                   <span>Boss Battles</span>
-                  <span class="menu-button-meta">Enter the arena and challenge cleared or active targets.</span>
+                  <span class="menu-button-meta">${tutorialRequired ? lockCopy : "Enter the arena and challenge cleared or active targets."}</span>
                 </span>
               </button>
-              <button class="menu-button menu-hoverable" data-nav="operations" ${operationsLocked ? "disabled" : ""}>
+              <button class="menu-button menu-hoverable" data-nav="tutorial">
+                <span class="menu-button-stack">
+                  <span>Tutorial</span>
+                  <span class="menu-button-meta">${tutorialRequired ? "Mandatory onboarding for first-time pilots." : "Replay the guided combat onboarding and training miniboss."}</span>
+                </span>
+              </button>
+              <button class="menu-button menu-hoverable" data-nav="operations" ${(tutorialRequired || operationsLocked) ? "disabled" : ""}>
                 <span class="menu-button-stack">
                   <span>Operations</span>
-                  <span class="menu-button-meta">${operationsLocked ? `Locked ${operationsTimer}` : "Office side work and routine cash jobs."}</span>
+                  <span class="menu-button-meta">${tutorialRequired ? lockCopy : operationsLocked ? `Locked ${operationsTimer}` : "Office side work and routine cash jobs."}</span>
                 </span>
               </button>
-              <button class="menu-button menu-hoverable" data-nav="edit_attacks">
+              <button class="menu-button menu-hoverable" data-nav="edit_attacks" ${tutorialRequired ? "disabled" : ""}>
                 <span class="menu-button-stack">
                   <span>Shop</span>
-                  <span class="menu-button-meta">Tune ultimates and evolve your attack patterns.</span>
+                  <span class="menu-button-meta">${tutorialRequired ? lockCopy : "Tune ultimates and evolve your attack patterns."}</span>
                 </span>
               </button>
-              <button class="menu-button menu-hoverable" data-nav="config">
+              <button class="menu-button menu-hoverable" data-nav="config" ${tutorialRequired ? "disabled" : ""}>
                 <span class="menu-button-stack">
                   <span>Configuration</span>
-                  <span class="menu-button-meta">Adjust controls, visuals, audio, and profile settings.</span>
+                  <span class="menu-button-meta">${tutorialRequired ? lockCopy : "Adjust controls, visuals, audio, and profile settings."}</span>
                 </span>
               </button>
-              <button class="menu-button menu-hoverable" data-nav="achievements">
+              <button class="menu-button menu-hoverable" data-nav="achievements" ${tutorialRequired ? "disabled" : ""}>
                 <span class="menu-button-stack">
                   <span>Achievements</span>
-                  <span class="menu-button-meta">Review your unlocks and progress milestones.</span>
+                  <span class="menu-button-meta">${tutorialRequired ? lockCopy : "Review your unlocks and progress milestones."}</span>
                 </span>
               </button>
             </div>
             <div>
+              ${state.menuNotice ? `<div class="menu-footer" style="margin-bottom: 10px; color: var(--gold-hot);">${state.menuNotice}</div>` : ""}
               <div class="menu-footer">Best Score ${String(Math.floor(state.profile.bestScore)).padStart(6, "0")} / Achievements ${unlockedCount}/${Object.keys(achievementDefs).length}</div>
             </div>
           </div>
@@ -4049,6 +4560,18 @@
         state.mode = "config";
         const currentPreset = state.profile.skin?.preset || "gold";
         const currentBulletColor = getBulletColor();
+        const bindingMarkup = controlBindingDefs.map((binding) => {
+          const waiting = state.controlRebindAction === binding.id;
+          return `
+            <div class="diagram-row" style="grid-template-columns: 132px minmax(0, 1fr) auto; gap:10px;">
+              <span>${binding.label}</span>
+              <span>${binding.desc}</span>
+              <button class="config-toggle menu-hoverable ${waiting ? "active" : ""}" data-control-rebind="${binding.id}">
+                ${waiting ? "Press Key..." : formatControlCode(getControlBinding(binding.id))}
+              </button>
+            </div>
+          `;
+        }).join("");
         const skinMarkup = Object.entries(skinPresets).map(([key, skin]) => `
           <button class="skin-chip menu-hoverable ${currentPreset === key && !state.profile.skin?.customDataUrl ? "active" : ""}" data-skin-preset="${key}">
             <span class="skin-swatch" style="background:${skin.primary};"></span>${skin.name}
@@ -4070,17 +4593,18 @@
             </div>
             <div class="config-grid">
               <section class="config-card">
-                <div class="title">Control Infographic</div>
+                <div class="title">Controls</div>
                 <div class="controls-diagram">
                   <div class="diagram-row"><span>Mouse</span><span>Precision drift positioning</span></div>
-                  <div class="diagram-row"><span>W / S</span><span>Forward and reverse thrust</span></div>
-                  <div class="diagram-row"><span>A / D</span><span>Vessel rotation and aim vector</span></div>
-                  <div class="diagram-row"><span>Q</span><span>Focus-combine later evolution bullet spreads into a tighter stream</span></div>
-                  <div class="diagram-row"><span>Shift / Ctrl</span><span>Chrono compression and acceleration</span></div>
+                  ${bindingMarkup}
                   <div class="diagram-row"><span>Left Click</span><span>Trigger the loaded ultimate when the kinetic well is full</span></div>
-                  <div class="diagram-row"><span>Esc</span><span>Pause and field shop access</span></div>
                   <div class="diagram-row"><span>Mobile</span><span>Use the joystick to drift, the turn buttons to rotate, and the ultimate button to fire</span></div>
                 </div>
+                <div class="config-actions" style="margin-top:18px;">
+                  <button class="config-toggle menu-hoverable" data-control-reset>Reset Defaults</button>
+                  <button class="config-toggle menu-hoverable" data-control-cancel ${state.controlRebindAction ? "" : "disabled"}>Cancel Rebind</button>
+                </div>
+                <div class="menu-footer" style="text-align:left; margin-top:12px;">${state.controlRebindMessage || (state.controlRebindAction ? `Press a new key for ${controlBindingDefs.find((binding) => binding.id === state.controlRebindAction)?.label || "that action"}.` : "Select any action to assign a new key.")}</div>
               </section>
               <section class="config-card">
                 <div class="title">Audio Volume</div>
@@ -4426,6 +4950,10 @@
       }
 
       function restartCurrentEncounter() {
+        if (state.tutorial.active) {
+          startTutorial();
+          return;
+        }
         const bossIndex = state.currentBoss === "sovereign" ? 1 : state.currentBoss === "monarch" ? 2 : state.currentBoss === "cesium" ? 3 : state.currentBoss === "tantalum" ? 4 : state.currentBoss === "luminosity" ? 5 : 0;
         startBossEncounter(bossIndex);
       }
@@ -4506,9 +5034,9 @@
         state.glitch = 1;
         overlay.innerHTML = `
           <div class="message">
-            <h1>Signal Fractured</h1>
+            <h1>${state.tutorial.active ? "Tutorial Failed" : "Signal Fractured"}</h1>
             <p>Score ${String(Math.floor(state.score)).padStart(6, "0")}</p>
-            <p>Space or Click to snap back into the drift.</p>
+            <p>${state.tutorial.active ? `Press ${formatControlCode(getControlBinding("restart"))} or click to restart the tutorial encounter.` : "Space or Click to snap back into the drift."}</p>
           </div>
         `;
         overlay.classList.add("show");
@@ -4520,6 +5048,10 @@
         state.score -= cost;
         player.damageUpgradeLevel += 1;
         player.damageMultiplier = 1 + player.damageUpgradeLevel * 0.1;
+        if (state.tutorial.active && state.tutorial.step === 4) {
+          state.tutorial.boughtPauseUpgrade = true;
+          state.tutorial.openedPauseMenu = true;
+        }
         awardAchievement("arsenal_tuned");
         renderPauseOverlay();
       }
@@ -4536,11 +5068,23 @@
       }
 
       function renderPauseOverlay() {
+        const tutorialPauseStep = state.tutorial.active ? state.tutorial.step : -1;
+        const tutorialNote = tutorialPauseStep === 4
+          ? `
+            <div class="config-card" style="text-align:left; margin-bottom:16px;">
+              <div class="title">Tutorial Step / Chrono Hold</div>
+              <div class="value" style="font-size:18px; margin-top:6px;">Buy 1 Damage Matrix upgrade</div>
+              <div class="menu-footer" style="text-align:left; margin-top:10px;">This menu appears during boss fights when you press ${formatControlCode(getControlBinding("pause"))}. Spend your score here before resuming.</div>
+            </div>
+          `
+          : "";
+        const continueDisabled = tutorialPauseStep === 4 && player.damageUpgradeLevel < 1 ? "disabled" : "";
         overlay.innerHTML = `
           <div class="message">
             <h1>Chrono Hold</h1>
             <p>Score ${String(Math.floor(state.score)).padStart(6, "0")}</p>
             <p>${isMobileClient ? "Tap Continue or the pause icon to resume." : "Press Esc or Continue to resume."}</p>
+            ${tutorialNote}
             <div class="shop-grid">
               <div class="shop-item">
                 <strong>Damage Matrix</strong>
@@ -4559,7 +5103,7 @@
             </div>
             <div class="config-actions" style="justify-content:center;">
               <button class="menu-button menu-hoverable" data-pause-menu>Return To Menu</button>
-              <button class="menu-button menu-hoverable" data-pause-continue>Continue</button>
+              <button class="menu-button menu-hoverable" data-pause-continue ${continueDisabled}>Continue</button>
             </div>
           </div>
         `;
@@ -4577,6 +5121,9 @@
           input.mobileJoystickActive = false;
           input.mobileJoystickX = 0;
           input.mobileJoystickY = 0;
+          if (state.tutorial.active && state.tutorial.step === 4) {
+            state.tutorial.openedPauseMenu = true;
+          }
           state.mode = "paused";
           renderPauseOverlay();
           updateHudVisibility();
@@ -4584,6 +5131,11 @@
         }
 
         if (state.mode === "paused") {
+          if (state.tutorial.active && state.tutorial.step === 4 && player.damageUpgradeLevel < 1) {
+            renderPauseOverlay();
+            updateHudVisibility();
+            return;
+          }
           input.keys.clear();
           state.mode = "playing";
           overlay.classList.remove("show");
@@ -4787,6 +5339,10 @@
         const loadout = state.profile.attackLoadout || "graphic_reset";
         state.ultimateCharge = 0;
         state.ultimateFlash = 0.32;
+        if (state.tutorial.active) {
+          state.tutorial.usedUltimate = true;
+          if (state.tutorial.step < 7) state.tutorial.step = 7;
+        }
         triggerImpactFrame("special", 1);
         state.glitch = Math.max(state.glitch, 1);
         state.shake = Math.max(state.shake, 24);
@@ -7200,10 +7756,17 @@
         state.luminosity.detachedElectrons.length = 0;
         state.luminosity.freeElectrons.length = 0;
         state.luminosity.shards.length = 0;
+        if (state.tutorial.active) {
+          resetTutorialRunState();
+        }
         renderMainMenu();
       }
 
       function triggerBossDefeat() {
+        if (state.tutorial.active) {
+          finishTutorial();
+          return;
+        }
         state.score += 2000;
         if (state.currentBoss === "architect") {
           const vortex = getVortexPosition();
@@ -7343,7 +7906,7 @@
           11: [0, -0.04, 0.04, -0.08, 0.08, -0.12, 0.12, -0.17, 0.17, -0.23, 0.23, -0.3, 0.3, -0.38, 0.38, -0.47, 0.47, -0.57, 0.57]
         };
         const baseOffsets = spreadPatterns[level] || spreadPatterns[11];
-        const focusedFire = (input.mouseDown || input.mobileFocus || input.keys.has("KeyQ")) && level > 1;
+        const focusedFire = (input.mouseDown || input.mobileFocus || actionPressed("focus")) && level > 1;
         const focusRangeFactor = {
           2: 0.75,
           3: 0.62,
@@ -7404,12 +7967,12 @@
         const turnSpeed = player.turnSpeed * (fpsUnlockActive ? 1.22 : rootActive ? 1.18 : macroActive ? 1.1 : 1);
         const moveSpeed = player.moveSpeed * (fpsUnlockActive ? 1.15 : rootActive ? 1.12 : macroActive ? 1.08 : 1) * tantalumSlow;
         const reverseSpeed = player.reverseSpeed * (fpsUnlockActive ? 1.12 : rootActive ? 1.1 : macroActive ? 1.06 : 1) * tantalumSlow;
-        if (input.keys.has("KeyA")) player.angle -= turnSpeed * dt;
-        if (input.keys.has("KeyD")) player.angle += turnSpeed * dt;
+        if (actionPressed("turn_left")) player.angle -= turnSpeed * dt;
+        if (actionPressed("turn_right")) player.angle += turnSpeed * dt;
         if (input.mobileTurnLeft) player.angle -= turnSpeed * dt;
         if (input.mobileTurnRight) player.angle += turnSpeed * dt;
-        if (input.keys.has("KeyW")) thrust += moveSpeed;
-        if (input.keys.has("KeyS")) thrust -= reverseSpeed;
+        if (actionPressed("thrust_forward")) thrust += moveSpeed;
+        if (actionPressed("thrust_reverse")) thrust -= reverseSpeed;
 
         if (thrust !== 0) {
           player.x += Math.cos(player.angle) * thrust * dt;
@@ -7454,14 +8017,8 @@
       }
 
       function updateTimeControls(dt) {
-        const slowing =
-          input.keys.has("ShiftLeft") ||
-          input.keys.has("ShiftRight") ||
-          input.mobileSlow;
-        const speeding =
-          input.keys.has("ControlLeft") ||
-          input.keys.has("ControlRight") ||
-          input.mobileFast;
+        const slowing = actionPressed("slow") || input.mobileSlow;
+        const speeding = actionPressed("fast") || input.mobileFast;
 
         if (slowing && !speeding) state.manualScale = 0.1;
         else if (speeding && !slowing) state.manualScale = 1.9;
@@ -7815,10 +8372,16 @@
         updatePlayer(dt);
         const enemyTimeScale = state.fpsUnlockTimer > 0 ? 0.22 : state.rootOverrideTimer > 0 ? Math.min(state.timeScale, 0.52) : state.timeScale;
         if (state.currentBoss === "architect") {
-          if (state.fpsUnlockTimer <= 0) {
-            updateSpawnLogic(dt * (0.95 + player.evolutionLevel * 0.05));
+          const tutorialCombatLive = !state.tutorial.active || state.tutorial.step >= 5;
+          if (tutorialCombatLive) {
+            if (state.fpsUnlockTimer <= 0) {
+              const tutorialSpawnScale = state.tutorial.active ? 0.58 : 1;
+              updateSpawnLogic(dt * tutorialSpawnScale * (0.95 + player.evolutionLevel * 0.05));
+            }
+            updateBullets(dt * enemyTimeScale * (state.tutorial.active ? 0.82 : 1));
+          } else {
+            clearEnemyHazards();
           }
-          updateBullets(dt * enemyTimeScale);
         } else if (state.currentBoss === "sovereign") {
           if (state.fpsUnlockTimer <= 0) updateSovereignBoss(dt * enemyTimeScale);
         } else if (state.currentBoss === "monarch") {
@@ -7834,6 +8397,7 @@
         updatePlayerShots(dt);
         updateSparks(dt);
         updateFlashes(dt);
+        updateTutorial(dt);
       }
 
       function drawBackground() {
@@ -7873,6 +8437,10 @@
       }
 
       function drawVortex() {
+        if (state.tutorial.active) {
+          drawTutorialBoss();
+          return;
+        }
         const visualTime = getVisualTime();
         const vortex = getVortexPosition();
         const x = vortex.x;
@@ -7937,6 +8505,108 @@
           ctx.arc(Math.cos(angle) * radius, Math.sin(angle) * radius, 2.4 + (shard % 3), 0, TAU);
           ctx.fill();
         }
+        ctx.restore();
+      }
+
+      function drawTutorialBoss() {
+        const visualTime = getVisualTime();
+        const boss = getVortexPosition();
+        const x = boss.x;
+        const y = boss.y;
+        const pulse = 1 + Math.sin(visualTime * 3.8) * 0.08;
+
+        ctx.save();
+        ctx.translate(x, y);
+
+        const halo = ctx.createRadialGradient(0, 0, 0, 0, 0, 150);
+        halo.addColorStop(0, "rgba(255, 255, 255, 0.14)");
+        halo.addColorStop(0.22, "rgba(72, 220, 255, 0.16)");
+        halo.addColorStop(0.58, "rgba(255, 176, 92, 0.1)");
+        halo.addColorStop(1, "rgba(0, 0, 0, 0)");
+        ctx.fillStyle = halo;
+        ctx.beginPath();
+        ctx.arc(0, 0, 150, 0, TAU);
+        ctx.fill();
+
+        ctx.save();
+        ctx.rotate(visualTime * 0.55);
+        for (let fin = 0; fin < 4; fin++) {
+          ctx.rotate(TAU / 4);
+          ctx.fillStyle = "rgba(32, 42, 58, 0.92)";
+          ctx.strokeStyle = "rgba(96, 226, 255, 0.45)";
+          ctx.lineWidth = 2;
+          ctx.beginPath();
+          ctx.moveTo(16, -16);
+          ctx.lineTo(74, -30);
+          ctx.lineTo(94, 0);
+          ctx.lineTo(74, 30);
+          ctx.lineTo(16, 16);
+          ctx.closePath();
+          ctx.fill();
+          ctx.stroke();
+        }
+        ctx.restore();
+
+        ctx.save();
+        ctx.rotate(-visualTime * 0.9);
+        ctx.strokeStyle = "rgba(118, 235, 255, 0.34)";
+        ctx.lineWidth = 5;
+        ctx.beginPath();
+        ctx.arc(0, 0, 62, 0, TAU);
+        ctx.stroke();
+        ctx.lineWidth = 1.5;
+        ctx.strokeStyle = "rgba(255, 215, 106, 0.24)";
+        ctx.beginPath();
+        ctx.arc(0, 0, 88, 0, TAU);
+        ctx.stroke();
+        ctx.restore();
+
+        ctx.save();
+        ctx.scale(pulse, pulse);
+        const core = ctx.createRadialGradient(0, 0, 0, 0, 0, 48);
+        core.addColorStop(0, "rgba(255, 255, 255, 0.96)");
+        core.addColorStop(0.18, "rgba(255, 221, 140, 0.95)");
+        core.addColorStop(0.48, "rgba(108, 232, 255, 0.86)");
+        core.addColorStop(1, "rgba(108, 232, 255, 0)");
+        ctx.fillStyle = core;
+        ctx.beginPath();
+        ctx.arc(0, 0, 48, 0, TAU);
+        ctx.fill();
+
+        ctx.fillStyle = "rgba(24, 30, 44, 0.96)";
+        ctx.strokeStyle = "rgba(255, 215, 106, 0.6)";
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(-34, -22);
+        ctx.lineTo(0, -38);
+        ctx.lineTo(34, -22);
+        ctx.lineTo(34, 22);
+        ctx.lineTo(0, 38);
+        ctx.lineTo(-34, 22);
+        ctx.closePath();
+        ctx.fill();
+        ctx.stroke();
+
+        ctx.strokeStyle = "rgba(118, 235, 255, 0.72)";
+        ctx.lineWidth = 2.4;
+        ctx.beginPath();
+        ctx.moveTo(-18, 0);
+        ctx.lineTo(18, 0);
+        ctx.moveTo(0, -18);
+        ctx.lineTo(0, 18);
+        ctx.stroke();
+        ctx.restore();
+
+        ctx.globalCompositeOperation = "lighter";
+        for (let spark = 0; spark < 10; spark++) {
+          const angle = visualTime * 1.4 + (spark / 10) * TAU;
+          const radius = 84 + Math.sin(visualTime * 2.5 + spark) * 8;
+          ctx.fillStyle = spark % 2 === 0 ? "rgba(118, 235, 255, 0.8)" : "rgba(255, 215, 106, 0.72)";
+          ctx.beginPath();
+          ctx.arc(Math.cos(angle) * radius, Math.sin(angle) * radius, spark % 2 === 0 ? 3.6 : 2.6, 0, TAU);
+          ctx.fill();
+        }
+
         ctx.restore();
       }
 
@@ -10375,11 +11045,14 @@
 
       function drawHud() {
         const attackMeta = getAttackLoadoutMeta();
+        updateControlHint();
         scoreValue.textContent = String(Math.floor(state.score)).padStart(6, "0");
         chronoValue.textContent = `${Math.round(state.timeScale * 100)}%`;
         chronoFill.style.width = `${Math.round(clamp(state.timeScale / 2.2, 0, 1) * 100)}%`;
         const bossPercent = Math.round(clamp(state.bossHealth / Math.max(1, state.bossMaxHealth), 0, 1) * 100);
-        const bossLabel = state.currentBoss === "sovereign"
+        const bossLabel = state.tutorial.active && state.currentBoss === "architect"
+          ? getTutorialMinibossName()
+          : state.currentBoss === "sovereign"
           ? "Sovereign"
           : state.currentBoss === "monarch"
           ? "Monarch"
@@ -10809,12 +11482,34 @@
         if (event.target === lastHoverTarget) lastHoverTarget = null;
       });
       overlay.addEventListener("click", (event) => {
+        if (event.target.closest("[data-tutorial-continue]")) {
+          const resumeStep = state.tutorial.promptResumeStep;
+          state.tutorial.promptTitle = "";
+          state.tutorial.promptBody = [];
+          state.tutorial.promptResumeStep = null;
+          if (resumeStep === 5) {
+            beginTutorialCombat();
+          } else {
+            state.mode = "playing";
+            overlay.classList.remove("show");
+            updateHudVisibility();
+            if (resumeStep !== null) {
+              state.tutorial.step = resumeStep;
+            }
+          }
+          return;
+        }
+
         const nav = event.target.closest("[data-nav]");
         if (nav) {
           const destination = nav.dataset.nav;
+          if (isTutorialRequired() && destination !== "tutorial" && destination !== "menu") {
+            return;
+          }
           if (destination === "menu") renderMainMenu();
           if (destination === "operations") renderOperations();
           if (destination === "boss_select") renderBossSelect();
+          if (destination === "tutorial") startTutorial();
           if (destination === "config") renderConfig();
           if (destination === "achievements") renderAchievements();
           if (destination === "edit_attacks") renderEditAttacks();
@@ -10869,6 +11564,29 @@
 
         if (event.target.closest("[data-toggle-boss-music]")) {
           setBossMusicMuted(!state.settings.bossMusicMuted);
+          renderConfig();
+          return;
+        }
+
+        const controlRebind = event.target.closest("[data-control-rebind]");
+        if (controlRebind) {
+          state.controlRebindAction = controlRebind.dataset.controlRebind;
+          state.controlRebindMessage = "";
+          renderConfig();
+          return;
+        }
+
+        if (event.target.closest("[data-control-reset]")) {
+          resetControlBindings();
+          state.controlRebindAction = null;
+          state.controlRebindMessage = "Controls restored to defaults.";
+          renderConfig();
+          return;
+        }
+
+        if (event.target.closest("[data-control-cancel]")) {
+          state.controlRebindAction = null;
+          state.controlRebindMessage = "Rebind cancelled.";
           renderConfig();
           return;
         }
@@ -10928,6 +11646,18 @@
         }
 
         if (event.target.closest("[data-pause-continue]")) {
+          if (state.tutorial.active && state.tutorial.step === 4 && player.damageUpgradeLevel >= 1) {
+            showTutorialPrompt(
+              "Training Miniboss Online",
+              [
+                `${getTutorialMinibossName()} is now live in the arena.`,
+                "Keep moving, keep shooting, and use your ultimate when the prompt appears. Defeat the core to unlock the full command menu."
+              ],
+              5,
+              "Start Fight"
+            );
+            return;
+          }
           togglePause();
           return;
         }
@@ -11022,7 +11752,21 @@
           return;
         }
 
-        if (event.code === "Escape") {
+        if (state.controlRebindAction && state.mode === "config") {
+          event.preventDefault();
+          const duplicate = controlBindingDefs.find((binding) => binding.id !== state.controlRebindAction && getControlBinding(binding.id) === event.code);
+          if (duplicate) {
+            state.controlRebindMessage = `${formatControlCode(event.code)} is already used by ${duplicate.label}.`;
+          } else {
+            setControlBinding(state.controlRebindAction, event.code);
+            state.controlRebindMessage = `${controlBindingDefs.find((binding) => binding.id === state.controlRebindAction)?.label || "Control"} set to ${formatControlCode(event.code)}.`;
+            state.controlRebindAction = null;
+          }
+          renderConfig();
+          return;
+        }
+
+        if (event.code === getControlBinding("pause")) {
           event.preventDefault();
           if (["operations", "boss_select", "config", "achievements", "edit_attacks", "severed"].includes(state.mode)) {
             renderMainMenu();
@@ -11036,7 +11780,7 @@
         }
 
         input.keys.add(event.code);
-        if (event.code === "Space") {
+        if (event.code === getControlBinding("restart")) {
           event.preventDefault();
           if (state.mode === "gameover") restartCurrentEncounter();
         }
