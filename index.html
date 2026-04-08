@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Aether-Vortex: Chrono-Drift</title>
+  <title>Sector V: Chrono-Drift</title>
   <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cdefs%3E%3CradialGradient id='bg' cx='50%25' cy='45%25' r='70%25'%3E%3Cstop offset='0%25' stop-color='%23150b24'/%3E%3Cstop offset='65%25' stop-color='%23080410'/%3E%3Cstop offset='100%25' stop-color='%23020106'/%3E%3C/radialGradient%3E%3CradialGradient id='core' cx='50%25' cy='50%25' r='50%25'%3E%3Cstop offset='0%25' stop-color='%23ffffff' stop-opacity='.95'/%3E%3Cstop offset='28%25' stop-color='%23ffd76a' stop-opacity='.9'/%3E%3Cstop offset='62%25' stop-color='%23a54cff' stop-opacity='.82'/%3E%3Cstop offset='100%25' stop-color='%23a54cff' stop-opacity='0'/%3E%3C/radialGradient%3E%3C/defs%3E%3Crect width='64' height='64' rx='14' fill='url(%23bg)'/%3E%3Ccircle cx='32' cy='32' r='24' fill='none' stroke='%23a54cff' stroke-opacity='.35'/%3E%3Ccircle cx='32' cy='32' r='18' fill='none' stroke='%23ffd76a' stroke-opacity='.45'/%3E%3Cg fill='none' stroke-linecap='round'%3E%3Cpath d='M12 32C18 20 46 20 52 32C46 44 18 44 12 32Z' stroke='%23ffd76a' stroke-width='2.4' stroke-opacity='.85'/%3E%3Cpath d='M18 16C28 20 36 44 32 52C22 48 14 24 18 16Z' stroke='%23a54cff' stroke-width='2.2' stroke-opacity='.8'/%3E%3Cpath d='M46 16C50 24 42 48 32 52C28 44 36 20 46 16Z' stroke='%23ffd76a' stroke-width='1.8' stroke-opacity='.62'/%3E%3C/g%3E%3Ccircle cx='32' cy='32' r='11' fill='url(%23core)'/%3E%3Ccircle cx='47' cy='22' r='3.2' fill='%23ffd76a'/%3E%3C/svg%3E" />
   <style>
     :root {
@@ -36,6 +36,37 @@
       font-family: "Courier New", Courier, monospace;
       user-select: none;
       -webkit-user-select: none;
+    }
+
+    html {
+      scrollbar-color: rgba(255, 215, 106, 0.68) rgba(18, 10, 28, 0.78);
+    }
+
+    * {
+      scrollbar-width: thin;
+    }
+
+    *::-webkit-scrollbar {
+      width: 12px;
+      height: 12px;
+    }
+
+    *::-webkit-scrollbar-track {
+      background: linear-gradient(180deg, rgba(16, 10, 24, 0.96), rgba(8, 5, 14, 0.88));
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    *::-webkit-scrollbar-thumb {
+      background: linear-gradient(180deg, rgba(255, 215, 106, 0.92), rgba(165, 76, 255, 0.84));
+      border: 2px solid rgba(9, 6, 16, 0.92);
+      border-radius: 999px;
+      box-shadow:
+        0 0 12px rgba(255, 215, 106, 0.22),
+        inset 0 0 10px rgba(255, 255, 255, 0.14);
+    }
+
+    *::-webkit-scrollbar-thumb:hover {
+      background: linear-gradient(180deg, rgba(255, 232, 152, 0.96), rgba(190, 116, 255, 0.88));
     }
 
     canvas,
@@ -323,6 +354,10 @@
       margin-top: 18px;
       display: grid;
       gap: 12px;
+      max-height: min(52dvh, 420px);
+      overflow-y: auto;
+      padding-right: 8px;
+      scrollbar-gutter: stable;
     }
 
     .shop-item {
@@ -373,7 +408,9 @@
       grid-template-rows: auto 1fr auto;
       gap: 20px;
       padding: 28px 30px;
-      overflow: hidden;
+      overflow-x: hidden;
+      overflow-y: auto;
+      scrollbar-gutter: stable;
       border: 1px solid rgba(255, 255, 255, 0.12);
       background:
         radial-gradient(circle at top, rgba(255, 215, 106, 0.06), transparent 30%),
@@ -454,6 +491,11 @@
       justify-content: center;
       align-items: center;
       gap: 16px;
+      min-height: 0;
+      overflow-y: auto;
+      overflow-x: hidden;
+      padding-right: 8px;
+      scrollbar-gutter: stable;
     }
 
     .main-menu-stack {
@@ -495,6 +537,7 @@
       align-items: center;
       gap: 4px;
       width: 100%;
+      text-align: center;
     }
 
     .menu-button-meta {
@@ -593,6 +636,10 @@
       grid-template-columns: repeat(3, minmax(0, 1fr));
       gap: 14px;
       align-items: stretch;
+      min-height: 0;
+      overflow: auto;
+      padding-right: 8px;
+      scrollbar-gutter: stable;
     }
 
     .boss-card {
@@ -834,12 +881,18 @@
       border: 1px solid rgba(255, 255, 255, 0.14);
       background: rgba(255, 255, 255, 0.03);
       text-align: left;
+      overflow: auto;
+      scrollbar-gutter: stable;
     }
 
     .operations-grid {
       display: grid;
       grid-template-columns: repeat(2, minmax(0, 1fr));
       gap: 16px;
+      min-height: 0;
+      overflow: auto;
+      padding-right: 8px;
+      scrollbar-gutter: stable;
     }
 
     .operations-layout {
@@ -847,6 +900,8 @@
       grid-template-columns: 1.05fr 0.95fr;
       gap: 18px;
       min-height: 0;
+      overflow: auto;
+      scrollbar-gutter: stable;
     }
 
     .operations-shell {
@@ -1103,12 +1158,17 @@
       grid-template-rows: auto auto 1fr;
       gap: 14px;
       min-height: 0;
+      overflow: auto;
+      padding-right: 8px;
+      scrollbar-gutter: stable;
     }
 
     .operations-task-pane {
       display: grid;
       gap: 14px;
       align-content: start;
+      overflow: auto;
+      scrollbar-gutter: stable;
     }
 
     .operations-option-grid {
@@ -1713,7 +1773,7 @@
 
   <div class="hud">
     <div class="panel">
-      <div class="title">Aether-Vortex: Chrono-Drift</div>
+      <div class="title">Sector V: Chrono-Drift</div>
       <div class="value" id="scoreValue">000000</div>
       <div style="margin-top: 8px; color: var(--ui-dim); font-size: 12px; letter-spacing: 0.12em;">
         MOUSE MOVE / W-S THRUST / A-D TURN / SHIFT SLOW / CTRL FAST / Q ULTIMATE
@@ -2104,8 +2164,6 @@
         operationsJobs: [],
         operationsSelectedIndex: 0,
         operationsDragItem: null,
-        pauseSecretUnlocked: false,
-        pauseSecretMessage: "",
         achievementToasts: [],
         impactFrames: {
           damage: 0,
@@ -3375,7 +3433,7 @@
         overlay.innerHTML = `
           <div class="loading-shell">
             <div class="loading-core"></div>
-            <h1 class="loading-title">Aether-Vortex</h1>
+            <h1 class="loading-title">Sector V</h1>
             <div class="loading-caption">Stabilizing Chrono Drift / Syncing Fractal Gate</div>
             <div class="loading-bar">
               <div class="loading-bar-fill" style="width:${percent}%;"></div>
@@ -3398,33 +3456,48 @@
         state.mode = "menu";
         if (currentMusicTarget !== "menu") playMusic("menu");
         const unlockedCount = Object.keys(state.profile.achievements).length;
-        const operationsMoney = formatMoney(state.profile.operations?.cents || 0);
         const operationsLocked = isOperationsLocked();
         const operationsTimer = operationsLocked ? formatOperationsCountdown(getOperationsCooldownRemainingMs()) : "";
         overlay.innerHTML = `
           <div class="menu-shell">
             <div>
-              <h1 class="menu-title">Aether-Vortex</h1>
+              <h1 class="menu-title">Sector V</h1>
               <div class="menu-subtitle">Chrono-Drift / Neo-Baroque Combat Interface</div>
             </div>
             <div class="menu-stack main-menu-stack">
-              <button class="menu-button menu-hoverable" data-nav="boss_select">Boss Battles</button>
-              <div class="menu-action-row">
-                <button class="menu-button menu-hoverable" data-nav="operations" ${operationsLocked ? "disabled" : ""}>
-                  <span class="menu-button-stack">
-                    <span>Operations</span>
-                    <span class="menu-button-meta">${operationsLocked ? `Locked ${operationsTimer}` : "Office side work"}</span>
-                  </span>
-                </button>
-                <div class="menu-side-badge">${operationsMoney}</div>
-              </div>
-              <button class="menu-button menu-hoverable" data-nav="config">Configuration</button>
-              <button class="menu-button menu-hoverable" data-nav="achievements">Achievements</button>
-              <button class="menu-button menu-hoverable" data-nav="edit_attacks">Shop</button>
+              <button class="menu-button menu-hoverable" data-nav="boss_select">
+                <span class="menu-button-stack">
+                  <span>Boss Battles</span>
+                  <span class="menu-button-meta">Enter the arena and challenge cleared or active targets.</span>
+                </span>
+              </button>
+              <button class="menu-button menu-hoverable" data-nav="operations" ${operationsLocked ? "disabled" : ""}>
+                <span class="menu-button-stack">
+                  <span>Operations</span>
+                  <span class="menu-button-meta">${operationsLocked ? `Locked ${operationsTimer}` : "Office side work and routine cash jobs."}</span>
+                </span>
+              </button>
+              <button class="menu-button menu-hoverable" data-nav="edit_attacks">
+                <span class="menu-button-stack">
+                  <span>Shop</span>
+                  <span class="menu-button-meta">Tune ultimates and evolve your attack patterns.</span>
+                </span>
+              </button>
+              <button class="menu-button menu-hoverable" data-nav="config">
+                <span class="menu-button-stack">
+                  <span>Configuration</span>
+                  <span class="menu-button-meta">Adjust controls, visuals, audio, and profile settings.</span>
+                </span>
+              </button>
+              <button class="menu-button menu-hoverable" data-nav="achievements">
+                <span class="menu-button-stack">
+                  <span>Achievements</span>
+                  <span class="menu-button-meta">Review your unlocks and progress milestones.</span>
+                </span>
+              </button>
             </div>
             <div>
               <div class="menu-footer">Best Score ${String(Math.floor(state.profile.bestScore)).padStart(6, "0")} / Achievements ${unlockedCount}/${Object.keys(achievementDefs).length}</div>
-              <div style="margin-top:12px;">${getAchievementMarkup()}</div>
             </div>
           </div>
         `;
@@ -3513,7 +3586,7 @@
               <button class="menu-button menu-hoverable" data-nav="menu">Back</button>
             </div>
             <div class="operations-stat-row">
-              <span>Operations Funds ${formatMoney(ops.cents)} <button class="config-toggle menu-hoverable" data-operations-return-funds style="min-width:0; margin-left:10px; padding:8px 12px;">Return Funds</button></span>
+              <span>Operations Funds ${formatMoney(ops.cents)}</span>
               <span>Strike Count ${ops.wrongCount} / 30</span>
             </div>
             <div class="operations-feedback">${state.operationsFeedback || "Choose any office task below. Each answer pays out or docks cash immediately."}</div>
@@ -4131,28 +4204,6 @@
       }
 
       function renderPauseOverlay() {
-        const secretUnlocked = state.pauseSecretUnlocked;
-        const secretMarkup = secretUnlocked
-          ? `
-            <div class="shop-item">
-              <strong>Secret Boss Control</strong>
-              <span>Set the current boss to a chosen remaining health percentage.</span>
-              <span>${state.pauseSecretMessage || "Choose a value below."}</span>
-              <div class="config-actions" style="justify-content:flex-start; gap:10px; flex-wrap:wrap; margin-top:14px;">
-                ${[90, 70, 65, 50, 30, 10].map((percent) => `
-                  <button class="menu-button menu-hoverable" data-boss-health-set="${percent}" style="min-width:92px;">${percent}%</button>
-                `).join("")}
-              </div>
-            </div>
-          `
-          : `
-            <div class="shop-item">
-              <strong>Secret Menu</strong>
-              <span>Restricted boss controls are hidden behind a password prompt.</span>
-              <span>${state.pauseSecretMessage || "Authorized personnel only."}</span>
-              <button class="menu-button menu-hoverable" data-secret-unlock style="margin-top:14px;">Unlock Secret Menu</button>
-            </div>
-          `;
         overlay.innerHTML = `
           <div class="message">
             <h1>Chrono Hold</h1>
@@ -4173,7 +4224,6 @@
                 <span>Cost 600 score</span>
                 <button data-shop="health" ${player.healthBufferBuys >= 6 || state.score < 600 ? "disabled" : ""}>Buy Health</button>
               </div>
-              ${secretMarkup}
             </div>
             <div class="config-actions" style="justify-content:center;">
               <button class="menu-button menu-hoverable" data-pause-menu>Return To Menu</button>
@@ -4191,7 +4241,6 @@
           input.mobileFast = false;
           input.mobileFocus = false;
           state.mode = "paused";
-          state.pauseSecretMessage = "";
           renderPauseOverlay();
           updateHudVisibility();
           return;
@@ -7955,6 +8004,52 @@
         ctxPreview.fill();
       }
 
+      function drawBossPreviewByIndex(index, targetCtx, time) {
+        if (index === 0) drawArchitectPreview(targetCtx, time);
+        else if (index === 1) drawSovereignPreview(targetCtx, time);
+        else if (index === 2) drawMonarchPreview(targetCtx, time);
+        else if (index === 3) drawCesiumPreview(targetCtx, time);
+        else if (index === 4) drawTantalumPreview(targetCtx, time);
+        else if (index === 5) drawLuminosityPreview(targetCtx, time);
+      }
+
+      function getDefeatedBossIndices() {
+        return bosses
+          .map((_, index) => index)
+          .filter((index) => state.profile.bossRecords[getBossRecordKey(index)]);
+      }
+
+      function drawMenuAmbientBosses() {
+        const defeatedBosses = getDefeatedBossIndices();
+        if (!defeatedBosses.length) return;
+
+        const vortex = getVortexPosition();
+        const time = getVisualTime();
+        const orbitRadius = Math.min(width, height) * 0.16;
+        const baseScale = clamp(1 - defeatedBosses.length * 0.06, 0.58, 0.9);
+
+        ctx.save();
+        ctx.globalCompositeOperation = "lighter";
+        for (let i = 0; i < defeatedBosses.length; i++) {
+          const bossIndex = defeatedBosses[i];
+          const angle = time * 0.18 + (i / defeatedBosses.length) * TAU;
+          const radiusX = orbitRadius + (i % 2 === 0 ? 18 : 54);
+          const radiusY = orbitRadius * 0.58 + (i % 3) * 16;
+          const x = vortex.x + Math.cos(angle) * radiusX;
+          const y = vortex.y + Math.sin(angle * 1.28) * radiusY + Math.sin(time * 1.6 + i) * 8;
+          const scale = baseScale + Math.sin(time * 1.1 + i * 0.7) * 0.04;
+
+          ctx.save();
+          ctx.translate(x, y);
+          ctx.rotate(Math.sin(time * 0.9 + i) * 0.08);
+          ctx.scale(scale, scale);
+          ctx.translate(-64, -64);
+          drawBossPreviewByIndex(bossIndex, ctx, time + i * 0.55);
+          ctx.restore();
+        }
+        ctx.restore();
+      }
+
       function renderBossSelectPreviews() {
         if (state.mode !== "boss_select") return;
         const canvases = overlay.querySelectorAll("[data-boss-preview]");
@@ -7966,12 +8061,7 @@
           previewCtx.clearRect(0, 0, canvasEl.width, canvasEl.height);
           const animated = canvasEl.dataset.bossAnimated === "true";
           const time = animated ? state.rawElapsed : 0;
-          if (previewIndex === 0) drawArchitectPreview(previewCtx, time);
-          else if (previewIndex === 1) drawSovereignPreview(previewCtx, time);
-          else if (previewIndex === 2) drawMonarchPreview(previewCtx, time);
-          else if (previewIndex === 3) drawCesiumPreview(previewCtx, time);
-          else if (previewIndex === 4) drawTantalumPreview(previewCtx, time);
-          else if (previewIndex === 5) drawLuminosityPreview(previewCtx, time);
+          drawBossPreviewByIndex(previewIndex, previewCtx, time);
         }
       }
 
@@ -8891,7 +8981,10 @@
           ctx.stroke();
           ctx.restore();
         }
+      }
 
+      function drawCesiumProjectiles() {
+        const c = state.cesium;
         ctx.save();
         ctx.globalCompositeOperation = "lighter";
         for (const cursor of c.cursors) {
@@ -9741,6 +9834,9 @@
           drawLuminosityBoss();
         } else {
           drawVortex();
+          if (["menu", "operations", "boss_select", "config", "achievements", "edit_attacks", "severed"].includes(state.mode)) {
+            drawMenuAmbientBosses();
+          }
         }
         if (["playing", "paused", "gameover"].includes(state.mode)) {
           drawBossDamageIndicator();
@@ -10173,29 +10269,6 @@
 
         if (event.target.closest("[data-pause-menu]")) {
           returnToMenu();
-          return;
-        }
-
-        if (event.target.closest("[data-secret-unlock]")) {
-          const password = window.prompt("Enter the secret pause-menu password:");
-          if (password === null) return;
-          if (password === "808Passw0rd") {
-            state.pauseSecretUnlocked = true;
-            state.pauseSecretMessage = "Secret boss controls unlocked.";
-          } else {
-            state.pauseSecretMessage = "Password denied.";
-          }
-          renderPauseOverlay();
-          return;
-        }
-
-        const bossHealthSet = event.target.closest("[data-boss-health-set]");
-        if (bossHealthSet) {
-          if (!state.pauseSecretUnlocked || state.mode !== "paused") return;
-          const percent = clamp(Number(bossHealthSet.dataset.bossHealthSet) || 100, 1, 100);
-          state.bossHealth = Math.max(1, state.bossMaxHealth * (percent / 100));
-          state.pauseSecretMessage = `Boss health set to ${percent}%`;
-          renderPauseOverlay();
           return;
         }
 
