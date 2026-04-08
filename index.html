@@ -1342,15 +1342,17 @@
 
     .mobile-controls {
       position: fixed;
-      left: 14px;
-      right: 14px;
-      bottom: 14px;
+      left: 0;
+      right: 0;
+      bottom: 0;
       display: none;
       justify-content: space-between;
-      align-items: center;
-      gap: 10px;
+      align-items: flex-end;
+      gap: 16px;
+      padding: 18px 16px calc(18px + env(safe-area-inset-bottom));
       pointer-events: none;
-      z-index: 6;
+      z-index: 8;
+      background: linear-gradient(180deg, rgba(5, 3, 10, 0), rgba(5, 3, 10, 0.26) 24%, rgba(5, 3, 10, 0.62));
     }
 
     .achievement-feed {
@@ -1405,15 +1407,89 @@
       100% { opacity: 0; transform: translateY(-6px); }
     }
 
-    .mobile-cluster {
-      display: flex;
-      gap: 10px;
+    .mobile-joystick-wrap,
+    .mobile-action-pad {
       pointer-events: auto;
     }
 
+    .mobile-joystick-wrap {
+      display: grid;
+      gap: 8px;
+      justify-items: center;
+    }
+
+    .mobile-joystick-label,
+    .mobile-action-label {
+      font-size: 10px;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: rgba(255, 255, 255, 0.64);
+    }
+
+    .mobile-joystick {
+      position: relative;
+      width: 138px;
+      height: 138px;
+      border-radius: 50%;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      background:
+        radial-gradient(circle at 50% 50%, rgba(255, 215, 106, 0.12), rgba(165, 76, 255, 0.08) 48%, rgba(8, 5, 14, 0.82) 100%);
+      box-shadow:
+        inset 0 0 28px rgba(255, 255, 255, 0.04),
+        0 0 26px rgba(165, 76, 255, 0.16);
+      touch-action: none;
+    }
+
+    .mobile-joystick::before,
+    .mobile-joystick::after {
+      content: "";
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
+      pointer-events: none;
+    }
+
+    .mobile-joystick::before {
+      width: 76%;
+      height: 1px;
+      background: rgba(255, 255, 255, 0.08);
+    }
+
+    .mobile-joystick::after {
+      width: 1px;
+      height: 76%;
+      background: rgba(255, 255, 255, 0.08);
+    }
+
+    .mobile-stick {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      width: 58px;
+      height: 58px;
+      transform: translate(-50%, -50%);
+      border-radius: 50%;
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      background: radial-gradient(circle at 35% 35%, rgba(255, 246, 214, 0.92), rgba(255, 215, 106, 0.78) 52%, rgba(165, 76, 255, 0.42));
+      box-shadow:
+        0 0 22px rgba(255, 215, 106, 0.18),
+        inset 0 0 12px rgba(255, 255, 255, 0.16);
+      pointer-events: none;
+    }
+
+    .mobile-action-pad {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 92px));
+      gap: 12px;
+      align-content: end;
+    }
+
     .mobile-button {
-      min-width: 72px;
-      padding: 12px 14px;
+      min-width: 0;
+      min-height: 68px;
+      padding: 14px 12px;
+      border-radius: 22px;
       border: 1px solid rgba(255, 255, 255, 0.18);
       background: linear-gradient(180deg, rgba(14, 10, 22, 0.92), rgba(8, 5, 14, 0.84));
       color: var(--ui);
@@ -1430,6 +1506,11 @@
       box-shadow:
         0 0 20px rgba(255, 215, 106, 0.18),
         inset 0 0 18px rgba(255, 215, 106, 0.08);
+    }
+
+    .mobile-button.mobile-ultimate {
+      min-height: 84px;
+      background: linear-gradient(180deg, rgba(42, 18, 8, 0.94), rgba(22, 10, 8, 0.86));
     }
 
     .skin-grid {
@@ -1720,23 +1801,26 @@
 
     @media (max-width: 760px) {
       .hud {
-        padding: 80px 12px 12px;
-        flex-direction: column;
-        align-items: stretch;
-        gap: 10px;
+        inset: auto 0 164px 0;
+        padding: 0 10px 0;
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 8px;
       }
 
       .panel {
         min-width: 0;
         max-width: none;
         width: 100%;
+        padding: 10px 12px;
       }
 
       .boss-hud {
-        top: 18px;
-        left: 12px;
+        top: 10px;
+        left: 10px;
         transform: none;
-        width: calc(100vw - 24px);
+        width: calc(100vw - 20px);
+        padding: 10px 12px 12px;
       }
 
       .boss-head {
@@ -1761,6 +1845,15 @@
         max-height: calc(var(--app-height, 100dvh) - 16px);
         padding: 18px 16px;
       }
+
+      .title {
+        font-size: 10px;
+        margin-bottom: 6px;
+      }
+
+      .value {
+        font-size: 20px;
+      }
     }
   </style>
 </head>
@@ -1781,7 +1874,7 @@
       <div class="title">Sector V: Chrono-Drift</div>
       <div class="value" id="scoreValue">000000</div>
       <div style="margin-top: 8px; color: var(--ui-dim); font-size: 12px; letter-spacing: 0.12em;">
-        MOUSE MOVE / W-S THRUST / A-D TURN / SHIFT SLOW / CTRL FAST / Q ULTIMATE
+        MOUSE MOVE / W-S THRUST / A-D TURN / SHIFT SLOW / CTRL FAST / LEFT CLICK ULTIMATE
       </div>
       <button class="pause-toggle inline" id="pauseButton" aria-label="Pause or continue">
         <span class="pause-toggle-bar"></span>
@@ -1808,13 +1901,17 @@
   </div>
 
   <div class="mobile-controls" id="mobileControls" aria-hidden="true">
-    <div class="mobile-cluster">
-      <button class="mobile-button" data-mobile-control="slow">Slow</button>
-      <button class="mobile-button" data-mobile-control="fast">Fast</button>
+    <div class="mobile-joystick-wrap">
+      <div class="mobile-joystick-label">Drift</div>
+      <div class="mobile-joystick" id="mobileJoystick">
+        <div class="mobile-stick" id="mobileStick"></div>
+      </div>
     </div>
-    <div class="mobile-cluster">
-      <button class="mobile-button" data-mobile-control="focus">Focus</button>
-      <button class="mobile-button" data-mobile-control="ultimate">Ult</button>
+    <div class="mobile-action-pad">
+      <div class="mobile-action-label" style="grid-column: 1 / -1; text-align: center;">Controls</div>
+      <button class="mobile-button" data-mobile-control="turn-left">Left</button>
+      <button class="mobile-button" data-mobile-control="turn-right">Right</button>
+      <button class="mobile-button mobile-ultimate" data-mobile-control="ultimate" style="grid-column: 1 / -1;">Ultimate</button>
     </div>
   </div>
 
@@ -1839,6 +1936,8 @@
       const bossHud = document.querySelector(".boss-hud");
       const pauseButton = document.getElementById("pauseButton");
       const mobileControls = document.getElementById("mobileControls");
+      const mobileJoystick = document.getElementById("mobileJoystick");
+      const mobileStick = document.getElementById("mobileStick");
       const achievementFeed = document.getElementById("achievementFeed");
       const scoreValue = document.getElementById("scoreValue");
       const chronoValue = document.getElementById("chronoValue");
@@ -2114,7 +2213,12 @@
         touchAimActive: false,
         mobileSlow: false,
         mobileFast: false,
-        mobileFocus: false
+        mobileFocus: false,
+        mobileTurnLeft: false,
+        mobileTurnRight: false,
+        mobileJoystickActive: false,
+        mobileJoystickX: 0,
+        mobileJoystickY: 0
       };
 
       const state = {
@@ -3414,14 +3518,11 @@
         pauseButton.style.display = pauseEnabled ? "inline-flex" : "none";
         pauseButton.classList.toggle("paused", state.mode === "paused");
         mobileControls.style.display = isMobileClient && state.mode === "playing" ? "flex" : "none";
-        for (const button of mobileControls.querySelectorAll("[data-mobile-control='slow']")) {
-          button.classList.toggle("active", input.mobileSlow);
+        for (const button of mobileControls.querySelectorAll("[data-mobile-control='turn-left']")) {
+          button.classList.toggle("active", input.mobileTurnLeft);
         }
-        for (const button of mobileControls.querySelectorAll("[data-mobile-control='fast']")) {
-          button.classList.toggle("active", input.mobileFast);
-        }
-        for (const button of mobileControls.querySelectorAll("[data-mobile-control='focus']")) {
-          button.classList.toggle("active", input.mobileFocus);
+        for (const button of mobileControls.querySelectorAll("[data-mobile-control='turn-right']")) {
+          button.classList.toggle("active", input.mobileTurnRight);
         }
         for (const button of mobileControls.querySelectorAll("[data-mobile-control='ultimate']")) {
           button.classList.toggle("ultimate-ready", state.ultimateCharge >= 100);
@@ -3753,9 +3854,9 @@
                   <div class="diagram-row"><span>W / S</span><span>Forward and reverse thrust</span></div>
                   <div class="diagram-row"><span>A / D</span><span>Vessel rotation and aim vector</span></div>
                   <div class="diagram-row"><span>Shift / Ctrl</span><span>Chrono compression and acceleration</span></div>
-                  <div class="diagram-row"><span>Q</span><span>Trigger the loaded ultimate when the kinetic well is full</span></div>
+                  <div class="diagram-row"><span>Left Click</span><span>Trigger the loaded ultimate when the kinetic well is full</span></div>
                   <div class="diagram-row"><span>Esc</span><span>Pause and field shop access</span></div>
-                  <div class="diagram-row"><span>Mobile</span><span>Touch the field to steer, then use the on-screen control cluster</span></div>
+                  <div class="diagram-row"><span>Mobile</span><span>Use the joystick to drift, the turn buttons to rotate, and the ultimate button to fire</span></div>
                 </div>
               </section>
               <section class="config-card">
@@ -3865,7 +3966,7 @@
                 <div class="title">Funds</div>
                 <div class="value" style="font-size: 28px;">${formatMoney(funds)}</div>
                 <div class="controls-diagram">
-                  <div class="diagram-row"><span>Q</span><span>Trigger the equipped ultimate once the kinetic well is full</span></div>
+                  <div class="diagram-row"><span>Left Click</span><span>Trigger the equipped ultimate once the kinetic well is full</span></div>
                   <div class="diagram-row"><span>Charge</span><span>Builds from boss damage dealt, with a smaller surge when you take damage</span></div>
                   <div class="diagram-row"><span>Evolve</span><span>Boss damage raises your plane from I toward your purchased cap</span></div>
                 </div>
@@ -4162,6 +4263,11 @@
         input.mobileSlow = false;
         input.mobileFast = false;
         input.mobileFocus = false;
+        input.mobileTurnLeft = false;
+        input.mobileTurnRight = false;
+        input.mobileJoystickActive = false;
+        input.mobileJoystickX = 0;
+        input.mobileJoystickY = 0;
         input.touchAimActive = false;
         overlay.classList.remove("show");
         updateHudVisibility();
@@ -4242,6 +4348,11 @@
           input.mobileSlow = false;
           input.mobileFast = false;
           input.mobileFocus = false;
+          input.mobileTurnLeft = false;
+          input.mobileTurnRight = false;
+          input.mobileJoystickActive = false;
+          input.mobileJoystickX = 0;
+          input.mobileJoystickY = 0;
           state.mode = "paused";
           renderPauseOverlay();
           updateHudVisibility();
@@ -6745,6 +6856,11 @@
         input.mobileSlow = false;
         input.mobileFast = false;
         input.mobileFocus = false;
+        input.mobileTurnLeft = false;
+        input.mobileTurnRight = false;
+        input.mobileJoystickActive = false;
+        input.mobileJoystickX = 0;
+        input.mobileJoystickY = 0;
         state.bullets.length = 0;
         state.playerShots.length = 0;
         state.sparks.length = 0;
@@ -6979,12 +7095,21 @@
         const reverseSpeed = player.reverseSpeed * (fpsUnlockActive ? 1.12 : rootActive ? 1.1 : macroActive ? 1.06 : 1) * tantalumSlow;
         if (input.keys.has("KeyA")) player.angle -= turnSpeed * dt;
         if (input.keys.has("KeyD")) player.angle += turnSpeed * dt;
+        if (input.mobileTurnLeft) player.angle -= turnSpeed * dt;
+        if (input.mobileTurnRight) player.angle += turnSpeed * dt;
         if (input.keys.has("KeyW")) thrust += moveSpeed;
         if (input.keys.has("KeyS")) thrust -= reverseSpeed;
 
         if (thrust !== 0) {
           player.x += Math.cos(player.angle) * thrust * dt;
           player.y += Math.sin(player.angle) * thrust * dt;
+        }
+
+        if (input.mobileJoystickActive) {
+          input.touchAimActive = true;
+          input.mouseX = player.x + input.mobileJoystickX * 180;
+          input.mouseY = player.y + input.mobileJoystickY * 180;
+          input.hasMouse = true;
         }
 
         if (input.hasMouse || input.touchAimActive) {
@@ -10290,8 +10415,13 @@
         input.hasMouse = true;
       });
       window.addEventListener("mousedown", () => {
-        input.mouseDown = true;
-        if (state.mode === "gameover") restartCurrentEncounter();
+        if (state.mode === "gameover") {
+          restartCurrentEncounter();
+          return;
+        }
+        if (state.mode === "playing") {
+          useUltimate();
+        }
       });
       window.addEventListener("mouseup", () => {
         input.mouseDown = false;
@@ -10302,6 +10432,11 @@
         input.mobileSlow = false;
         input.mobileFast = false;
         input.mobileFocus = false;
+        input.mobileTurnLeft = false;
+        input.mobileTurnRight = false;
+        input.mobileJoystickActive = false;
+        input.mobileJoystickX = 0;
+        input.mobileJoystickY = 0;
         input.keys.clear();
       });
       overlay.addEventListener("mouseover", (event) => {
@@ -10545,10 +10680,6 @@
           event.preventDefault();
           if (state.mode === "gameover") restartCurrentEncounter();
         }
-        if (event.code === "KeyQ" && state.mode === "playing" && state.ultimateCharge >= 100) {
-          event.preventDefault();
-          useUltimate();
-        }
       });
       window.addEventListener("keyup", (event) => {
         input.keys.delete(event.code);
@@ -10557,36 +10688,53 @@
         if (state.mode === "playing" || state.mode === "paused") togglePause();
       });
       if (isMobileClient) {
-        canvas.addEventListener("touchstart", (event) => {
-          const touch = event.touches[0];
-          if (!touch || state.mode !== "playing") return;
-          event.preventDefault();
-          input.mouseX = touch.clientX;
-          input.mouseY = touch.clientY;
-          input.hasMouse = true;
-          input.touchAimActive = true;
-        }, { passive: false });
-        canvas.addEventListener("touchmove", (event) => {
-          const touch = event.touches[0];
-          if (!touch || state.mode !== "playing") return;
-          event.preventDefault();
-          input.mouseX = touch.clientX;
-          input.mouseY = touch.clientY;
-          input.hasMouse = true;
-          input.touchAimActive = true;
-        }, { passive: false });
-        const clearTouchAim = (event) => {
-          if (event) event.preventDefault();
-          input.touchAimActive = false;
+        const updateMobileStick = () => {
+          if (!mobileStick) return;
+          mobileStick.style.transform = `translate(calc(-50% + ${input.mobileJoystickX * 34}px), calc(-50% + ${input.mobileJoystickY * 34}px))`;
         };
-        canvas.addEventListener("touchend", clearTouchAim, { passive: false });
-        canvas.addEventListener("touchcancel", clearTouchAim, { passive: false });
 
-        const setMobileControlState = (control, active) => {
-          if (control === "slow") input.mobileSlow = active;
-          if (control === "fast") input.mobileFast = active;
-          if (control === "focus") input.mobileFocus = active;
+        const setJoystickFromEvent = (event) => {
+          if (!mobileJoystick || state.mode !== "playing") return;
+          const rect = mobileJoystick.getBoundingClientRect();
+          const centerX = rect.left + rect.width * 0.5;
+          const centerY = rect.top + rect.height * 0.5;
+          const rawX = event.clientX - centerX;
+          const rawY = event.clientY - centerY;
+          const distance = Math.hypot(rawX, rawY) || 1;
+          const maxRadius = rect.width * 0.34;
+          const clamped = Math.min(distance, maxRadius);
+          input.mobileJoystickX = (rawX / distance) * (clamped / maxRadius);
+          input.mobileJoystickY = (rawY / distance) * (clamped / maxRadius);
+          input.mobileJoystickActive = true;
+          updateMobileStick();
         };
+
+        const releaseJoystick = () => {
+          input.mobileJoystickActive = false;
+          input.mobileJoystickX = 0;
+          input.mobileJoystickY = 0;
+          input.touchAimActive = false;
+          updateMobileStick();
+        };
+
+        if (mobileJoystick) {
+          mobileJoystick.addEventListener("pointerdown", (event) => {
+            event.preventDefault();
+            mobileJoystick.setPointerCapture?.(event.pointerId);
+            setJoystickFromEvent(event);
+          });
+          mobileJoystick.addEventListener("pointermove", (event) => {
+            if (!input.mobileJoystickActive) return;
+            event.preventDefault();
+            setJoystickFromEvent(event);
+          });
+          mobileJoystick.addEventListener("pointerup", (event) => {
+            event.preventDefault();
+            releaseJoystick();
+          });
+          mobileJoystick.addEventListener("pointercancel", releaseJoystick);
+          mobileJoystick.addEventListener("lostpointercapture", releaseJoystick);
+        }
 
         for (const button of mobileControls.querySelectorAll("[data-mobile-control]")) {
           button.addEventListener("pointerdown", (event) => {
@@ -10596,13 +10744,15 @@
               useUltimate();
               return;
             }
-            setMobileControlState(control, true);
+            if (control === "turn-left") input.mobileTurnLeft = true;
+            if (control === "turn-right") input.mobileTurnRight = true;
             button.classList.add("active");
           });
           const release = () => {
             const control = button.dataset.mobileControl;
+            if (control === "turn-left") input.mobileTurnLeft = false;
+            if (control === "turn-right") input.mobileTurnRight = false;
             if (control !== "ultimate") {
-              setMobileControlState(control, false);
               button.classList.remove("active");
             }
           };
@@ -10610,6 +10760,7 @@
           button.addEventListener("pointercancel", release);
           button.addEventListener("pointerleave", release);
         }
+        updateMobileStick();
       }
       window.addEventListener("selectstart", (event) => {
         event.preventDefault();
