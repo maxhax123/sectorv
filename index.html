@@ -1852,10 +1852,16 @@
           teaser: "A rugged dark-yellow slab ringed by five bright cesium cones. Expect violent magnet pulls, cursor lanes, and a chaotic final fracture."
         },
         {
-          name: "Spot Reserved",
-          active: false,
-          status: "RESERVED",
-          teaser: "This containment slot is reserved for a future boss encounter."
+          name: "The Tantalum Capacitive Redundant / 73Ta-VI",
+          active: true,
+          status: "ACTIVE",
+          teaser: "A matte slate-grey capacitor stack with neon-blue charge seams and violent buffer-panels. Expect static drag, absorb punishes, and arena-wide discharge."
+        },
+        {
+          name: "Lord Luminosity the Noble Neon",
+          active: true,
+          status: "ACTIVE",
+          teaser: "A noble neon atom burning hot at the center. Expect blinding red pulses, roaming electrons, drifting pop-up barriers, and a lethal high-voltage sweep."
         },
         {
           name: "Spot Reserved",
@@ -1969,6 +1975,8 @@
         sovereign_down: { title: "Sovereign Split", desc: "Defeat the Protium Sovereign." },
         monarch_down: { title: "Null Shattered", desc: "Defeat Monarch Null." },
         cesium_down: { title: "Cesium Cracked", desc: "Defeat The Cesium Jim-Dandy Superficial." },
+        tantalum_down: { title: "Capacitor Collapsed", desc: "Defeat The Tantalum Capacitive Redundant / 73Ta-VI." },
+        luminosity_down: { title: "Neon Extinguished", desc: "Defeat Lord Luminosity the Noble Neon." },
         arsenal_tuned: { title: "Arsenal Tuned", desc: "Purchase your first shop upgrade." },
         score_2500: { title: "Signal Ascendant", desc: "Reach a score of 2500." },
         score_5000: { title: "Signal Unbroken", desc: "Reach a score of 5000." },
@@ -2021,7 +2029,9 @@
             architect: Boolean(source.bossRecords?.architect),
             sovereign: Boolean(source.bossRecords?.sovereign),
             monarch: Boolean(source.bossRecords?.monarch),
-            cesium: Boolean(source.bossRecords?.cesium)
+            cesium: Boolean(source.bossRecords?.cesium),
+            tantalum: Boolean(source.bossRecords?.tantalum),
+            luminosity: Boolean(source.bossRecords?.luminosity)
           },
           skin: {
             preset: source.skin?.preset || "gold",
@@ -2094,6 +2104,8 @@
         operationsJobs: [],
         operationsSelectedIndex: 0,
         operationsDragItem: null,
+        pauseSecretUnlocked: false,
+        pauseSecretMessage: "",
         achievementToasts: [],
         impactFrames: {
           damage: 0,
@@ -2151,6 +2163,65 @@
           cursors: [],
           spinners: [],
           fragments: []
+        },
+        tantalum: {
+          x: 0,
+          y: 0,
+          vx: 0,
+          vy: 0,
+          phase: 1,
+          rotation: 0,
+          targetX: 0,
+          targetY: 0,
+          retargetTimer: 0,
+          auraTimer: 0,
+          auraDuration: 0,
+          auraRadius: 0,
+          packetTimer: 0,
+          flashTimer: 0,
+          retaliateTimer: 0,
+          absorbShotsRemaining: 0,
+          loadingBarTimer: 0,
+          lightningTimer: 0,
+          ringTimer: 0,
+          packets: [],
+          beams: [],
+          lightningBolts: [],
+          cursorRings: [],
+          scraps: [],
+          staticPhase: 0
+        },
+        luminosity: {
+          x: 0,
+          y: 0,
+          vx: 0,
+          vy: 0,
+          phase: 1,
+          innerAngle: 0,
+          outerAngle: 0,
+          dashCheckTimer: 0,
+          dashActive: 0,
+          dashCooldown: 0,
+          dashTargetX: 0,
+          dashTargetY: 0,
+          wanderTimer: 0,
+          wanderTargetX: 0,
+          wanderTargetY: 0,
+          flashBlindTimer: 0,
+          flashBlindCooldown: 0,
+          dotTimer: 0,
+          barrierTimer: 0,
+          detachTimer: 0,
+          detachedElectrons: [],
+          freeElectrons: [],
+          barriers: [],
+          dots: [],
+          beamTimer: 0,
+          beamSweep: 0,
+          beamActive: 0,
+          beamAngle: 0,
+          flicker: 0,
+          shards: []
         },
         settings: {
           volume: Number.isFinite(storedVolume) ? clamp(storedVolume, 0, 1) : 0.65,
@@ -2361,6 +2432,8 @@
         if (state.currentBoss === "sovereign") return boss2Music;
         if (state.currentBoss === "monarch") return boss3Music;
         if (state.currentBoss === "cesium") return boss3Music;
+        if (state.currentBoss === "tantalum") return boss3Music;
+        if (state.currentBoss === "luminosity") return boss3Music;
         return boss1Music;
       }
 
@@ -2591,7 +2664,7 @@
       }
 
       function getBossRecordKey(index) {
-        return index === 1 ? "sovereign" : index === 2 ? "monarch" : index === 3 ? "cesium" : "architect";
+        return index === 1 ? "sovereign" : index === 2 ? "monarch" : index === 3 ? "cesium" : index === 4 ? "tantalum" : index === 5 ? "luminosity" : "architect";
       }
 
       function getBossStatusLabel(index, fallbackStatus) {
@@ -3497,7 +3570,7 @@
       }
 
       function getBossPreviewMarkup(index, animated = false) {
-        if (index <= 3) {
+        if (index <= 5) {
           return `<div class="boss-preview ${animated ? "animated" : ""}"><canvas class="boss-preview-canvas" width="128" height="128" data-boss-preview="${index}" data-boss-animated="${animated ? "true" : "false"}"></canvas></div>`;
         }
         return `<div class="fractal-glyph"></div>`;
@@ -3847,18 +3920,83 @@
         };
       }
 
+      function resetTantalumState() {
+        state.tantalum = {
+          x: centerX,
+          y: height * 0.2,
+          vx: 0,
+          vy: 0,
+          phase: 1,
+          rotation: 0,
+          targetX: centerX,
+          targetY: height * 0.2,
+          retargetTimer: 0.45,
+          auraTimer: 1.8,
+          auraDuration: 0,
+          auraRadius: 190,
+          packetTimer: 0.8,
+          flashTimer: 0,
+          retaliateTimer: 2.8,
+          absorbShotsRemaining: 0,
+          loadingBarTimer: 4,
+          lightningTimer: 1.8,
+          ringTimer: 1.35,
+          packets: [],
+          beams: [],
+          lightningBolts: [],
+          cursorRings: [],
+          scraps: [],
+          staticPhase: 0
+        };
+      }
+
+      function resetLuminosityState() {
+        state.luminosity = {
+          x: centerX,
+          y: height * 0.27,
+          vx: 0,
+          vy: 0,
+          phase: 1,
+          innerAngle: 0,
+          outerAngle: 0,
+          dashCheckTimer: 1.8 + Math.random() * 2.4,
+          dashActive: 0,
+          dashCooldown: 0,
+          dashTargetX: centerX,
+          dashTargetY: height * 0.46,
+          wanderTimer: 0.9,
+          wanderTargetX: centerX,
+          wanderTargetY: height * 0.3,
+          flashBlindTimer: 0,
+          flashBlindCooldown: 2.2,
+          dotTimer: 0.55,
+          barrierTimer: 1.9,
+          detachTimer: 2.8,
+          detachedElectrons: [],
+          freeElectrons: [],
+          barriers: [],
+          dots: [],
+          beamTimer: 2,
+          beamSweep: 0,
+          beamActive: 0,
+          beamAngle: 0,
+          flicker: 0,
+          shards: []
+        };
+      }
+
       function startBossEncounter(index) {
         if (state.profile.bossRecords[getBossRecordKey(index)]) {
           awardAchievement("resurrected");
         }
-        state.currentBoss = index === 1 ? "sovereign" : index === 2 ? "monarch" : index === 3 ? "cesium" : "architect";
+        state.currentBoss = index === 1 ? "sovereign" : index === 2 ? "monarch" : index === 3 ? "cesium" : index === 4 ? "tantalum" : index === 5 ? "luminosity" : "architect";
         if (state.currentBoss === "architect") {
           startArchitectCutscene();
           return;
         }
         resetGame("cutscene");
-        state.currentBoss = index === 3 ? "cesium" : index === 2 ? "monarch" : "sovereign";
-        state.bossMaxHealth = state.currentBoss === "monarch" ? 2100 : state.currentBoss === "cesium" ? 3200 : 2400;
+        state.currentBoss = index === 5 ? "luminosity" : index === 4 ? "tantalum" : index === 3 ? "cesium" : index === 2 ? "monarch" : "sovereign";
+        state.bossMaxHealth = state.currentBoss === "monarch" ? 2100 : state.currentBoss === "cesium" ? 3200 : state.currentBoss === "tantalum" ? 3600 : state.currentBoss === "luminosity" ? 3900 : 2400;
         state.bossHealth = state.bossMaxHealth;
         state.bossPhase = 1;
         state.cutsceneTime = 0;
@@ -3866,6 +4004,8 @@
         resetSovereignState();
         resetNullState();
         resetCesiumState();
+        resetTantalumState();
+        resetLuminosityState();
         playMusic("boss");
         overlay.innerHTML = `<div class="warning-shell"><div class="warning-text" id="warningText"></div></div>`;
         overlay.classList.add("show");
@@ -3886,7 +4026,7 @@
       }
 
       function restartCurrentEncounter() {
-        const bossIndex = state.currentBoss === "sovereign" ? 1 : state.currentBoss === "monarch" ? 2 : state.currentBoss === "cesium" ? 3 : 0;
+        const bossIndex = state.currentBoss === "sovereign" ? 1 : state.currentBoss === "monarch" ? 2 : state.currentBoss === "cesium" ? 3 : state.currentBoss === "tantalum" ? 4 : state.currentBoss === "luminosity" ? 5 : 0;
         startBossEncounter(bossIndex);
       }
 
@@ -3927,6 +4067,8 @@
         resetSovereignState();
         resetNullState();
         resetCesiumState();
+        resetTantalumState();
+        resetLuminosityState();
         player.x = centerX;
         player.y = height * 0.82;
         player.pullVx = 0;
@@ -3989,6 +4131,28 @@
       }
 
       function renderPauseOverlay() {
+        const secretUnlocked = state.pauseSecretUnlocked;
+        const secretMarkup = secretUnlocked
+          ? `
+            <div class="shop-item">
+              <strong>Secret Boss Control</strong>
+              <span>Set the current boss to a chosen remaining health percentage.</span>
+              <span>${state.pauseSecretMessage || "Choose a value below."}</span>
+              <div class="config-actions" style="justify-content:flex-start; gap:10px; flex-wrap:wrap; margin-top:14px;">
+                ${[90, 70, 65, 50, 30, 10].map((percent) => `
+                  <button class="menu-button menu-hoverable" data-boss-health-set="${percent}" style="min-width:92px;">${percent}%</button>
+                `).join("")}
+              </div>
+            </div>
+          `
+          : `
+            <div class="shop-item">
+              <strong>Secret Menu</strong>
+              <span>Restricted boss controls are hidden behind a password prompt.</span>
+              <span>${state.pauseSecretMessage || "Authorized personnel only."}</span>
+              <button class="menu-button menu-hoverable" data-secret-unlock style="margin-top:14px;">Unlock Secret Menu</button>
+            </div>
+          `;
         overlay.innerHTML = `
           <div class="message">
             <h1>Chrono Hold</h1>
@@ -4009,6 +4173,7 @@
                 <span>Cost 600 score</span>
                 <button data-shop="health" ${player.healthBufferBuys >= 6 || state.score < 600 ? "disabled" : ""}>Buy Health</button>
               </div>
+              ${secretMarkup}
             </div>
             <div class="config-actions" style="justify-content:center;">
               <button class="menu-button menu-hoverable" data-pause-menu>Return To Menu</button>
@@ -4026,6 +4191,7 @@
           input.mobileFast = false;
           input.mobileFocus = false;
           state.mode = "paused";
+          state.pauseSecretMessage = "";
           renderPauseOverlay();
           updateHudVisibility();
           return;
@@ -4051,6 +4217,14 @@
         state.nullBoss.reflections.length = 0;
         state.cesium.cursors.length = 0;
         state.cesium.spinners.length = 0;
+        state.tantalum.packets.length = 0;
+        state.tantalum.beams.length = 0;
+        state.tantalum.lightningBolts.length = 0;
+        state.tantalum.cursorRings.length = 0;
+        state.luminosity.dots.length = 0;
+        state.luminosity.barriers.length = 0;
+        state.luminosity.detachedElectrons.length = 0;
+        state.luminosity.freeElectrons.length = 0;
       }
 
       function updateEvolutionProgressFromBossDamage() {
@@ -4119,7 +4293,7 @@
               remove: () => state.nullBoss.reflections.splice(index, 1)
             });
           }
-        } else {
+        } else if (state.currentBoss === "cesium") {
           if (state.cesium.cursors.length) {
             const index = Math.floor(Math.random() * state.cesium.cursors.length);
             const cursor = state.cesium.cursors[index];
@@ -4138,12 +4312,88 @@
               remove: () => state.cesium.spinners.splice(index, 1)
             });
           }
+        } else if (state.currentBoss === "tantalum") {
+          if (state.tantalum.packets.length) {
+            const index = Math.floor(Math.random() * state.tantalum.packets.length);
+            const packet = state.tantalum.packets[index];
+            candidates.push({
+              x: packet.x,
+              y: packet.y,
+              remove: () => state.tantalum.packets.splice(index, 1)
+            });
+          }
+          if (state.tantalum.beams.length) {
+            const index = Math.floor(Math.random() * state.tantalum.beams.length);
+            const beam = state.tantalum.beams[index];
+            candidates.push({
+              x: beam.x ?? width * 0.5,
+              y: beam.y ?? height * 0.5,
+              remove: () => state.tantalum.beams.splice(index, 1)
+            });
+          }
+          if (state.tantalum.lightningBolts.length) {
+            const index = Math.floor(Math.random() * state.tantalum.lightningBolts.length);
+            const bolt = state.tantalum.lightningBolts[index];
+            candidates.push({
+              x: bolt.x,
+              y: bolt.y,
+              remove: () => state.tantalum.lightningBolts.splice(index, 1)
+            });
+          }
+          if (state.tantalum.cursorRings.length) {
+            const index = Math.floor(Math.random() * state.tantalum.cursorRings.length);
+            const ring = state.tantalum.cursorRings[index];
+            candidates.push({
+              x: width * 0.5,
+              y: height * 0.5,
+              remove: () => state.tantalum.cursorRings.splice(index, 1)
+            });
+          }
+        } else if (state.currentBoss === "luminosity") {
+          if (state.luminosity.dots.length) {
+            const index = Math.floor(Math.random() * state.luminosity.dots.length);
+            const dot = state.luminosity.dots[index];
+            candidates.push({
+              x: dot.x,
+              y: dot.y,
+              remove: () => state.luminosity.dots.splice(index, 1)
+            });
+          }
+          if (state.luminosity.barriers.length) {
+            const index = Math.floor(Math.random() * state.luminosity.barriers.length);
+            const barrier = state.luminosity.barriers[index];
+            candidates.push({
+              x: barrier.x,
+              y: barrier.y,
+              remove: () => state.luminosity.barriers.splice(index, 1)
+            });
+          }
+          if (state.luminosity.detachedElectrons.length) {
+            const index = Math.floor(Math.random() * state.luminosity.detachedElectrons.length);
+            const electron = state.luminosity.detachedElectrons[index];
+            candidates.push({
+              x: electron.x,
+              y: electron.y,
+              remove: () => state.luminosity.detachedElectrons.splice(index, 1)
+            });
+          }
+          if (state.luminosity.freeElectrons.length) {
+            const index = Math.floor(Math.random() * state.luminosity.freeElectrons.length);
+            const electron = state.luminosity.freeElectrons[index];
+            candidates.push({
+              x: electron.x,
+              y: electron.y,
+              remove: () => state.luminosity.freeElectrons.splice(index, 1)
+            });
+          }
         }
         if (!candidates.length || Math.random() > 0.3) return;
         const chosen = candidates[Math.floor(Math.random() * candidates.length)];
         chosen.remove();
-        addFlash(chosen.x, chosen.y, "rgba(170, 240, 255, 0.6)", 46);
-        addSpark(chosen.x, chosen.y, "rgba(215, 250, 255, 0.92)", 12, 160);
+        const flashColor = state.currentBoss === "luminosity" ? "rgba(255, 120, 120, 0.6)" : "rgba(170, 240, 255, 0.6)";
+        const sparkColor = state.currentBoss === "luminosity" ? "rgba(255, 210, 210, 0.92)" : "rgba(215, 250, 255, 0.92)";
+        addFlash(chosen.x, chosen.y, flashColor, 46);
+        addSpark(chosen.x, chosen.y, sparkColor, 12, 160);
       }
 
       function useUltimate() {
@@ -5085,6 +5335,925 @@
         applyThreatResponse(dt, nearest, closeCount);
       }
 
+      function getTantalumBossScale() {
+        return state.tantalum.phase === 3 ? 1.2 : 1;
+      }
+
+      function getTantalumPlateStates() {
+        const t = state.tantalum;
+        const scale = getTantalumBossScale();
+        const rotation = t.rotation;
+        const spread = t.phase === 3 ? 1.42 : 1;
+        const offsets = [-38, -12, 12, 38].map((offset) => offset * spread * scale);
+        const widthValue = 126 * scale;
+        const heightValue = 18 * scale;
+        return offsets.map((localY, index) => {
+          const localX = 0;
+          const cos = Math.cos(rotation);
+          const sin = Math.sin(rotation);
+          return {
+            x: t.x + localX * cos - localY * sin,
+            y: t.y + localX * sin + localY * cos,
+            width: widthValue,
+            height: heightValue,
+            rotation,
+            localY,
+            index
+          };
+        });
+      }
+
+      function getTantalumPanelStates() {
+        const t = state.tantalum;
+        const scale = getTantalumBossScale();
+        const rotation = t.rotation;
+        const halfW = 82 * scale;
+        const halfH = (t.phase === 3 ? 78 : 58) * scale;
+        const corners = [
+          { sx: -1, sy: -1 },
+          { sx: 1, sy: -1 },
+          { sx: 1, sy: 1 },
+          { sx: -1, sy: 1 }
+        ];
+        return corners.map((corner, index) => {
+          const jitter = Math.sin(state.elapsed * 22 + index * 1.7 + t.staticPhase) * 6;
+          const localX = corner.sx * (halfW + jitter * 0.35);
+          const localY = corner.sy * (halfH + Math.cos(state.elapsed * 18 + index) * 4);
+          const cos = Math.cos(rotation);
+          const sin = Math.sin(rotation);
+          return {
+            x: t.x + localX * cos - localY * sin,
+            y: t.y + localX * sin + localY * cos,
+            width: 22 * scale,
+            height: 15 * scale,
+            rotation: rotation + Math.sin(state.elapsed * 30 + index) * 0.18,
+            index
+          };
+        });
+      }
+
+      function isPlayerInTantalumAura() {
+        if (state.currentBoss !== "tantalum") return false;
+        const t = state.tantalum;
+        if (t.phase === 3) return true;
+        if (t.auraDuration <= 0) return false;
+        return Math.hypot(player.x - t.x, player.y - t.y) < t.auraRadius;
+      }
+
+      function spawnTantalumPacket(gapIndex) {
+        const t = state.tantalum;
+        const plates = getTantalumPlateStates();
+        const upper = plates[gapIndex];
+        const lower = plates[gapIndex + 1];
+        if (!upper || !lower) return;
+        const spawnX = (upper.x + lower.x) * 0.5;
+        const spawnY = (upper.y + lower.y) * 0.5;
+        const dx = player.x - spawnX;
+        const dy = player.y - spawnY;
+        const distance = Math.hypot(dx, dy) || 1;
+        const baseSpeed = t.phase === 3 ? 170 : t.phase === 2 ? 142 : 122;
+        t.packets.push({
+          x: spawnX,
+          y: spawnY,
+          vx: (dx / distance) * baseSpeed,
+          vy: (dy / distance) * baseSpeed,
+          life: 11,
+          age: 0,
+          size: t.phase === 3 ? 14 : 12,
+          jitter: t.phase >= 2,
+          phase: Math.random() * TAU,
+          gapIndex
+        });
+      }
+
+      function spawnTantalumPlateWall() {
+        const t = state.tantalum;
+        const speed = 300;
+        const targetY = clamp(player.y, 70, height - 70);
+        const direction = player.x >= t.x ? 1 : -1;
+        t.packets.push({
+          kind: "plate_wall",
+          x: t.x,
+          y: targetY,
+          vx: direction * speed,
+          vy: 0,
+          life: 6.2,
+          age: 0,
+          width: 188,
+          height: 22,
+          angle: 0
+        });
+      }
+
+      function spawnTantalumSweepBeam(side = "left", y = height * 0.5) {
+        const fromLeft = side === "left";
+        state.tantalum.beams.push({
+          type: "sweep",
+          x: fromLeft ? -220 : width + 220,
+          y,
+          vx: fromLeft ? 560 : -560,
+          width: 310,
+          height: 30,
+          telegraph: 0.42,
+          active: 2.2,
+          life: 2.8,
+          sourceSide: side
+        });
+      }
+
+      function spawnTantalumCursorRing() {
+        const t = state.tantalum;
+        t.cursorRings.push({
+          inset: -Math.max(width, height) * 0.24,
+          speed: t.phase === 3 ? 122 : t.phase === 2 ? 96 : 72,
+          thickness: t.phase === 3 ? 30 : t.phase === 2 ? 26 : 22,
+          life: 14,
+          pulse: Math.random() * TAU
+        });
+      }
+
+      function triggerTantalumRetaliation(targetX, targetY) {
+        const t = state.tantalum;
+        const angle = Math.atan2(targetY - t.y, targetX - t.x);
+        const perpendicularX = -Math.sin(angle);
+        const perpendicularY = Math.cos(angle);
+        for (const offset of [-24, 24]) {
+          const originX = t.x + perpendicularX * offset;
+          const originY = t.y + perpendicularY * offset;
+          const tipX = targetX + perpendicularX * offset;
+          const tipY = targetY + perpendicularY * offset;
+          const dx = tipX - originX;
+          const dy = tipY - originY;
+          const distance = Math.hypot(dx, dy) || 1;
+          const vx = (dx / distance) * 240;
+          const vy = (dy / distance) * 240;
+          state.tantalum.beams.push({
+            type: "lance",
+            x: originX,
+            y: originY,
+            vx,
+            vy,
+            angle,
+            length: Math.max(220, distance),
+            width: 20,
+            telegraph: 0.7,
+            active: 4.2,
+            life: 5.4,
+            targetX: tipX,
+            targetY: tipY
+          });
+        }
+        addFlash(t.x, t.y, "rgba(168, 244, 255, 0.62)", 135);
+        addSpark(t.x, t.y, "rgba(160, 246, 255, 0.96)", 18, 210);
+      }
+
+      function spawnTantalumLightningBurst() {
+        const t = state.tantalum;
+        const count = 7 + Math.floor(Math.random() * 3);
+        for (let i = 0; i < count; i++) {
+          const angle = (i / count) * TAU + Math.random() * 0.22 + t.rotation;
+          const lengthValue = 150 + Math.random() * 110;
+          const points = [{ x: t.x, y: t.y }];
+          for (let step = 1; step <= 5; step++) {
+            const progress = step / 5;
+            const distance = lengthValue * progress;
+            const wobble = (Math.random() - 0.5) * 24;
+            points.push({
+              x: t.x + Math.cos(angle) * distance - Math.sin(angle) * wobble,
+              y: t.y + Math.sin(angle) * distance + Math.cos(angle) * wobble
+            });
+          }
+          state.tantalum.lightningBolts.push({
+            x: t.x,
+            y: t.y,
+            points,
+            life: 0.58,
+            maxLife: 0.58
+          });
+        }
+      }
+
+      function updateTantalumBoss(dt) {
+        const t = state.tantalum;
+        const healthRatio = state.bossHealth / Math.max(1, state.bossMaxHealth);
+        const nextPhase = healthRatio <= 0.33 ? 3 : healthRatio <= 0.66 ? 2 : 1;
+        if (nextPhase !== t.phase) {
+          t.phase = nextPhase;
+          state.bossPhase = nextPhase;
+          addFlash(t.x, t.y, "rgba(140, 240, 255, 0.7)", 160 + nextPhase * 24);
+          addSpark(t.x, t.y, "rgba(150, 246, 255, 0.96)", 24 + nextPhase * 8, 200 + nextPhase * 24);
+        }
+
+        t.staticPhase += dt * (2 + t.phase * 0.3);
+        t.rotation = Math.sin(state.elapsed * (t.phase === 3 ? 0.58 : t.phase === 2 ? 0.4 : 0.28)) * (t.phase === 3 ? 0.26 : t.phase === 2 ? 0.17 : 0.1);
+        t.retargetTimer -= dt;
+        if (t.retargetTimer <= 0) {
+          t.retargetTimer = t.phase === 3 ? 1.25 + Math.random() * 0.7 : 1.6 + Math.random() * 1.2;
+          t.targetX = width * (0.26 + Math.random() * 0.48);
+          t.targetY = height * (0.14 + Math.random() * 0.24);
+        }
+        const pull = t.phase === 3 ? 3.2 : t.phase === 2 ? 2.5 : 2;
+        t.vx += (t.targetX - t.x) * dt * pull;
+        t.vy += (t.targetY - t.y) * dt * pull;
+        t.vx *= 0.93;
+        t.vy *= 0.93;
+        t.x = clamp(t.x + t.vx * dt, 120, width - 120);
+        t.y = clamp(t.y + t.vy * dt, 110, height * 0.42);
+
+        if (t.phase === 3) {
+          t.auraDuration = 1;
+          t.auraRadius = Math.max(width, height);
+        } else {
+          t.auraTimer -= dt;
+          t.auraDuration = Math.max(0, t.auraDuration - dt);
+          if (t.auraTimer <= 0) {
+            t.auraDuration = 1.9 + Math.random() * 0.9;
+            t.auraRadius = ((t.phase === 2 ? 220 : 190) + Math.random() * 40) * 1.6;
+            t.auraTimer = (t.phase === 2 ? 2 : 3) + Math.random() * 4;
+            addFlash(t.x, t.y, "rgba(112, 240, 255, 0.3)", t.auraRadius);
+          }
+        }
+
+        t.packetTimer -= dt;
+        if (t.packetTimer <= 0) {
+          if (t.phase === 3) {
+            spawnTantalumPlateWall();
+            t.packetTimer = 2.2;
+          } else {
+            for (let gapIndex = 0; gapIndex < 3; gapIndex++) {
+              spawnTantalumPacket(gapIndex);
+            }
+            t.packetTimer = t.phase === 2 ? 0.68 : 0.92;
+          }
+        }
+
+        if (t.phase >= 2) {
+          t.flashTimer = Math.max(0, t.flashTimer - dt);
+          t.retaliateTimer -= dt;
+          if (t.retaliateTimer <= 0 && t.flashTimer <= 0) {
+            t.flashTimer = 0.55;
+            t.absorbShotsRemaining = 1;
+            t.retaliateTimer = (t.phase === 3 ? 1.8 : 2) + Math.random() * (t.phase === 3 ? 2.2 : 4);
+            addFlash(t.x, t.y, "rgba(255, 255, 255, 0.6)", 110);
+          }
+          t.loadingBarTimer -= dt;
+          if (t.loadingBarTimer <= 0) {
+            if (t.phase === 2) {
+              spawnTantalumSweepBeam(Math.random() > 0.5 ? "left" : "right", height * 0.5 + (Math.random() - 0.5) * 36);
+            } else {
+              const y = height * 0.5 + (Math.random() - 0.5) * 52;
+              spawnTantalumSweepBeam("left", y);
+              spawnTantalumSweepBeam("right", y);
+            }
+            t.loadingBarTimer = 4;
+          }
+        } else {
+          t.flashTimer = 0;
+          t.absorbShotsRemaining = 0;
+        }
+
+        if (t.phase === 3) {
+          t.lightningTimer -= dt;
+          if (t.lightningTimer <= 0) {
+            spawnTantalumLightningBurst();
+            t.lightningTimer = 1.05 + Math.random() * 0.7;
+          }
+        } else {
+          t.lightningTimer = Math.max(0, t.lightningTimer - dt);
+        }
+
+        t.ringTimer -= dt;
+        if (t.ringTimer <= 0) {
+          spawnTantalumCursorRing();
+          t.ringTimer = t.phase === 3 ? 1.65 : t.phase === 2 ? 2.55 : 4.2;
+        }
+
+        let nearest = Infinity;
+        let closeCount = 0;
+        const panelStates = getTantalumPanelStates();
+        const coreRadius = 42 * getTantalumBossScale();
+        for (const panel of panelStates) {
+          const dist = Math.hypot(player.x - panel.x, player.y - panel.y);
+          nearest = Math.min(nearest, dist);
+          if (dist < 118) closeCount++;
+          if (dist < player.hitRadius + Math.max(panel.width, panel.height) * 0.52) {
+            damagePlayer(0.5, "impact");
+          }
+        }
+        const bossDistance = Math.hypot(player.x - t.x, player.y - t.y);
+        nearest = Math.min(nearest, bossDistance);
+        if (bossDistance < 130) closeCount++;
+        if (bossDistance < player.hitRadius + coreRadius * 0.92) {
+          damagePlayer(1, "impact");
+        }
+
+        for (let i = t.packets.length - 1; i >= 0; i--) {
+          const packet = t.packets[i];
+          packet.age += dt;
+          packet.life -= dt;
+          if (packet.kind === "plate_wall") {
+            packet.x += packet.vx * dt;
+            packet.y += packet.vy * dt;
+            const angle = packet.angle;
+            const cos = Math.cos(angle);
+            const sin = Math.sin(angle);
+            const localX = (player.x - packet.x) * cos + (player.y - packet.y) * sin;
+            const localY = -(player.x - packet.x) * sin + (player.y - packet.y) * cos;
+            const dist = Math.hypot(player.x - packet.x, player.y - packet.y);
+            nearest = Math.min(nearest, dist);
+            if (dist < 122) closeCount++;
+            if (Math.abs(localX) < packet.width * 0.5 + player.hitRadius && Math.abs(localY) < packet.height * 0.5 + player.hitRadius) {
+              t.packets.splice(i, 1);
+              damagePlayer(1, "impact");
+              continue;
+            }
+            if (packet.life <= 0 || packet.x < -180 || packet.x > width + 180 || packet.y < -180 || packet.y > height + 180) {
+              t.packets.splice(i, 1);
+            }
+            continue;
+          }
+          const dx = player.x - packet.x;
+          const dy = player.y - packet.y;
+          const distance = Math.hypot(dx, dy) || 1;
+          const steer = t.phase === 3 ? 48 : 28;
+          packet.vx += (dx / distance) * steer * dt;
+          packet.vy += (dy / distance) * steer * dt;
+          if (packet.jitter) {
+            const sideX = -packet.vy;
+            const sideY = packet.vx;
+            const sideLength = Math.hypot(sideX, sideY) || 1;
+            const jitter = Math.sin(packet.age * 14 + packet.phase) * (t.phase === 3 ? 48 : 30);
+            packet.x += (sideX / sideLength) * jitter * dt;
+            packet.y += (sideY / sideLength) * jitter * dt;
+          }
+          const speed = Math.hypot(packet.vx, packet.vy);
+          const maxSpeed = t.phase === 3 ? 300 : t.phase === 2 ? 248 : 214;
+          if (speed > maxSpeed) {
+            packet.vx *= maxSpeed / speed;
+            packet.vy *= maxSpeed / speed;
+          }
+          packet.x += packet.vx * dt;
+          packet.y += packet.vy * dt;
+          const dist = Math.hypot(player.x - packet.x, player.y - packet.y);
+          nearest = Math.min(nearest, dist);
+          if (dist < 108) closeCount++;
+          if (dist < player.hitRadius + packet.size * 0.8) {
+            t.packets.splice(i, 1);
+            damagePlayer(0.5, "impact");
+            continue;
+          }
+          if (packet.life <= 0 || packet.x < -80 || packet.x > width + 80 || packet.y < -80 || packet.y > height + 80) {
+            t.packets.splice(i, 1);
+          }
+        }
+
+        for (let i = t.beams.length - 1; i >= 0; i--) {
+          const beam = t.beams[i];
+          beam.life -= dt;
+          if (beam.telegraph > 0) {
+            beam.telegraph -= dt;
+          } else {
+            beam.active -= dt;
+            if (beam.type === "sweep") {
+              beam.x += beam.vx * dt;
+              const dist = Math.hypot(player.x - beam.x, player.y - beam.y);
+              nearest = Math.min(nearest, dist);
+              if (Math.abs(player.x - beam.x) < beam.width * 0.5 + player.hitRadius && Math.abs(player.y - beam.y) < beam.height * 0.5 + player.hitRadius) {
+                damagePlayer(1, "impact");
+              }
+            } else {
+              beam.x += beam.vx * dt;
+              beam.y += beam.vy * dt;
+              const tipX = beam.x + Math.cos(beam.angle) * beam.length;
+              const tipY = beam.y + Math.sin(beam.angle) * beam.length;
+              const dist = distanceToSegment(player.x, player.y, beam.x, beam.y, tipX, tipY);
+              nearest = Math.min(nearest, dist);
+              if (dist < beam.width * 0.5 + player.hitRadius) {
+                damagePlayer(1, "impact");
+              }
+            }
+          }
+          if (beam.life <= 0 || beam.active <= -0.2 || beam.x < -320 || beam.x > width + 320 || beam.y < -220 || beam.y > height + 220) {
+            t.beams.splice(i, 1);
+          }
+        }
+
+        for (let i = t.lightningBolts.length - 1; i >= 0; i--) {
+          const bolt = t.lightningBolts[i];
+          bolt.life -= dt;
+          for (let p = 1; p < bolt.points.length; p++) {
+            const prev = bolt.points[p - 1];
+            const next = bolt.points[p];
+            const dist = distanceToSegment(player.x, player.y, prev.x, prev.y, next.x, next.y);
+            nearest = Math.min(nearest, dist);
+            if (dist < player.hitRadius + 6) {
+              damagePlayer(0.5, "impact");
+              break;
+            }
+          }
+          if (bolt.life <= 0) t.lightningBolts.splice(i, 1);
+        }
+
+        for (let i = t.cursorRings.length - 1; i >= 0; i--) {
+          const ring = t.cursorRings[i];
+          ring.inset += ring.speed * dt;
+          ring.life -= dt;
+          const halfSize = Math.max(0, Math.min(width, height) * 0.5 - ring.inset);
+          const left = centerX - halfSize;
+          const right = centerX + halfSize;
+          const top = centerY - halfSize;
+          const bottom = centerY + halfSize;
+          const cursorStep = 96;
+          const jitter = Math.sin(state.elapsed * 12 + ring.pulse) * 3;
+          let ringNearest = Infinity;
+          let ringClose = 0;
+          for (let x = left + 16; x <= right - 16; x += cursorStep) {
+            for (const y of [top, bottom]) {
+              const cursorX = x;
+              const cursorY = y + Math.sin(state.elapsed * 10 + ring.pulse + x * 0.02) * jitter;
+              const dist = Math.hypot(player.x - cursorX, player.y - cursorY);
+              ringNearest = Math.min(ringNearest, dist);
+              if (dist < 108) ringClose++;
+              if (dist < player.hitRadius + 5.5) damagePlayer(0.5, "impact");
+            }
+          }
+          for (let y = top + 16; y <= bottom - 16; y += cursorStep) {
+            for (const x of [left, right]) {
+              const cursorX = x + Math.cos(state.elapsed * 10 + ring.pulse + y * 0.02) * jitter;
+              const cursorY = y;
+              const dist = Math.hypot(player.x - cursorX, player.y - cursorY);
+              ringNearest = Math.min(ringNearest, dist);
+              if (dist < 108) ringClose++;
+              if (dist < player.hitRadius + 5.5) damagePlayer(0.5, "impact");
+            }
+          }
+          nearest = Math.min(nearest, ringNearest);
+          closeCount += ringClose;
+          if (ring.life <= 0 || halfSize <= 1 || left >= right || top >= bottom) {
+            t.cursorRings.splice(i, 1);
+          }
+        }
+
+        applyThreatResponse(dt, nearest, closeCount);
+      }
+
+      function getLuminosityCoreRadius() {
+        return state.luminosity.phase === 3 ? 52 : 42;
+      }
+
+      function getLuminosityBeamSegments() {
+        const l = state.luminosity;
+        const beamLength = Math.max(width, height) * 1.15;
+        const dirX = Math.cos(l.beamAngle);
+        const dirY = Math.sin(l.beamAngle);
+        const gapCenters = [0.14, 0.27, 0.41, 0.56].map((ratio) => beamLength * ratio);
+        const gapHalf = 38;
+        const segments = [];
+
+        const pushArmSegments = (direction) => {
+          let start = 0;
+          for (const center of gapCenters) {
+            const gapStart = Math.max(28, center - gapHalf);
+            const gapEnd = Math.min(beamLength - 28, center + gapHalf);
+            if (gapStart > start + 18) {
+              segments.push({
+                x1: l.x + dirX * start * direction,
+                y1: l.y + dirY * start * direction,
+                x2: l.x + dirX * gapStart * direction,
+                y2: l.y + dirY * gapStart * direction
+              });
+            }
+            start = gapEnd;
+          }
+          if (beamLength > start + 18) {
+            segments.push({
+              x1: l.x + dirX * start * direction,
+              y1: l.y + dirY * start * direction,
+              x2: l.x + dirX * beamLength * direction,
+              y2: l.y + dirY * beamLength * direction
+            });
+          }
+        };
+
+        pushArmSegments(1);
+        pushArmSegments(-1);
+        return segments;
+      }
+
+      function pickLuminositySafeBeamAngle() {
+        const l = state.luminosity;
+        const previousAngle = l.beamAngle;
+        let bestAngle = Math.random() * TAU;
+        let bestDistance = -Infinity;
+        for (let attempt = 0; attempt < 10; attempt++) {
+          const candidate = Math.random() * TAU;
+          l.beamAngle = candidate;
+          const segments = getLuminosityBeamSegments();
+          const nearestToPlayer = segments.reduce((nearest, segment) => (
+            Math.min(nearest, distanceToSegment(player.x, player.y, segment.x1, segment.y1, segment.x2, segment.y2))
+          ), Infinity);
+          if (nearestToPlayer > 170) {
+            bestAngle = candidate;
+            bestDistance = nearestToPlayer;
+            break;
+          }
+          if (nearestToPlayer > bestDistance) {
+            bestAngle = candidate;
+            bestDistance = nearestToPlayer;
+          }
+        }
+        l.beamAngle = previousAngle;
+        return bestAngle;
+      }
+
+      function getLuminosityElectronStates() {
+        const l = state.luminosity;
+        const states = [];
+        if (l.phase === 3) return states;
+        const innerRadius = 64;
+        const outerRadius = 118;
+        for (let i = 0; i < 2; i++) {
+          const angle = l.innerAngle + (i / 2) * TAU;
+          states.push({
+            x: l.x + Math.cos(angle) * innerRadius,
+            y: l.y + Math.sin(angle) * innerRadius * 0.52,
+            ring: "inner",
+            angle,
+            size: 10,
+            index: i
+          });
+        }
+        for (let i = 0; i < 8; i++) {
+          const angle = l.outerAngle + (i / 8) * TAU;
+          states.push({
+            x: l.x + Math.cos(angle) * outerRadius,
+            y: l.y + Math.sin(angle) * outerRadius * 0.6,
+            ring: "outer",
+            angle,
+            size: 9,
+            index: i
+          });
+        }
+        return states;
+      }
+
+      function spawnLuminosityDot(x, y, angle, speed = 240) {
+        state.luminosity.dots.push({
+          x,
+          y,
+          vx: Math.cos(angle) * speed,
+          vy: Math.sin(angle) * speed,
+          life: 5.8,
+          size: 5.2
+        });
+      }
+
+      function spawnLuminosityBarrier(side = "left", y = height * 0.5) {
+        const fromLeft = side === "left";
+        state.luminosity.barriers.push({
+          x: fromLeft ? -70 : width + 70,
+          y,
+          vx: fromLeft ? 180 : -180,
+          vy: 0,
+          width: 94,
+          height: 58,
+          side,
+          life: 8
+        });
+      }
+
+      function spawnLuminosityDetachedElectrons() {
+        const l = state.luminosity;
+        const source = l.phase === 3
+          ? shuffleArray(l.freeElectrons.map((electron, index) => ({
+              x: electron.x,
+              y: electron.y,
+              size: Math.max(11, electron.size + 2),
+              anchorMode: "free",
+              anchorAngle: electron.angle,
+              anchorRadius: electron.radius,
+              anchorIndex: index
+            })))
+          : shuffleArray(getLuminosityElectronStates().filter((electron) => electron.ring === "outer").map((electron) => ({
+              x: electron.x,
+              y: electron.y,
+              size: 10,
+              anchorMode: "ring",
+              anchorIndex: electron.index
+            })));
+        const picks = source.slice(0, l.phase === 3 ? 3 : 2);
+        for (const electron of picks) {
+          l.detachedElectrons.push({
+            x: electron.x,
+            y: electron.y,
+            vx: 0,
+            vy: 0,
+            anchorIndex: electron.anchorIndex,
+            anchorMode: electron.anchorMode,
+            anchorAngle: electron.anchorAngle ?? 0,
+            anchorRadius: electron.anchorRadius ?? 118,
+            timer: 3,
+            returning: false,
+            size: electron.size || 10
+          });
+        }
+        if (picks.length) {
+          addFlash(l.x, l.y, "rgba(255, 118, 118, 0.42)", l.phase === 3 ? 150 : 118);
+          addSpark(l.x, l.y, "rgba(255, 228, 228, 0.92)", l.phase === 3 ? 18 : 12, l.phase === 3 ? 180 : 140);
+        }
+      }
+
+      function ensureLuminosityFreeElectrons() {
+        const l = state.luminosity;
+        if (l.freeElectrons.length) return;
+        const orbit = getLuminosityElectronStates();
+        for (const electron of orbit) {
+          l.freeElectrons.push({
+            x: electron.x,
+            y: electron.y,
+            angle: electron.angle,
+            radius: electron.ring === "inner" ? 74 : 128,
+            drift: electron.ring === "inner" ? 1.6 : 1,
+            size: electron.ring === "inner" ? 10 : 9
+          });
+        }
+      }
+
+      function updateLuminosityBoss(dt) {
+        const l = state.luminosity;
+        const healthRatio = state.bossHealth / Math.max(1, state.bossMaxHealth);
+        const nextPhase = healthRatio <= 0.33 ? 3 : healthRatio <= 0.66 ? 2 : 1;
+        if (nextPhase !== l.phase) {
+          l.phase = nextPhase;
+          state.bossPhase = nextPhase;
+          addFlash(l.x, l.y, "rgba(255, 96, 96, 0.75)", 170 + nextPhase * 22);
+          addSpark(l.x, l.y, "rgba(255, 160, 160, 0.96)", 26 + nextPhase * 10, 220 + nextPhase * 26);
+          if (nextPhase === 3) {
+            ensureLuminosityFreeElectrons();
+            l.wanderTimer = 0.25;
+            if (l.detachedElectrons.length) {
+              for (const electron of l.detachedElectrons) {
+                electron.anchorMode = "free";
+                electron.anchorAngle = Math.atan2((electron.y - l.y) / 0.7, electron.x - l.x);
+                electron.anchorRadius = Math.max(84, Math.hypot(electron.x - l.x, (electron.y - l.y) / 0.7));
+                electron.timer = 3.2;
+                electron.returning = false;
+                electron.size = Math.max(13, electron.size + 2);
+                const chaseDx = player.x - electron.x;
+                const chaseDy = player.y - electron.y;
+                const chaseDist = Math.hypot(chaseDx, chaseDy) || 1;
+                electron.vx = (chaseDx / chaseDist) * 190;
+                electron.vy = (chaseDy / chaseDist) * 190;
+              }
+            }
+            if (l.detachedElectrons.length < 3) {
+              spawnLuminosityDetachedElectrons();
+            }
+            l.detachedElectrons = l.detachedElectrons.slice(0, 3);
+            l.detachTimer = 3.2;
+            addFlash(l.x, l.y, "rgba(255, 160, 160, 0.58)", 190);
+            addSpark(l.x, l.y, "rgba(255, 236, 236, 0.98)", 26, 220);
+          }
+        }
+
+        const homeX = centerX + Math.sin(state.elapsed * 0.62) * 124;
+        const homeY = height * 0.28 + Math.cos(state.elapsed * 0.34) * 8;
+        const chargeHalfWidth = 128;
+        l.dashCooldown = Math.max(0, l.dashCooldown - dt);
+        if (l.phase <= 2) {
+          l.dashCheckTimer -= dt;
+          if (l.dashCheckTimer <= 0) {
+            l.dashCheckTimer = l.phase === 2 ? 1 + Math.random() * 2 : 1 + Math.random() * 4;
+            const playerInChargeLane = Math.abs(player.x - l.x) <= chargeHalfWidth && player.y >= l.y;
+            const shouldCharge = l.phase === 2 ? Math.random() < 0.78 : Math.random() < 0.6;
+            if (!l.dashActive && l.dashCooldown <= 0 && playerInChargeLane && shouldCharge) {
+              const targetX = clamp(player.x, 100, width - 100);
+              const targetY = height - 34;
+              const dx = targetX - l.x;
+              const dy = targetY - l.y;
+              const dashNorm = Math.hypot(dx, dy) || 1;
+              l.dashActive = l.phase === 2 ? 0.56 : 0.48;
+              l.dashCooldown = l.phase === 2 ? 1.05 : 1.5;
+              l.dashTargetX = targetX;
+              l.dashTargetY = targetY;
+              l.vx = (dx / dashNorm) * (l.phase === 2 ? 620 : 560);
+              l.vy = (dy / dashNorm) * (l.phase === 2 ? 690 : 610);
+              addFlash(l.x, l.y, "rgba(255, 92, 92, 0.5)", 136);
+              addSpark(l.x, l.y, "rgba(255, 205, 205, 0.94)", 22, 230);
+            }
+          }
+        } else {
+          l.dashCheckTimer = 99;
+          l.dashActive = 0;
+        }
+
+        if (l.dashActive > 0) {
+          l.dashActive -= dt;
+          l.x += l.vx * dt;
+          l.y += l.vy * dt;
+          l.vx *= Math.max(0, 1 - dt * 2.1);
+          l.vy *= Math.max(0, 1 - dt * 2.4);
+          if (l.y >= height - 38 || Math.hypot(l.x - l.dashTargetX, l.y - l.dashTargetY) < 26) {
+            l.dashActive = 0;
+          }
+        } else {
+          let moveTargetX = homeX;
+          let moveTargetY = homeY;
+          if (l.phase === 3) {
+            l.wanderTimer -= dt;
+            if (l.wanderTimer <= 0) {
+              l.wanderTimer = 0.8 + Math.random() * 1.45;
+              l.wanderTargetX = width * (0.2 + Math.random() * 0.6);
+              l.wanderTargetY = height * (0.18 + Math.random() * 0.28);
+            }
+            moveTargetX = l.wanderTargetX;
+            moveTargetY = l.wanderTargetY;
+          }
+          l.vx += (moveTargetX - l.x) * dt * (l.phase === 3 ? 2.5 : 3.1);
+          l.vy += (moveTargetY - l.y) * dt * (l.phase === 3 ? 2.35 : 2.7);
+          l.vx *= Math.max(0, 1 - dt * 3.6);
+          l.vy *= Math.max(0, 1 - dt * 3.8);
+          l.x += l.vx * dt;
+          l.y += l.vy * dt;
+        }
+        l.x = clamp(l.x, 96, width - 96);
+        const maxY = l.phase === 3 ? height * 0.54 : l.dashActive > 0 ? height - 30 : height * 0.42;
+        l.y = clamp(l.y, 86, maxY);
+        l.innerAngle += dt * 0.85;
+        l.outerAngle += dt * (l.phase >= 2 ? 3.8 : 1.2);
+        l.flashBlindTimer = Math.max(0, l.flashBlindTimer - dt);
+        l.flashBlindCooldown -= dt;
+        if (l.flashBlindCooldown <= 0) {
+          l.flashBlindTimer = 0.5;
+          l.flashBlindCooldown = l.phase === 3 ? 1.6 + Math.random() * 1.2 : l.phase === 2 ? 2.4 + Math.random() * 2.2 : 4 + Math.random() * 5;
+        }
+
+        l.dotTimer -= dt;
+        if (l.dotTimer <= 0) {
+          if (l.phase < 3) {
+            const outerElectrons = getLuminosityElectronStates().filter((electron) => electron.ring === "outer");
+            for (const electron of outerElectrons) {
+              spawnLuminosityDot(electron.x, electron.y, electron.angle, l.phase === 2 ? 270 : 220);
+            }
+            l.dotTimer = l.phase === 2 ? 0.42 : 0.78;
+          }
+        }
+
+        l.barrierTimer -= dt;
+        if (l.barrierTimer <= 0) {
+          if (l.phase === 1) {
+            spawnLuminosityBarrier("left", 90 + Math.random() * (height - 180));
+            l.barrierTimer = 1.9;
+          } else if (l.phase === 2) {
+            const gapY = clamp(player.y, 120, height - 120);
+            spawnLuminosityBarrier("left", clamp(gapY - 84, 70, height - 70));
+            spawnLuminosityBarrier("right", clamp(gapY + 84, 70, height - 70));
+            l.barrierTimer = 1.6;
+          }
+        }
+
+        if (l.phase >= 2) {
+          l.detachTimer -= dt;
+          if (l.detachTimer <= 0 && l.detachedElectrons.length === 0) {
+            spawnLuminosityDetachedElectrons();
+            l.detachTimer = l.phase === 3 ? 0.95 + Math.random() * 1.7 : 1 + Math.random() * 2;
+          }
+        }
+
+        if (l.phase === 3) {
+          ensureLuminosityFreeElectrons();
+          l.flicker = 0.35 + Math.sin(state.elapsed * 22) * 0.22;
+          l.beamTimer -= dt;
+          if (l.beamActive > 0) {
+            l.beamActive -= dt;
+            l.beamSweep += dt;
+            l.beamAngle += TAU * dt * 0.09;
+          } else if (l.beamTimer <= 0) {
+            l.beamActive = 2.2;
+            l.beamSweep = 0;
+            l.beamAngle = pickLuminositySafeBeamAngle();
+            l.beamTimer = 2;
+          }
+        } else {
+          l.freeElectrons.length = 0;
+          l.beamActive = 0;
+          l.beamTimer = 2;
+          l.flicker = 0;
+          l.wanderTimer = 0.9;
+          l.wanderTargetX = homeX;
+          l.wanderTargetY = homeY;
+        }
+
+        let nearest = Infinity;
+        let closeCount = 0;
+        const coreRadius = getLuminosityCoreRadius();
+        const coreDistance = Math.hypot(player.x - l.x, player.y - l.y);
+        nearest = Math.min(nearest, coreDistance);
+        if (coreDistance < 118) closeCount++;
+        if (coreDistance < player.hitRadius + coreRadius) damagePlayer(1, "impact");
+
+        const orbitElectrons = getLuminosityElectronStates();
+        for (const electron of orbitElectrons) {
+          const dist = Math.hypot(player.x - electron.x, player.y - electron.y);
+          nearest = Math.min(nearest, dist);
+          if (dist < 90) closeCount++;
+          if (dist < player.hitRadius + electron.size) damagePlayer(0.5, "impact");
+        }
+
+        for (let i = l.detachedElectrons.length - 1; i >= 0; i--) {
+          const electron = l.detachedElectrons[i];
+          electron.timer -= dt;
+          let anchorX;
+          let anchorY;
+          if (electron.anchorMode === "free") {
+            electron.anchorAngle += dt * (1.05 + (electron.anchorIndex % 3) * 0.14);
+            anchorX = l.x + Math.cos(electron.anchorAngle) * electron.anchorRadius;
+            anchorY = l.y + Math.sin(electron.anchorAngle) * electron.anchorRadius * 0.7;
+          } else {
+            const anchorAngle = l.outerAngle + (electron.anchorIndex / 8) * TAU;
+            anchorX = l.x + Math.cos(anchorAngle) * 118;
+            anchorY = l.y + Math.sin(anchorAngle) * 118 * 0.6;
+          }
+          if (electron.timer <= 0) electron.returning = true;
+          const targetX = electron.returning ? anchorX : player.x;
+          const targetY = electron.returning ? anchorY : player.y;
+          const dx = targetX - electron.x;
+          const dy = targetY - electron.y;
+          const distance = Math.hypot(dx, dy) || 1;
+          const accel = electron.returning ? 240 : 310;
+          electron.vx += (dx / distance) * accel * dt;
+          electron.vy += (dy / distance) * accel * dt;
+          const speed = Math.hypot(electron.vx, electron.vy);
+          const maxSpeed = electron.returning ? 240 : 320;
+          if (speed > maxSpeed) {
+            electron.vx *= maxSpeed / speed;
+            electron.vy *= maxSpeed / speed;
+          }
+          electron.x += electron.vx * dt;
+          electron.y += electron.vy * dt;
+          const dist = Math.hypot(player.x - electron.x, player.y - electron.y);
+          nearest = Math.min(nearest, dist);
+          if (dist < 100) closeCount++;
+          if (dist < player.hitRadius + electron.size) damagePlayer(0.5, "impact");
+          if (electron.returning && Math.hypot(electron.x - anchorX, electron.y - anchorY) < 16) {
+            l.detachedElectrons.splice(i, 1);
+          }
+        }
+
+        for (const electron of l.freeElectrons) {
+          electron.angle += dt * (1 + electron.drift);
+          electron.radius += Math.sin(state.elapsed * (1.6 + electron.drift) + electron.angle) * 10 * dt;
+          electron.x = l.x + Math.cos(electron.angle) * electron.radius;
+          electron.y = l.y + Math.sin(electron.angle) * electron.radius * 0.7;
+          const dist = Math.hypot(player.x - electron.x, player.y - electron.y);
+          nearest = Math.min(nearest, dist);
+          if (dist < 100) closeCount++;
+          if (dist < player.hitRadius + electron.size) damagePlayer(0.5, "impact");
+        }
+
+        for (let i = l.dots.length - 1; i >= 0; i--) {
+          const dot = l.dots[i];
+          dot.x += dot.vx * dt;
+          dot.y += dot.vy * dt;
+          dot.life -= dt;
+          const dist = Math.hypot(player.x - dot.x, player.y - dot.y);
+          nearest = Math.min(nearest, dist);
+          if (dist < 90) closeCount++;
+          if (dist < player.hitRadius + dot.size) {
+            l.dots.splice(i, 1);
+            damagePlayer(0.5, "impact");
+            continue;
+          }
+          if (dot.life <= 0 || dot.x < -80 || dot.x > width + 80 || dot.y < -80 || dot.y > height + 80) l.dots.splice(i, 1);
+        }
+
+        for (let i = l.barriers.length - 1; i >= 0; i--) {
+          const barrier = l.barriers[i];
+          barrier.x += barrier.vx * dt;
+          barrier.y += barrier.vy * dt;
+          barrier.life -= dt;
+          const dist = Math.hypot(player.x - barrier.x, player.y - barrier.y);
+          nearest = Math.min(nearest, dist);
+          if (dist < 150) closeCount++;
+          if (Math.abs(player.x - barrier.x) < barrier.width * 0.5 + player.hitRadius && Math.abs(player.y - barrier.y) < barrier.height * 0.5 + player.hitRadius) {
+            damagePlayer(1, "impact");
+          }
+          if (barrier.life <= 0 || barrier.x < -140 || barrier.x > width + 140) l.barriers.splice(i, 1);
+        }
+
+        if (l.phase === 3 && l.beamActive > 0) {
+          const beamSegments = getLuminosityBeamSegments();
+          const dist = beamSegments.reduce((nearestBeamDist, segment) => (
+            Math.min(nearestBeamDist, distanceToSegment(player.x, player.y, segment.x1, segment.y1, segment.x2, segment.y2))
+          ), Infinity);
+          nearest = Math.min(nearest, dist);
+          if (dist < 120) closeCount++;
+          if (dist < player.hitRadius + 11) damagePlayer(1, "impact");
+        }
+
+        applyThreatResponse(dt, nearest, closeCount);
+      }
+
       function addSpark(x, y, color, count, speed) {
         for (let i = 0; i < count; i++) {
           const angle = Math.random() * TAU;
@@ -5176,6 +6345,16 @@
               state.cutsceneTime > 1.65
                 ? "Containment 04 Splintering... Cesium Jim-Dandy Superficial Breaking Orbit."
                 : "Cesium Static Surging...";
+          } else if (state.currentBoss === "tantalum") {
+            warningText.textContent =
+              state.cutsceneTime > 1.65
+                ? "Containment 05 Charging... Tantalum Capacitive Redundant / 73Ta-VI Coming Online."
+                : "Capacitor Lattice Overclocking...";
+          } else if (state.currentBoss === "luminosity") {
+            warningText.textContent =
+              state.cutsceneTime > 1.65
+                ? "Containment 06 Igniting... Lord Luminosity the Noble Neon Taking The Stage."
+                : "Neon Noble Core Warming To A Blinding Red...";
           } else {
             warningText.textContent =
               state.cutsceneTime > 1.45
@@ -5202,9 +6381,11 @@
         state.sovereign.particles.length = 0;
         state.nullBoss.shatter.length = 0;
         state.cesium.fragments.length = 0;
+        state.tantalum.scraps.length = 0;
+        state.luminosity.shards.length = 0;
         overlay.innerHTML = `
           <div class="warning-shell">
-            <div class="warning-text" id="victoryText">${state.currentBoss === "architect" ? "Architect Disassembled. Neural Corridor Stabilizing." : state.currentBoss === "sovereign" ? "Protium Sovereign Destabilized. Fission Cascade Imminent." : state.currentBoss === "monarch" ? "Monarch Null Shattering Across The Lattice." : "Cesium Jim-Dandy Superficial Fracturing Into Hazardous Debris."}</div>
+            <div class="warning-text" id="victoryText">${state.currentBoss === "architect" ? "Architect Disassembled. Neural Corridor Stabilizing." : state.currentBoss === "sovereign" ? "Protium Sovereign Destabilized. Fission Cascade Imminent." : state.currentBoss === "monarch" ? "Monarch Null Shattering Across The Lattice." : state.currentBoss === "cesium" ? "Cesium Jim-Dandy Superficial Fracturing Into Hazardous Debris." : state.currentBoss === "tantalum" ? "Tantalum Capacitive Redundant Overloading. Charge Integrity Failing." : "Lord Luminosity Dimming. Noble Neon Structure Failing."}</div>
           </div>
         `;
         overlay.classList.add("show");
@@ -5220,7 +6401,11 @@
           ? { x: state.sovereign.x, y: state.sovereign.y }
           : state.victoryBoss === "monarch"
           ? { x: state.nullBoss.x, y: state.nullBoss.y }
-          : { x: state.cesium.x, y: state.cesium.y };
+          : state.victoryBoss === "cesium"
+          ? { x: state.cesium.x, y: state.cesium.y }
+          : state.victoryBoss === "tantalum"
+          ? { x: state.tantalum.x, y: state.tantalum.y }
+          : { x: state.luminosity.x, y: state.luminosity.y };
 
         if (!state.victoryExplosionTriggered && state.victoryTime > 0.15) {
           if (state.victoryBoss === "architect") {
@@ -5272,7 +6457,7 @@
                 size: 12 + Math.random() * 20
               });
             }
-          } else {
+          } else if (state.victoryBoss === "cesium") {
             for (let i = 0; i < 5; i++) {
               const angle = state.cesium.rotation + (i / 5) * TAU;
               const coneX = vortex.x + Math.cos(angle) * 124;
@@ -5306,6 +6491,53 @@
                 color: i % 3 === 0 ? "rgba(196, 164, 28, 0.94)" : "rgba(255, 242, 160, 0.98)"
               });
             }
+          } else if (state.victoryBoss === "tantalum") {
+            const plates = getTantalumPlateStates();
+            for (const plate of plates) {
+              state.tantalum.scraps.push({
+                x: plate.x,
+                y: plate.y,
+                vx: (Math.random() - 0.5) * 80,
+                vy: 35 + Math.random() * 90,
+                rotation: plate.rotation,
+                rotationSpeed: (Math.random() - 0.5) * 1.4,
+                life: 3.2 + Math.random() * 0.8,
+                width: plate.width * 0.92,
+                height: plate.height,
+                color: "rgba(246, 250, 255, 0.98)"
+              });
+            }
+            for (let i = 0; i < 22; i++) {
+              const angle = Math.random() * TAU;
+              state.tantalum.scraps.push({
+                x: vortex.x,
+                y: vortex.y,
+                vx: Math.cos(angle) * (60 + Math.random() * 150),
+                vy: Math.sin(angle) * (40 + Math.random() * 120),
+                rotation: Math.random() * TAU,
+                rotationSpeed: (Math.random() - 0.5) * 5,
+                life: 2.5 + Math.random() * 1.4,
+                width: 10 + Math.random() * 16,
+                height: 6 + Math.random() * 8,
+                color: i % 3 === 0 ? "rgba(240, 248, 255, 0.95)" : "rgba(92, 104, 114, 0.95)"
+              });
+            }
+          } else {
+            for (let i = 0; i < 18; i++) {
+              const angle = (i / 18) * TAU + Math.random() * 0.3;
+              state.luminosity.shards.push({
+                x: vortex.x,
+                y: vortex.y,
+                vx: Math.cos(angle) * (80 + Math.random() * 180),
+                vy: Math.sin(angle) * (70 + Math.random() * 180),
+                rotation: Math.random() * TAU,
+                rotationSpeed: (Math.random() - 0.5) * 7,
+                life: 2.8 + Math.random() * 1.4,
+                width: 10 + Math.random() * 20,
+                height: 4 + Math.random() * 10,
+                color: i < 8 ? "rgba(255, 120, 120, 0.95)" : "rgba(164, 164, 172, 0.94)"
+              });
+            }
           }
           state.victoryExplosionTriggered = true;
         }
@@ -5327,6 +6559,10 @@
             victoryText.textContent = "Monarch Null Shattered. Brown Fracture Signature Erased.";
           } else if (state.victoryBoss === "cesium" && state.victoryTime > 3.2) {
             victoryText.textContent = "Cesium Jim-Dandy Superficial Ruptured. Yellow Fragment Storm Dissipating.";
+          } else if (state.victoryBoss === "tantalum" && state.victoryTime > 3.2) {
+            victoryText.textContent = "Tantalum Capacitive Redundant Collapsed. Blue Charge Dead And Cold.";
+          } else if (state.victoryBoss === "luminosity" && state.victoryTime > 3.2) {
+            victoryText.textContent = "Lord Luminosity Extinguished. Noble Neon Glow Gone Cold.";
           } else if (state.victoryBoss === "sovereign" && state.victoryTime > 3.2) {
             victoryText.textContent = "Sovereign Fission Complete. Containment Restored.";
           } else if (state.victoryTime > 3.2) {
@@ -5338,7 +6574,11 @@
               ? "Protium Sovereign Split Across The Lattice."
               : state.victoryBoss === "monarch"
               ? "Monarch Null Core Breaking Into Geometric Shards."
-              : "Cesium Cones Shearing Free. Core Geometry Collapsing.";
+              : state.victoryBoss === "cesium"
+              ? "Cesium Cones Shearing Free. Core Geometry Collapsing."
+              : state.victoryBoss === "tantalum"
+              ? "Tantalum Plates Whitening. Capacitor Stack Overloading."
+              : "Luminosity Tubes Shattering. Neon Crown Falling Dark.";
           } else {
             victoryText.textContent = state.victoryBoss === "architect"
               ? "Architect Disassembled. Neural Corridor Stabilizing."
@@ -5346,7 +6586,11 @@
               ? "Protium Sovereign Destabilized. Fission Cascade Imminent."
               : state.victoryBoss === "monarch"
               ? "Monarch Null Shuddering. Shatter Cascade Imminent."
-              : "Cesium Jim-Dandy Superficial Cracking. Cone Detachment Imminent.";
+              : state.victoryBoss === "cesium"
+              ? "Cesium Jim-Dandy Superficial Cracking. Cone Detachment Imminent."
+              : state.victoryBoss === "tantalum"
+              ? "Tantalum Capacitive Redundant Surging White. Scrap Collapse Imminent."
+              : "Lord Luminosity Flickering Scarlet. Neon Failure Imminent.";
           }
           const fadeStart = 5.6;
           const fadeAlpha = state.victoryTime > fadeStart ? clamp(1 - (state.victoryTime - fadeStart) / 1.2, 0, 1) : 1;
@@ -5368,6 +6612,14 @@
           state.nullBoss.reflections.length = 0;
           state.cesium.cursors.length = 0;
           state.cesium.spinners.length = 0;
+          state.tantalum.packets.length = 0;
+          state.tantalum.beams.length = 0;
+          state.tantalum.lightningBolts.length = 0;
+          state.tantalum.cursorRings.length = 0;
+          state.luminosity.dots.length = 0;
+          state.luminosity.barriers.length = 0;
+          state.luminosity.detachedElectrons.length = 0;
+          state.luminosity.freeElectrons.length = 0;
           state.victoryProjectilesCleared = true;
         }
 
@@ -5411,6 +6663,26 @@
           frag.life -= dt;
           if (frag.life <= 0) state.cesium.fragments.splice(i, 1);
         }
+        for (let i = state.tantalum.scraps.length - 1; i >= 0; i--) {
+          const scrap = state.tantalum.scraps[i];
+          scrap.x += scrap.vx * dt;
+          scrap.y += scrap.vy * dt;
+          scrap.rotation += scrap.rotationSpeed * dt;
+          scrap.vx *= 0.988;
+          scrap.vy = scrap.vy * 0.992 + 18 * dt;
+          scrap.life -= dt;
+          if (scrap.life <= 0) state.tantalum.scraps.splice(i, 1);
+        }
+        for (let i = state.luminosity.shards.length - 1; i >= 0; i--) {
+          const shard = state.luminosity.shards[i];
+          shard.x += shard.vx * dt;
+          shard.y += shard.vy * dt;
+          shard.rotation += shard.rotationSpeed * dt;
+          shard.vx *= 0.988;
+          shard.vy = shard.vy * 0.992 + 10 * dt;
+          shard.life -= dt;
+          if (shard.life <= 0) state.luminosity.shards.splice(i, 1);
+        }
       }
 
       function returnToMenu() {
@@ -5437,6 +6709,19 @@
         state.nullBoss.monoliths.length = 0;
         state.nullBoss.reflections.length = 0;
         state.nullBoss.shatter.length = 0;
+        state.cesium.cursors.length = 0;
+        state.cesium.spinners.length = 0;
+        state.cesium.fragments.length = 0;
+        state.tantalum.packets.length = 0;
+        state.tantalum.beams.length = 0;
+        state.tantalum.lightningBolts.length = 0;
+        state.tantalum.cursorRings.length = 0;
+        state.tantalum.scraps.length = 0;
+        state.luminosity.dots.length = 0;
+        state.luminosity.barriers.length = 0;
+        state.luminosity.detachedElectrons.length = 0;
+        state.luminosity.freeElectrons.length = 0;
+        state.luminosity.shards.length = 0;
         renderMainMenu();
       }
 
@@ -5455,10 +6740,18 @@
           addFlash(state.nullBoss.x, state.nullBoss.y, "rgba(255, 165, 90, 0.82)", 220);
           addSpark(state.nullBoss.x, state.nullBoss.y, "rgba(190, 120, 70, 0.96)", 84, 260);
           awardAchievement("monarch_down");
-        } else {
+        } else if (state.currentBoss === "cesium") {
           addFlash(state.cesium.x, state.cesium.y, "rgba(255, 232, 106, 0.82)", 240);
           addSpark(state.cesium.x, state.cesium.y, "rgba(255, 236, 138, 0.96)", 96, 320);
           awardAchievement("cesium_down");
+        } else if (state.currentBoss === "tantalum") {
+          addFlash(state.tantalum.x, state.tantalum.y, "rgba(160, 240, 255, 0.82)", 250);
+          addSpark(state.tantalum.x, state.tantalum.y, "rgba(184, 246, 255, 0.96)", 102, 300);
+          awardAchievement("tantalum_down");
+        } else {
+          addFlash(state.luminosity.x, state.luminosity.y, "rgba(255, 102, 102, 0.82)", 260);
+          addSpark(state.luminosity.x, state.luminosity.y, "rgba(255, 190, 190, 0.96)", 112, 320);
+          awardAchievement("luminosity_down");
         }
         state.profile.bossRecords[state.currentBoss] = true;
         if (player.health >= 1) awardAchievement("survivor");
@@ -5628,10 +6921,11 @@
         const fpsUnlockActive = state.fpsUnlockTimer > 0;
         const macroActive = state.macroBurstTimer > 0;
         const rootActive = state.rootOverrideTimer > 0;
+        const tantalumSlow = isPlayerInTantalumAura() ? 0.65 : 1;
         let thrust = 0;
         const turnSpeed = player.turnSpeed * (fpsUnlockActive ? 1.22 : rootActive ? 1.18 : macroActive ? 1.1 : 1);
-        const moveSpeed = player.moveSpeed * (fpsUnlockActive ? 1.15 : rootActive ? 1.12 : macroActive ? 1.08 : 1);
-        const reverseSpeed = player.reverseSpeed * (fpsUnlockActive ? 1.12 : rootActive ? 1.1 : macroActive ? 1.06 : 1);
+        const moveSpeed = player.moveSpeed * (fpsUnlockActive ? 1.15 : rootActive ? 1.12 : macroActive ? 1.08 : 1) * tantalumSlow;
+        const reverseSpeed = player.reverseSpeed * (fpsUnlockActive ? 1.12 : rootActive ? 1.1 : macroActive ? 1.06 : 1) * tantalumSlow;
         if (input.keys.has("KeyA")) player.angle -= turnSpeed * dt;
         if (input.keys.has("KeyD")) player.angle += turnSpeed * dt;
         if (input.keys.has("KeyW")) thrust += moveSpeed;
@@ -5761,8 +7055,12 @@
           ? { x: state.sovereign.x, y: state.sovereign.y }
           : state.currentBoss === "monarch"
           ? { x: state.nullBoss.x, y: state.nullBoss.y }
-          : { x: state.cesium.x, y: state.cesium.y };
-        const bossHitRadius = state.currentBoss === "architect" ? 58 : state.currentBoss === "sovereign" ? 66 : state.currentBoss === "monarch" ? 64 : 68;
+          : state.currentBoss === "cesium"
+          ? { x: state.cesium.x, y: state.cesium.y }
+          : state.currentBoss === "tantalum"
+          ? { x: state.tantalum.x, y: state.tantalum.y }
+          : { x: state.luminosity.x, y: state.luminosity.y };
+        const bossHitRadius = state.currentBoss === "architect" ? 58 : state.currentBoss === "sovereign" ? 66 : state.currentBoss === "monarch" ? 64 : state.currentBoss === "cesium" ? 68 : state.currentBoss === "tantalum" ? 72 : getLuminosityCoreRadius();
         for (let i = state.playerShots.length - 1; i >= 0; i--) {
           const shot = state.playerShots[i];
           if (state.currentBoss === "cesium") {
@@ -5778,6 +7076,28 @@
                 shot.vy *= scale;
               }
             }
+          } else if (state.currentBoss === "tantalum") {
+            for (const panel of getTantalumPanelStates()) {
+              if (Math.abs(shot.x - panel.x) < panel.width * 0.6 + shot.size && Math.abs(shot.y - panel.y) < panel.height * 0.7 + shot.size) {
+                damageBoss(0.5);
+                addSpark(shot.x, shot.y, "rgba(146, 245, 255, 0.95)", 7, 115);
+                state.playerShots.splice(i, 1);
+                shot.life = 0;
+                break;
+              }
+            }
+            if (shot.life <= 0) continue;
+          } else if (state.currentBoss === "luminosity") {
+            let clippedBarrier = false;
+            for (const barrier of state.luminosity.barriers) {
+              if (Math.abs(shot.x - barrier.x) < barrier.width * 0.5 + shot.size && Math.abs(shot.y - barrier.y) < barrier.height * 0.5 + shot.size) {
+                addSpark(shot.x, shot.y, "rgba(255, 120, 120, 0.95)", 6, 110);
+                state.playerShots.splice(i, 1);
+                clippedBarrier = true;
+                break;
+              }
+            }
+            if (clippedBarrier) continue;
           }
           shot.x += shot.vx * dt;
           shot.y += shot.vy * dt;
@@ -5864,7 +7184,14 @@
           const dx = shot.x - bossPos.x;
           const dy = shot.y - bossPos.y;
           if (dx * dx + dy * dy < bossHitRadius * bossHitRadius) {
-            damageBoss(shot.damage);
+            if (state.currentBoss === "tantalum" && state.tantalum.flashTimer > 0 && state.tantalum.absorbShotsRemaining > 0) {
+              state.tantalum.absorbShotsRemaining -= 1;
+              state.tantalum.flashTimer = 0;
+              triggerTantalumRetaliation(player.x, player.y);
+              addFlash(shot.x, shot.y, "rgba(196, 252, 255, 0.55)", 44);
+            } else {
+              damageBoss(shot.damage);
+            }
             addSpark(shot.x, shot.y, "rgba(255, 215, 106, 0.95)", 4, 90);
             state.playerShots.splice(i, 1);
             continue;
@@ -6009,8 +7336,12 @@
           if (state.fpsUnlockTimer <= 0) updateSovereignBoss(dt * enemyTimeScale);
         } else if (state.currentBoss === "monarch") {
           if (state.fpsUnlockTimer <= 0) updateNullBoss(dt * enemyTimeScale);
-        } else {
+        } else if (state.currentBoss === "cesium") {
           if (state.fpsUnlockTimer <= 0) updateCesiumBoss(dt * enemyTimeScale);
+        } else if (state.currentBoss === "tantalum") {
+          if (state.fpsUnlockTimer <= 0) updateTantalumBoss(dt * enemyTimeScale);
+        } else if (state.currentBoss === "luminosity") {
+          if (state.fpsUnlockTimer <= 0) updateLuminosityBoss(dt * enemyTimeScale);
         }
         if (state.mode !== "playing") return;
         updatePlayerShots(dt);
@@ -6173,6 +7504,33 @@
           }
           ctx.closePath();
           ctx.fill();
+        } else if (state.currentBoss === "tantalum") {
+          const plates = getTantalumPlateStates();
+          ctx.fillStyle = `rgba(255, 72, 72, ${alpha})`;
+          for (const plate of plates) {
+            ctx.save();
+            ctx.translate(plate.x, plate.y);
+            ctx.rotate(plate.rotation);
+            ctx.fillRect(-plate.width * 0.5, -plate.height * 0.5, plate.width, plate.height);
+            ctx.restore();
+          }
+        } else if (state.currentBoss === "luminosity") {
+          const l = state.luminosity;
+          ctx.globalCompositeOperation = "lighter";
+          ctx.fillStyle = `rgba(255, 88, 88, ${alpha})`;
+          ctx.beginPath();
+          ctx.arc(l.x, l.y, getLuminosityCoreRadius() + 10, 0, TAU);
+          ctx.fill();
+          if (l.phase < 3) {
+            ctx.strokeStyle = `rgba(255, 122, 122, ${alpha * 0.8})`;
+            ctx.lineWidth = 10;
+            ctx.beginPath();
+            ctx.ellipse(l.x, l.y, 64, 34, l.innerAngle, 0, TAU);
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.ellipse(l.x, l.y, 118, 71, l.outerAngle, 0, TAU);
+            ctx.stroke();
+          }
         }
         ctx.restore();
       }
@@ -6487,6 +7845,116 @@
         }
       }
 
+      function drawTantalumPreview(ctxPreview, time) {
+        const x = 64;
+        const y = 64;
+        const rotation = time * 0.22;
+        const aura = ctxPreview.createRadialGradient(x, y, 0, x, y, 62);
+        aura.addColorStop(0, "rgba(78, 90, 102, 0.9)");
+        aura.addColorStop(0.3, "rgba(56, 68, 78, 0.58)");
+        aura.addColorStop(1, "rgba(40, 52, 64, 0)");
+        ctxPreview.fillStyle = aura;
+        ctxPreview.beginPath();
+        ctxPreview.arc(x, y, 62, 0, TAU);
+        ctxPreview.fill();
+
+        ctxPreview.save();
+        ctxPreview.translate(x, y);
+        ctxPreview.rotate(rotation);
+        for (let plate = 0; plate < 4; plate++) {
+          const localY = (-30 + plate * 20) * (1 + Math.sin(time * 1.5) * 0.05);
+          ctxPreview.fillStyle = "rgba(78, 86, 96, 0.98)";
+          ctxPreview.strokeStyle = "rgba(162, 244, 255, 0.18)";
+          ctxPreview.lineWidth = 1.2;
+          ctxPreview.fillRect(-34, localY - 6, 68, 12);
+          ctxPreview.strokeRect(-34, localY - 6, 68, 12);
+          if (plate < 3) {
+            ctxPreview.strokeStyle = "rgba(108, 246, 255, 0.76)";
+            ctxPreview.lineWidth = 1.5;
+            ctxPreview.beginPath();
+            ctxPreview.moveTo(-20, localY + 9);
+            ctxPreview.lineTo(-6, localY + 13);
+            ctxPreview.lineTo(5, localY + 8);
+            ctxPreview.lineTo(18, localY + 12);
+            ctxPreview.stroke();
+          }
+        }
+        ctxPreview.restore();
+
+        const corners = [
+          [-38, -34],
+          [38, -34],
+          [38, 34],
+          [-38, 34]
+        ];
+        for (let i = 0; i < corners.length; i++) {
+          const jitterX = Math.sin(time * 16 + i) * 3;
+          const jitterY = Math.cos(time * 14 + i) * 3;
+          ctxPreview.save();
+          ctxPreview.translate(x + corners[i][0] + jitterX, y + corners[i][1] + jitterY);
+          ctxPreview.rotate(rotation + Math.sin(time * 18 + i) * 0.14);
+          ctxPreview.fillStyle = "rgba(110, 246, 255, 0.95)";
+          ctxPreview.strokeStyle = "rgba(235, 253, 255, 0.72)";
+          ctxPreview.lineWidth = 1.1;
+          ctxPreview.fillRect(-8, -5, 16, 10);
+          ctxPreview.strokeRect(-8, -5, 16, 10);
+          ctxPreview.restore();
+        }
+      }
+
+      function drawLuminosityPreview(ctxPreview, time) {
+        const x = 64;
+        const y = 64;
+        const pulse = 1 + Math.sin(time * 8) * 0.08;
+        const innerAngle = time * 1.1;
+        const outerAngle = time * 2.6;
+        const aura = ctxPreview.createRadialGradient(x, y, 0, x, y, 64);
+        aura.addColorStop(0, "rgba(255, 118, 118, 0.46)");
+        aura.addColorStop(0.35, "rgba(255, 48, 48, 0.28)");
+        aura.addColorStop(1, "rgba(255, 48, 48, 0)");
+        ctxPreview.fillStyle = aura;
+        ctxPreview.beginPath();
+        ctxPreview.arc(x, y, 64, 0, TAU);
+        ctxPreview.fill();
+
+        ctxPreview.strokeStyle = "rgba(255, 92, 92, 0.72)";
+        ctxPreview.lineWidth = 2;
+        ctxPreview.beginPath();
+        ctxPreview.ellipse(x, y, 28, 16, innerAngle * 0.4, 0, TAU);
+        ctxPreview.stroke();
+        ctxPreview.beginPath();
+        ctxPreview.ellipse(x, y, 48, 28, -outerAngle * 0.24, 0, TAU);
+        ctxPreview.stroke();
+
+        for (let i = 0; i < 2; i++) {
+          const angle = innerAngle + (i / 2) * TAU;
+          const ex = x + Math.cos(angle) * 28;
+          const ey = y + Math.sin(angle) * 16;
+          ctxPreview.fillStyle = "rgba(255, 234, 234, 0.98)";
+          ctxPreview.beginPath();
+          ctxPreview.arc(ex, ey, 4.4, 0, TAU);
+          ctxPreview.fill();
+        }
+        for (let i = 0; i < 8; i++) {
+          const angle = outerAngle + (i / 8) * TAU;
+          const ex = x + Math.cos(angle) * 48;
+          const ey = y + Math.sin(angle) * 28;
+          ctxPreview.fillStyle = "rgba(255, 230, 230, 0.96)";
+          ctxPreview.beginPath();
+          ctxPreview.arc(ex, ey, 3.6, 0, TAU);
+          ctxPreview.fill();
+        }
+
+        const core = ctxPreview.createRadialGradient(x, y, 0, x, y, 18 * pulse);
+        core.addColorStop(0, "rgba(255, 240, 240, 0.98)");
+        core.addColorStop(0.35, "rgba(255, 80, 80, 0.96)");
+        core.addColorStop(1, "rgba(255, 42, 42, 0)");
+        ctxPreview.fillStyle = core;
+        ctxPreview.beginPath();
+        ctxPreview.arc(x, y, 18 * pulse, 0, TAU);
+        ctxPreview.fill();
+      }
+
       function renderBossSelectPreviews() {
         if (state.mode !== "boss_select") return;
         const canvases = overlay.querySelectorAll("[data-boss-preview]");
@@ -6502,6 +7970,8 @@
           else if (previewIndex === 1) drawSovereignPreview(previewCtx, time);
           else if (previewIndex === 2) drawMonarchPreview(previewCtx, time);
           else if (previewIndex === 3) drawCesiumPreview(previewCtx, time);
+          else if (previewIndex === 4) drawTantalumPreview(previewCtx, time);
+          else if (previewIndex === 5) drawLuminosityPreview(previewCtx, time);
         }
       }
 
@@ -6895,6 +8365,117 @@
           ctx.fillStyle = `rgba(255, 154, 86, ${0.08 + alpha * 0.14})`;
           ctx.beginPath();
           ctx.arc(Math.cos(angle) * radius, Math.sin(angle) * radius, 3 + (shard % 2), 0, TAU);
+          ctx.fill();
+        }
+        ctx.restore();
+      }
+
+      function drawCesiumSigil(progress) {
+        const alpha = clamp(progress, 0, 1);
+        const scale = 2.15 + progress * 0.85;
+        const time = state.cutsceneTime * 1.1;
+        const halo = ctx.createRadialGradient(centerX, centerY, 0, centerX, centerY, 220 + progress * 110);
+        halo.addColorStop(0, `rgba(255, 238, 146, ${0.12 + alpha * 0.18})`);
+        halo.addColorStop(0.32, `rgba(150, 112, 12, ${0.12 + alpha * 0.12})`);
+        halo.addColorStop(1, "rgba(255, 232, 118, 0)");
+        ctx.fillStyle = halo;
+        ctx.beginPath();
+        ctx.arc(centerX, centerY, 220 + progress * 110, 0, TAU);
+        ctx.fill();
+
+        ctx.save();
+        ctx.translate(centerX - 64 * scale, centerY - 64 * scale);
+        ctx.scale(scale, scale);
+        ctx.globalAlpha = 0.86 + alpha * 0.14;
+        drawCesiumPreview(ctx, time);
+        ctx.restore();
+
+        ctx.save();
+        ctx.translate(centerX, centerY);
+        ctx.globalCompositeOperation = "lighter";
+        for (let spoke = 0; spoke < 5; spoke++) {
+          const angle = time * 2.2 + (spoke / 5) * TAU;
+          const length = 74 + progress * 60 + Math.sin(time * 3 + spoke) * 8;
+          ctx.strokeStyle = `rgba(255, 234, 138, ${0.18 + (spoke % 2) * 0.08})`;
+          ctx.lineWidth = 2.2;
+          ctx.beginPath();
+          ctx.moveTo(Math.cos(angle) * 26, Math.sin(angle) * 22);
+          ctx.lineTo(Math.cos(angle) * length, Math.sin(angle) * length * 0.82);
+          ctx.stroke();
+        }
+        ctx.restore();
+      }
+
+      function drawTantalumSigil(progress) {
+        const alpha = clamp(progress, 0, 1);
+        const scale = 2.05 + progress * 0.82;
+        const time = state.cutsceneTime * 0.9;
+        const halo = ctx.createRadialGradient(centerX, centerY, 0, centerX, centerY, 240 + progress * 120);
+        halo.addColorStop(0, `rgba(216, 250, 255, ${0.08 + alpha * 0.14})`);
+        halo.addColorStop(0.34, `rgba(84, 128, 144, ${0.08 + alpha * 0.12})`);
+        halo.addColorStop(1, "rgba(84, 128, 144, 0)");
+        ctx.fillStyle = halo;
+        ctx.beginPath();
+        ctx.arc(centerX, centerY, 240 + progress * 120, 0, TAU);
+        ctx.fill();
+
+        ctx.save();
+        ctx.translate(centerX - 64 * scale, centerY - 64 * scale);
+        ctx.scale(scale, scale);
+        ctx.globalAlpha = 0.86 + alpha * 0.14;
+        drawTantalumPreview(ctx, time);
+        ctx.restore();
+
+        ctx.save();
+        ctx.translate(centerX, centerY);
+        ctx.globalCompositeOperation = "lighter";
+        for (let arc = 0; arc < 4; arc++) {
+          ctx.rotate(0.42 + arc * 0.2);
+          ctx.strokeStyle = `rgba(164, 246, 255, ${0.16 + arc * 0.06})`;
+          ctx.lineWidth = 1.6 + arc * 0.35;
+          ctx.beginPath();
+          ctx.ellipse(0, 0, 86 + arc * 26 + progress * 20, 42 + arc * 12, time * (0.4 + arc * 0.14), 0, TAU);
+          ctx.stroke();
+        }
+        ctx.restore();
+      }
+
+      function drawLuminositySigil(progress) {
+        const alpha = clamp(progress, 0, 1);
+        const scale = 2.1 + progress * 0.95;
+        const time = state.cutsceneTime * 1.06;
+        const wash = ctx.createRadialGradient(centerX, centerY, 0, centerX, centerY, 250 + progress * 140);
+        wash.addColorStop(0, `rgba(255, 244, 244, ${0.08 + alpha * 0.1})`);
+        wash.addColorStop(0.24, `rgba(255, 88, 88, ${0.14 + alpha * 0.16})`);
+        wash.addColorStop(1, "rgba(120, 0, 0, 0)");
+        ctx.fillStyle = wash;
+        ctx.beginPath();
+        ctx.arc(centerX, centerY, 250 + progress * 140, 0, TAU);
+        ctx.fill();
+
+        ctx.save();
+        ctx.translate(centerX - 64 * scale, centerY - 64 * scale);
+        ctx.scale(scale, scale);
+        ctx.globalAlpha = 0.88 + alpha * 0.12;
+        drawLuminosityPreview(ctx, time);
+        ctx.restore();
+
+        ctx.save();
+        ctx.translate(centerX, centerY);
+        ctx.globalCompositeOperation = "lighter";
+        for (let ring = 0; ring < 3; ring++) {
+          ctx.strokeStyle = `rgba(255, 138, 138, ${0.14 + ring * 0.06})`;
+          ctx.lineWidth = 1.4 + ring * 0.5;
+          ctx.beginPath();
+          ctx.ellipse(0, 0, 72 + ring * 34 + progress * 18, 40 + ring * 16, time * (0.52 + ring * 0.12), 0, TAU);
+          ctx.stroke();
+        }
+        for (let spark = 0; spark < 10; spark++) {
+          const angle = time * (1.4 + spark * 0.03) + spark * 0.62;
+          const radius = 48 + (spark % 4) * 14 + progress * 24;
+          ctx.fillStyle = `rgba(255, ${192 + (spark % 3) * 16}, ${192 + (spark % 2) * 28}, ${0.18 + (spark % 4) * 0.05})`;
+          ctx.beginPath();
+          ctx.arc(Math.cos(angle) * radius, Math.sin(angle) * radius * 0.74, 2 + (spark % 3) * 0.5, 0, TAU);
           ctx.fill();
         }
         ctx.restore();
@@ -7346,6 +8927,536 @@
         ctx.restore();
       }
 
+      function drawTantalumBoss() {
+        const t = state.tantalum;
+        const scale = getTantalumBossScale();
+        const plates = getTantalumPlateStates();
+        const panels = getTantalumPanelStates();
+        const auraRadius = t.phase === 3 ? Math.max(width, height) * 0.75 : t.auraRadius;
+        const victoryOverload = state.mode === "victory" && state.victoryBoss === "tantalum";
+
+        if (t.auraDuration > 0) {
+          const auraAlpha = t.phase === 3 ? 0.1 : clamp(t.auraDuration / 2.6, 0, 1) * 0.16;
+          ctx.save();
+          ctx.globalCompositeOperation = "lighter";
+          if (t.phase === 3) {
+            ctx.fillStyle = `rgba(72, 184, 255, ${auraAlpha})`;
+            ctx.fillRect(0, 0, width, height);
+          } else {
+            const aura = ctx.createRadialGradient(t.x, t.y, 0, t.x, t.y, auraRadius);
+            aura.addColorStop(0, `rgba(96, 226, 255, ${auraAlpha})`);
+            aura.addColorStop(0.55, `rgba(72, 160, 240, ${auraAlpha * 0.8})`);
+            aura.addColorStop(1, "rgba(72, 160, 240, 0)");
+            ctx.fillStyle = aura;
+            ctx.beginPath();
+            ctx.arc(t.x, t.y, auraRadius, 0, TAU);
+            ctx.fill();
+          }
+          ctx.restore();
+        }
+
+        ctx.save();
+        ctx.globalCompositeOperation = "lighter";
+        for (let spark = 0; spark < 14; spark++) {
+          const angle = state.elapsed * 0.45 + (spark / 14) * TAU;
+          const radius = 96 * scale + (spark % 4) * 10;
+          ctx.fillStyle = spark % 2 === 0 ? "rgba(118, 242, 255, 0.22)" : "rgba(210, 252, 255, 0.12)";
+          ctx.fillRect(t.x + Math.cos(angle) * radius, t.y + Math.sin(angle * 1.2) * radius * 0.56, 3 + (spark % 2), 2 + (spark % 3));
+        }
+        ctx.restore();
+
+        ctx.save();
+        ctx.globalCompositeOperation = "lighter";
+        for (let halo = 0; halo < 3; halo++) {
+          ctx.strokeStyle = `rgba(102, 244, 255, ${0.1 + halo * 0.07})`;
+          ctx.lineWidth = 1.4 + halo * 0.5;
+          ctx.beginPath();
+          for (let a = 0; a <= TAU + 0.08; a += 0.18) {
+            const r = 88 * scale + halo * 16 + Math.sin(a * (5 + halo) + state.elapsed * (2.4 + halo * 0.7)) * (6 + halo * 2);
+            const px = t.x + Math.cos(a) * r;
+            const py = t.y + Math.sin(a) * r * 0.74;
+            if (a === 0) ctx.moveTo(px, py);
+            else ctx.lineTo(px, py);
+          }
+          ctx.closePath();
+          ctx.stroke();
+        }
+        ctx.restore();
+
+        ctx.save();
+        ctx.translate(t.x, t.y);
+        ctx.rotate(t.rotation);
+        const bodyW = 130 * scale;
+        const bodyH = (t.phase === 3 ? 118 : 92) * scale;
+        const matte = ctx.createLinearGradient(-bodyW * 0.5, -bodyH * 0.5, bodyW * 0.5, bodyH * 0.5);
+        matte.addColorStop(0, victoryOverload || t.flashTimer > 0 ? "rgba(246, 252, 255, 0.98)" : "rgba(74, 82, 92, 0.98)");
+        matte.addColorStop(1, victoryOverload || t.flashTimer > 0 ? "rgba(202, 238, 255, 0.8)" : "rgba(42, 50, 60, 0.98)");
+        ctx.fillStyle = matte;
+        ctx.strokeStyle = "rgba(164, 236, 255, 0.16)";
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(-bodyW * 0.48, -bodyH * 0.5);
+        ctx.lineTo(bodyW * 0.46, -bodyH * 0.42);
+        ctx.lineTo(bodyW * 0.5, bodyH * 0.46);
+        ctx.lineTo(-bodyW * 0.52, bodyH * 0.4);
+        ctx.closePath();
+        ctx.fill();
+        ctx.stroke();
+        ctx.strokeStyle = "rgba(218, 248, 255, 0.14)";
+        ctx.lineWidth = 1.1;
+        for (let seam = -1; seam <= 1; seam++) {
+          ctx.beginPath();
+          ctx.moveTo(-bodyW * 0.38, seam * 18 - bodyH * 0.18);
+          ctx.lineTo(bodyW * 0.36, seam * 18 + bodyH * 0.14);
+          ctx.stroke();
+        }
+        ctx.restore();
+
+        for (let plateIndex = 0; plateIndex < plates.length; plateIndex++) {
+          const plate = plates[plateIndex];
+          ctx.save();
+          ctx.translate(plate.x, plate.y);
+          ctx.rotate(plate.rotation);
+          ctx.fillStyle = victoryOverload || t.flashTimer > 0 ? "rgba(248, 252, 255, 0.98)" : "rgba(86, 94, 104, 0.98)";
+          ctx.strokeStyle = "rgba(126, 214, 255, 0.2)";
+          ctx.lineWidth = 1.6;
+          ctx.beginPath();
+          ctx.moveTo(-plate.width * 0.54, -plate.height * 0.5);
+          ctx.lineTo(plate.width * 0.5, -plate.height * 0.42);
+          ctx.lineTo(plate.width * 0.56, plate.height * 0.46);
+          ctx.lineTo(-plate.width * 0.5, plate.height * 0.42);
+          ctx.closePath();
+          ctx.fill();
+          ctx.stroke();
+          ctx.restore();
+
+          if (plateIndex < plates.length - 1) {
+            const nextPlate = plates[plateIndex + 1];
+            const midX = (plate.x + nextPlate.x) * 0.5;
+            const midY = (plate.y + nextPlate.y) * 0.5;
+            ctx.save();
+            ctx.globalCompositeOperation = "lighter";
+            ctx.strokeStyle = "rgba(102, 244, 255, 0.82)";
+            ctx.lineWidth = 2.6;
+            ctx.beginPath();
+            ctx.moveTo(midX - 26 * scale, midY - 2);
+            ctx.lineTo(midX - 10 * scale, midY + 6);
+            ctx.lineTo(midX + 2 * scale, midY - 4);
+            ctx.lineTo(midX + 18 * scale, midY + 5);
+            ctx.lineTo(midX + 30 * scale, midY - 3);
+            ctx.stroke();
+            ctx.strokeStyle = "rgba(226, 252, 255, 0.28)";
+            ctx.lineWidth = 6;
+            ctx.stroke();
+            ctx.restore();
+          }
+        }
+
+        if (t.phase === 3) {
+          ctx.save();
+          ctx.globalCompositeOperation = "lighter";
+          const core = ctx.createRadialGradient(t.x, t.y, 0, t.x, t.y, 54 * scale);
+          core.addColorStop(0, "rgba(232, 252, 255, 0.95)");
+          core.addColorStop(0.35, "rgba(110, 242, 255, 0.82)");
+          core.addColorStop(1, "rgba(110, 242, 255, 0)");
+          ctx.fillStyle = core;
+          ctx.beginPath();
+          ctx.arc(t.x, t.y, 54 * scale, 0, TAU);
+          ctx.fill();
+          ctx.restore();
+        }
+
+        for (const panel of panels) {
+          ctx.save();
+          ctx.translate(panel.x, panel.y);
+          ctx.rotate(panel.rotation);
+          ctx.globalCompositeOperation = "lighter";
+          ctx.fillStyle = "rgba(108, 245, 255, 0.94)";
+          ctx.strokeStyle = "rgba(238, 252, 255, 0.72)";
+          ctx.lineWidth = 1.2;
+          ctx.fillRect(-panel.width * 0.5, -panel.height * 0.5, panel.width, panel.height);
+          ctx.strokeRect(-panel.width * 0.5, -panel.height * 0.5, panel.width, panel.height);
+          ctx.restore();
+        }
+      }
+
+      function drawTantalumProjectiles() {
+        const t = state.tantalum;
+        ctx.save();
+        ctx.globalCompositeOperation = "lighter";
+        for (const packet of t.packets) {
+          if (packet.kind === "plate_wall") {
+            ctx.save();
+            ctx.translate(packet.x, packet.y);
+            ctx.rotate(packet.angle);
+            const glow = ctx.createLinearGradient(-packet.width * 0.5, 0, packet.width * 0.5, 0);
+            glow.addColorStop(0, "rgba(28, 255, 244, 0.92)");
+            glow.addColorStop(0.18, "rgba(186, 248, 255, 0.9)");
+            glow.addColorStop(0.32, "rgba(98, 108, 118, 0.96)");
+            glow.addColorStop(0.68, "rgba(78, 88, 98, 0.96)");
+            glow.addColorStop(0.82, "rgba(186, 248, 255, 0.9)");
+            glow.addColorStop(1, "rgba(28, 255, 244, 0.92)");
+            ctx.fillStyle = glow;
+            ctx.fillRect(-packet.width * 0.5, -packet.height * 0.5, packet.width, packet.height);
+            ctx.strokeStyle = "rgba(28, 255, 244, 0.98)";
+            ctx.lineWidth = 2.4;
+            ctx.strokeRect(-packet.width * 0.5, -packet.height * 0.5, packet.width, packet.height);
+            ctx.strokeStyle = "rgba(220, 252, 255, 0.34)";
+            ctx.lineWidth = 6;
+            ctx.strokeRect(-packet.width * 0.48, -packet.height * 0.36, packet.width * 0.96, packet.height * 0.72);
+            ctx.restore();
+            continue;
+          }
+          const glow = ctx.createRadialGradient(packet.x, packet.y, 0, packet.x, packet.y, packet.size * 2.2);
+          glow.addColorStop(0, "rgba(230, 252, 255, 0.95)");
+          glow.addColorStop(0.45, "rgba(112, 244, 255, 0.78)");
+          glow.addColorStop(1, "rgba(112, 244, 255, 0)");
+          ctx.fillStyle = glow;
+          ctx.beginPath();
+          ctx.arc(packet.x, packet.y, packet.size * 2.2, 0, TAU);
+          ctx.fill();
+          ctx.save();
+          ctx.translate(packet.x, packet.y);
+          ctx.rotate(Math.atan2(packet.vy, packet.vx) + packet.age * 0.5);
+          ctx.fillStyle = "rgba(112, 244, 255, 0.98)";
+          ctx.fillRect(-packet.size * 0.55, -packet.size * 0.55, packet.size * 1.1, packet.size * 1.1);
+          ctx.restore();
+        }
+
+        for (const beam of t.beams) {
+          if (beam.telegraph > 0) {
+            ctx.fillStyle = `rgba(142, 244, 255, ${0.22 + clamp(beam.telegraph / 0.55, 0, 1) * 0.24})`;
+            if (beam.type === "sweep") {
+              ctx.fillRect(beam.x - beam.width * 0.55, beam.y - beam.height * 0.85, beam.width * 1.1, beam.height * 1.7);
+            } else {
+              const tipX = beam.x + Math.cos(beam.angle) * beam.length;
+              const tipY = beam.y + Math.sin(beam.angle) * beam.length;
+              ctx.strokeStyle = "rgba(196, 252, 255, 0.42)";
+              ctx.lineWidth = beam.width;
+              ctx.beginPath();
+              ctx.moveTo(beam.x, beam.y);
+              ctx.lineTo(tipX, tipY);
+              ctx.stroke();
+            }
+            continue;
+          }
+          if (beam.type === "sweep") {
+            const grad = ctx.createLinearGradient(beam.x - beam.width * 0.5, beam.y, beam.x + beam.width * 0.5, beam.y);
+            grad.addColorStop(0, "rgba(80, 235, 255, 0)");
+            grad.addColorStop(0.2, "rgba(104, 244, 255, 0.36)");
+            grad.addColorStop(0.5, "rgba(220, 252, 255, 0.98)");
+            grad.addColorStop(0.82, "rgba(110, 244, 255, 0.82)");
+            grad.addColorStop(1, "rgba(236, 252, 255, 0)");
+            ctx.fillStyle = grad;
+            ctx.fillRect(beam.x - beam.width * 0.5, beam.y - beam.height * 0.5, beam.width, beam.height);
+            ctx.strokeStyle = "rgba(220, 252, 255, 0.72)";
+            ctx.lineWidth = 2.2;
+            ctx.strokeRect(beam.x - beam.width * 0.5, beam.y - beam.height * 0.5, beam.width, beam.height);
+            ctx.strokeStyle = "rgba(90, 242, 255, 0.28)";
+            ctx.lineWidth = 8;
+            ctx.beginPath();
+            ctx.moveTo(beam.x - beam.width * 0.44, beam.y);
+            ctx.lineTo(beam.x + beam.width * 0.44, beam.y);
+            ctx.stroke();
+          } else {
+            const tipX = beam.x + Math.cos(beam.angle) * beam.length;
+            const tipY = beam.y + Math.sin(beam.angle) * beam.length;
+            ctx.strokeStyle = "rgba(110, 244, 255, 0.92)";
+            ctx.lineWidth = beam.width;
+            ctx.beginPath();
+            ctx.moveTo(beam.x, beam.y);
+            ctx.lineTo(tipX, tipY);
+            ctx.stroke();
+            ctx.strokeStyle = "rgba(236, 252, 255, 0.62)";
+            ctx.lineWidth = Math.max(2, beam.width * 0.22);
+            ctx.beginPath();
+            ctx.moveTo(beam.x, beam.y);
+            ctx.lineTo(tipX, tipY);
+            ctx.stroke();
+          }
+        }
+
+        for (const ring of t.cursorRings) {
+          const halfSize = Math.max(18, Math.min(width, height) * 0.5 - ring.inset);
+          const left = centerX - halfSize;
+          const right = centerX + halfSize;
+          const top = centerY - halfSize;
+          const bottom = centerY + halfSize;
+          const alpha = clamp((ring.life / 6) * 0.8, 0.18, 0.68);
+          const cursorStep = 96;
+          const jitter = Math.sin(state.elapsed * 12 + ring.pulse) * 3;
+          for (let x = left + 16; x <= right - 16; x += cursorStep) {
+            for (const y of [top, bottom]) {
+              ctx.save();
+              ctx.translate(x, y + Math.sin(state.elapsed * 10 + ring.pulse + x * 0.02) * jitter);
+              ctx.rotate(y === top ? Math.PI * 0.5 : -Math.PI * 0.5);
+              const scale = 0.72 + Math.sin(state.elapsed * 10 + ring.pulse + x * 0.04) * 0.05;
+              ctx.scale(scale, scale);
+              ctx.fillStyle = `rgba(24, 255, 244, ${alpha * 0.26})`;
+              ctx.beginPath();
+              ctx.moveTo(0, -1);
+              ctx.lineTo(0, 18);
+              ctx.lineTo(6.5, 13);
+              ctx.lineTo(10, 23);
+              ctx.lineTo(14, 20.5);
+              ctx.lineTo(10, 10);
+              ctx.lineTo(18, 10);
+              ctx.closePath();
+              ctx.fill();
+              ctx.fillStyle = `rgba(32, 255, 246, ${alpha * 0.98})`;
+              ctx.beginPath();
+              ctx.moveTo(0, 0);
+              ctx.lineTo(0, 16);
+              ctx.lineTo(5, 12);
+              ctx.lineTo(8, 21);
+              ctx.lineTo(12, 19);
+              ctx.lineTo(8.5, 10);
+              ctx.lineTo(16, 10);
+              ctx.closePath();
+              ctx.fill();
+              ctx.restore();
+            }
+          }
+          for (let y = top + 16; y <= bottom - 16; y += cursorStep) {
+            for (const x of [left, right]) {
+              ctx.save();
+              ctx.translate(x + Math.cos(state.elapsed * 10 + ring.pulse + y * 0.02) * jitter, y);
+              ctx.rotate(x === left ? 0 : Math.PI);
+              const scale = 0.72 + Math.sin(state.elapsed * 10 + ring.pulse + y * 0.04) * 0.05;
+              ctx.scale(scale, scale);
+              ctx.fillStyle = `rgba(24, 255, 244, ${alpha * 0.26})`;
+              ctx.beginPath();
+              ctx.moveTo(0, -1);
+              ctx.lineTo(0, 18);
+              ctx.lineTo(6.5, 13);
+              ctx.lineTo(10, 23);
+              ctx.lineTo(14, 20.5);
+              ctx.lineTo(10, 10);
+              ctx.lineTo(18, 10);
+              ctx.closePath();
+              ctx.fill();
+              ctx.fillStyle = `rgba(32, 255, 246, ${alpha * 0.98})`;
+              ctx.beginPath();
+              ctx.moveTo(0, 0);
+              ctx.lineTo(0, 16);
+              ctx.lineTo(5, 12);
+              ctx.lineTo(8, 21);
+              ctx.lineTo(12, 19);
+              ctx.lineTo(8.5, 10);
+              ctx.lineTo(16, 10);
+              ctx.closePath();
+              ctx.fill();
+              ctx.restore();
+            }
+          }
+        }
+
+        for (const bolt of t.lightningBolts) {
+          const alpha = clamp(bolt.life / bolt.maxLife, 0, 1);
+          ctx.strokeStyle = `rgba(150, 246, 255, ${0.2 + alpha * 0.72})`;
+          ctx.lineWidth = 3;
+          ctx.beginPath();
+          for (let i = 0; i < bolt.points.length; i++) {
+            const point = bolt.points[i];
+            if (i === 0) ctx.moveTo(point.x, point.y);
+            else ctx.lineTo(point.x, point.y);
+          }
+          ctx.stroke();
+          ctx.strokeStyle = `rgba(240, 252, 255, ${alpha * 0.52})`;
+          ctx.lineWidth = 1.2;
+          ctx.stroke();
+        }
+        ctx.restore();
+      }
+
+      function drawLuminosityBoss() {
+        const l = state.luminosity;
+        const orbitElectrons = getLuminosityElectronStates();
+        const coreRadius = getLuminosityCoreRadius();
+        const flicker = l.phase === 3 ? 0.7 + l.flicker : 1;
+        if (l.dashActive > 0) {
+          const trailAlpha = clamp(l.dashActive / 0.46, 0, 1);
+          for (let i = 1; i <= 4; i++) {
+            const ghostX = l.x - l.vx * 0.03 * i;
+            const ghostY = l.y - l.vy * 0.03 * i;
+            const ghost = ctx.createRadialGradient(ghostX, ghostY, 0, ghostX, ghostY, coreRadius * (1.9 - i * 0.18));
+            ghost.addColorStop(0, `rgba(255, 210, 210, ${trailAlpha * 0.08})`);
+            ghost.addColorStop(0.35, `rgba(255, 92, 92, ${trailAlpha * 0.12})`);
+            ghost.addColorStop(1, "rgba(255, 92, 92, 0)");
+            ctx.fillStyle = ghost;
+            ctx.beginPath();
+            ctx.arc(ghostX, ghostY, coreRadius * (1.9 - i * 0.18), 0, TAU);
+            ctx.fill();
+          }
+        }
+        const aura = ctx.createRadialGradient(l.x, l.y, 0, l.x, l.y, 200);
+        aura.addColorStop(0, `rgba(255, 120, 120, ${0.18 * flicker})`);
+        aura.addColorStop(0.3, `rgba(255, 44, 44, ${0.14 * flicker})`);
+        aura.addColorStop(1, "rgba(255, 44, 44, 0)");
+        ctx.fillStyle = aura;
+        ctx.beginPath();
+        ctx.arc(l.x, l.y, 200, 0, TAU);
+        ctx.fill();
+
+        if (l.phase < 3) {
+          ctx.save();
+          ctx.globalCompositeOperation = "lighter";
+          const innerTube = ctx.createLinearGradient(l.x - 70, l.y - 36, l.x + 70, l.y + 36);
+          innerTube.addColorStop(0, "rgba(255, 80, 80, 0.16)");
+          innerTube.addColorStop(0.45, "rgba(255, 238, 238, 0.88)");
+          innerTube.addColorStop(1, "rgba(255, 70, 70, 0.18)");
+          ctx.strokeStyle = innerTube;
+          ctx.lineWidth = 5;
+          ctx.beginPath();
+          ctx.ellipse(l.x, l.y, 70, 36, l.innerAngle * 0.32, 0, TAU);
+          ctx.stroke();
+          ctx.strokeStyle = "rgba(255, 94, 94, 0.92)";
+          ctx.lineWidth = 2;
+          ctx.beginPath();
+          ctx.ellipse(l.x, l.y, 70, 36, l.innerAngle * 0.32, 0, TAU);
+          ctx.stroke();
+          const outerTube = ctx.createLinearGradient(l.x - 128, l.y - 68, l.x + 128, l.y + 68);
+          outerTube.addColorStop(0, "rgba(255, 66, 66, 0.14)");
+          outerTube.addColorStop(0.5, "rgba(255, 245, 245, 0.92)");
+          outerTube.addColorStop(1, "rgba(255, 66, 66, 0.14)");
+          ctx.strokeStyle = outerTube;
+          ctx.lineWidth = 6;
+          ctx.beginPath();
+          ctx.ellipse(l.x, l.y, 128, 68, -l.outerAngle * 0.18, 0, TAU);
+          ctx.stroke();
+          ctx.strokeStyle = "rgba(255, 82, 82, 0.94)";
+          ctx.lineWidth = 2.2;
+          ctx.beginPath();
+          ctx.ellipse(l.x, l.y, 128, 68, -l.outerAngle * 0.18, 0, TAU);
+          ctx.stroke();
+          ctx.restore();
+        }
+
+        const core = ctx.createRadialGradient(l.x, l.y, 0, l.x, l.y, coreRadius * 1.8);
+        core.addColorStop(0, "rgba(255, 245, 245, 0.98)");
+        core.addColorStop(0.3, "rgba(255, 110, 110, 0.96)");
+        core.addColorStop(1, "rgba(255, 44, 44, 0)");
+        ctx.fillStyle = core;
+        ctx.beginPath();
+        ctx.arc(l.x, l.y, coreRadius * 1.8, 0, TAU);
+        ctx.fill();
+
+        ctx.save();
+        ctx.globalCompositeOperation = "lighter";
+        for (let spark = 0; spark < 12; spark++) {
+          const angle = state.elapsed * (1.2 + spark * 0.05) + spark * 0.52;
+          const radius = coreRadius + 10 + Math.sin(state.elapsed * 3.4 + spark) * 5;
+          const sparkX = l.x + Math.cos(angle) * radius;
+          const sparkY = l.y + Math.sin(angle) * radius * 0.78;
+          ctx.fillStyle = `rgba(255, ${180 + (spark % 3) * 20}, ${180 + (spark % 2) * 28}, ${0.22 + (spark % 4) * 0.05})`;
+          ctx.beginPath();
+          ctx.arc(sparkX, sparkY, 1.8 + (spark % 3) * 0.35, 0, TAU);
+          ctx.fill();
+        }
+        ctx.restore();
+
+        ctx.fillStyle = "rgba(255, 54, 54, 0.98)";
+        ctx.beginPath();
+        ctx.arc(l.x, l.y, coreRadius, 0, TAU);
+        ctx.fill();
+
+        for (const electron of orbitElectrons) {
+          ctx.strokeStyle = "rgba(255, 124, 124, 0.16)";
+          ctx.lineWidth = 1;
+          ctx.beginPath();
+          ctx.moveTo(l.x, l.y);
+          ctx.lineTo(electron.x, electron.y);
+          ctx.stroke();
+          const glow = ctx.createRadialGradient(electron.x, electron.y, 0, electron.x, electron.y, electron.size * 3);
+          glow.addColorStop(0, "rgba(255,255,255,0.98)");
+          glow.addColorStop(0.4, "rgba(255,160,160,0.92)");
+          glow.addColorStop(1, "rgba(255,60,60,0)");
+          ctx.fillStyle = glow;
+          ctx.beginPath();
+          ctx.arc(electron.x, electron.y, electron.size * 3, 0, TAU);
+          ctx.fill();
+        }
+
+        for (const electron of l.detachedElectrons) {
+          const detachedGlow = ctx.createRadialGradient(electron.x, electron.y, 0, electron.x, electron.y, electron.size * 3.4);
+          detachedGlow.addColorStop(0, "rgba(255, 255, 255, 0.98)");
+          detachedGlow.addColorStop(0.38, "rgba(255, 210, 210, 0.94)");
+          detachedGlow.addColorStop(1, "rgba(255, 72, 72, 0)");
+          ctx.fillStyle = detachedGlow;
+          ctx.beginPath();
+          ctx.arc(electron.x, electron.y, electron.size * 3.4, 0, TAU);
+          ctx.fill();
+          ctx.fillStyle = "rgba(255, 248, 248, 0.98)";
+          ctx.beginPath();
+          ctx.arc(electron.x, electron.y, electron.size, 0, TAU);
+          ctx.fill();
+          ctx.strokeStyle = "rgba(255, 124, 124, 0.62)";
+          ctx.lineWidth = 1.4;
+          ctx.beginPath();
+          ctx.arc(electron.x, electron.y, electron.size * 1.45, 0, TAU);
+          ctx.stroke();
+        }
+        for (const electron of l.freeElectrons) {
+          ctx.fillStyle = "rgba(255, 236, 236, 0.98)";
+          ctx.beginPath();
+          ctx.arc(electron.x, electron.y, electron.size, 0, TAU);
+          ctx.fill();
+        }
+      }
+
+      function drawLuminosityProjectiles() {
+        const l = state.luminosity;
+        ctx.save();
+        ctx.globalCompositeOperation = "lighter";
+        for (const dot of l.dots) {
+          const glow = ctx.createRadialGradient(dot.x, dot.y, 0, dot.x, dot.y, 18);
+          glow.addColorStop(0, "rgba(255,255,255,0.96)");
+          glow.addColorStop(0.4, "rgba(255,118,118,0.88)");
+          glow.addColorStop(1, "rgba(255,68,68,0)");
+          ctx.fillStyle = glow;
+          ctx.beginPath();
+          ctx.arc(dot.x, dot.y, 18, 0, TAU);
+          ctx.fill();
+          ctx.fillStyle = "rgba(255, 82, 82, 0.98)";
+          ctx.beginPath();
+          ctx.arc(dot.x, dot.y, dot.size, 0, TAU);
+          ctx.fill();
+        }
+
+        for (const barrier of l.barriers) {
+          ctx.fillStyle = "rgba(58, 16, 22, 0.94)";
+          ctx.fillRect(barrier.x - barrier.width * 0.5, barrier.y - barrier.height * 0.5, barrier.width, barrier.height);
+          ctx.strokeStyle = "rgba(255, 92, 92, 0.78)";
+          ctx.lineWidth = 2;
+          ctx.strokeRect(barrier.x - barrier.width * 0.5, barrier.y - barrier.height * 0.5, barrier.width, barrier.height);
+          ctx.fillStyle = "rgba(255, 84, 84, 0.14)";
+          ctx.fillRect(barrier.x - barrier.width * 0.5 + 8, barrier.y - barrier.height * 0.5 + 8, barrier.width - 16, 10);
+          ctx.fillStyle = "rgba(255, 230, 230, 0.18)";
+          ctx.fillRect(barrier.x - barrier.width * 0.5 + 12, barrier.y - barrier.height * 0.5 + 14, barrier.width * 0.42, 4);
+        }
+
+        if (l.phase === 3 && l.beamActive > 0) {
+          const beamSegments = getLuminosityBeamSegments();
+          ctx.strokeStyle = "rgba(255, 72, 72, 0.92)";
+          ctx.lineWidth = 18;
+          ctx.beginPath();
+          for (const segment of beamSegments) {
+            ctx.moveTo(segment.x1, segment.y1);
+            ctx.lineTo(segment.x2, segment.y2);
+          }
+          ctx.stroke();
+          ctx.strokeStyle = "rgba(255, 218, 218, 0.52)";
+          ctx.lineWidth = 5;
+          ctx.beginPath();
+          for (const segment of beamSegments) {
+            ctx.moveTo(segment.x1, segment.y1);
+            ctx.lineTo(segment.x2, segment.y2);
+          }
+          ctx.stroke();
+        }
+        ctx.restore();
+      }
+
       function drawBullets() {
         ctx.save();
         ctx.globalCompositeOperation = "lighter";
@@ -7537,6 +9648,10 @@
           ? "Monarch"
           : state.currentBoss === "cesium"
           ? "Cesium"
+          : state.currentBoss === "tantalum"
+          ? "Tantalum"
+          : state.currentBoss === "luminosity"
+          ? "Luminosity"
           : "Architect";
         bossValue.textContent = `${bossLabel} P${state.bossPhase} - ${bossPercent}%`;
         bossFill.style.width = `${bossPercent}%`;
@@ -7618,8 +9733,12 @@
           drawSovereignBoss();
         } else if (state.currentBoss === "monarch" && ["playing", "paused", "gameover", "victory", "cutscene"].includes(state.mode)) {
           drawNullBoss();
-        } else if (state.currentBoss === "cesium" && ["playing", "paused", "gameover", "victory", "cutscene"].includes(state.mode)) {
+        } else if (state.currentBoss === "cesium" && ["playing", "paused", "gameover", "victory"].includes(state.mode)) {
           drawCesiumBoss();
+        } else if (state.currentBoss === "tantalum" && ["playing", "paused", "gameover", "victory"].includes(state.mode)) {
+          drawTantalumBoss();
+        } else if (state.currentBoss === "luminosity" && ["playing", "paused", "gameover", "victory"].includes(state.mode)) {
+          drawLuminosityBoss();
         } else {
           drawVortex();
         }
@@ -7636,7 +9755,11 @@
           } else if (state.currentBoss === "monarch") {
             drawMonarchSigil(progress);
           } else if (state.currentBoss === "cesium") {
-            drawCesiumBoss();
+            drawCesiumSigil(progress);
+          } else if (state.currentBoss === "tantalum") {
+            drawTantalumSigil(progress);
+          } else if (state.currentBoss === "luminosity") {
+            drawLuminositySigil(progress);
           } else {
             drawArchitectSigil(progress);
           }
@@ -7775,7 +9898,7 @@
               ctx.fill();
             }
             ctx.restore();
-          } else {
+          } else if (state.victoryBoss === "cesium") {
             ctx.save();
             ctx.globalCompositeOperation = "lighter";
             const burst = ctx.createRadialGradient(state.cesium.x, state.cesium.y, 0, state.cesium.x, state.cesium.y, 220);
@@ -7801,6 +9924,58 @@
               ctx.restore();
             }
             ctx.restore();
+          } else if (state.victoryBoss === "tantalum") {
+            const overload = clamp(state.victoryTime / 1.8, 0, 1);
+            const whiteMix = 0.4 + overload * 0.6;
+            ctx.save();
+            ctx.globalCompositeOperation = "lighter";
+            const aura = ctx.createRadialGradient(state.tantalum.x, state.tantalum.y, 0, state.tantalum.x, state.tantalum.y, 250);
+            aura.addColorStop(0, `rgba(240, 252, 255, ${0.12 + overload * 0.24})`);
+            aura.addColorStop(0.45, `rgba(120, 244, 255, ${0.1 + overload * 0.16})`);
+            aura.addColorStop(1, "rgba(120, 244, 255, 0)");
+            ctx.fillStyle = aura;
+            ctx.beginPath();
+            ctx.arc(state.tantalum.x, state.tantalum.y, 250, 0, TAU);
+            ctx.fill();
+            ctx.restore();
+            for (const scrap of state.tantalum.scraps) {
+              ctx.save();
+              ctx.translate(scrap.x, scrap.y);
+              ctx.rotate(scrap.rotation);
+              ctx.fillStyle = scrap.color || mixHexColors("#6f7984", "#f8fdff", whiteMix);
+              ctx.fillRect(-scrap.width * 0.5, -scrap.height * 0.5, scrap.width, scrap.height);
+              ctx.restore();
+            }
+          } else if (state.victoryBoss === "luminosity") {
+            const dimming = clamp(state.victoryTime / 2, 0, 1);
+            ctx.save();
+            ctx.globalCompositeOperation = "lighter";
+            const glow = ctx.createRadialGradient(state.luminosity.x, state.luminosity.y, 0, state.luminosity.x, state.luminosity.y, 240);
+            glow.addColorStop(0, `rgba(255, 255, 255, ${0.12 + dimming * 0.18})`);
+            glow.addColorStop(0.28, `rgba(255, 88, 88, ${0.18 + dimming * 0.18})`);
+            glow.addColorStop(1, "rgba(255, 88, 88, 0)");
+            ctx.fillStyle = glow;
+            ctx.beginPath();
+            ctx.arc(state.luminosity.x, state.luminosity.y, 240, 0, TAU);
+            ctx.fill();
+            ctx.restore();
+            for (const shard of state.luminosity.shards) {
+              ctx.save();
+              ctx.translate(shard.x, shard.y);
+              ctx.rotate(shard.rotation);
+              ctx.fillStyle = shard.color || "rgba(255, 132, 132, 0.95)";
+              ctx.beginPath();
+              ctx.moveTo(0, -shard.height);
+              ctx.lineTo(shard.width * 0.55, -shard.height * 0.15);
+              ctx.lineTo(shard.width * 0.2, shard.height);
+              ctx.lineTo(-shard.width * 0.58, shard.height * 0.28);
+              ctx.lineTo(-shard.width * 0.24, -shard.height * 0.8);
+              ctx.closePath();
+              ctx.fill();
+              ctx.restore();
+            }
+          } else {
+            drawArchitectSigil(0.8 + bloom * 0.7);
           }
         } else if (["playing", "paused", "gameover"].includes(state.mode)) {
           drawChronoField();
@@ -7810,6 +9985,12 @@
             drawNullProjectiles();
           } else if (state.currentBoss === "sovereign") {
             drawSovereignProjectiles();
+          } else if (state.currentBoss === "cesium") {
+            drawCesiumProjectiles();
+          } else if (state.currentBoss === "tantalum") {
+            drawTantalumProjectiles();
+          } else if (state.currentBoss === "luminosity") {
+            drawLuminosityProjectiles();
           }
           drawPlayerShots();
           drawFlashes();
@@ -7824,6 +10005,15 @@
         }
         if (["playing", "paused", "gameover", "cutscene", "victory"].includes(state.mode)) {
           drawGlitch();
+        }
+        if (state.currentBoss === "luminosity" && state.luminosity.flashBlindTimer > 0 && ["playing", "paused", "gameover"].includes(state.mode)) {
+          const blindAlpha = clamp(state.luminosity.flashBlindTimer / 0.5, 0, 1);
+          const wash = ctx.createRadialGradient(centerX, centerY, 0, centerX, centerY, Math.max(width, height) * 0.9);
+          wash.addColorStop(0, `rgba(255, 245, 245, ${0.2 + blindAlpha * 0.3})`);
+          wash.addColorStop(0.35, `rgba(255, 80, 80, ${0.18 + blindAlpha * 0.4})`);
+          wash.addColorStop(1, `rgba(120, 0, 0, ${blindAlpha * 0.16})`);
+          ctx.fillStyle = wash;
+          ctx.fillRect(0, 0, width, height);
         }
         drawHud();
       }
@@ -7983,6 +10173,29 @@
 
         if (event.target.closest("[data-pause-menu]")) {
           returnToMenu();
+          return;
+        }
+
+        if (event.target.closest("[data-secret-unlock]")) {
+          const password = window.prompt("Enter the secret pause-menu password:");
+          if (password === null) return;
+          if (password === "808Passw0rd") {
+            state.pauseSecretUnlocked = true;
+            state.pauseSecretMessage = "Secret boss controls unlocked.";
+          } else {
+            state.pauseSecretMessage = "Password denied.";
+          }
+          renderPauseOverlay();
+          return;
+        }
+
+        const bossHealthSet = event.target.closest("[data-boss-health-set]");
+        if (bossHealthSet) {
+          if (!state.pauseSecretUnlocked || state.mode !== "paused") return;
+          const percent = clamp(Number(bossHealthSet.dataset.bossHealthSet) || 100, 1, 100);
+          state.bossHealth = Math.max(1, state.bossMaxHealth * (percent / 100));
+          state.pauseSecretMessage = `Boss health set to ${percent}%`;
+          renderPauseOverlay();
           return;
         }
 
