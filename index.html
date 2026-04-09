@@ -671,6 +671,14 @@
       transition: opacity 140ms ease, transform 140ms ease, box-shadow 140ms ease;
     }
 
+    .boss-card > div:first-child {
+      display: grid;
+      justify-items: center;
+      align-content: start;
+      gap: 10px;
+      text-align: center;
+    }
+
     .boss-card.focused {
       opacity: 1;
       transform: translateY(0) scale(1);
@@ -689,6 +697,7 @@
     }
 
     .boss-icon {
+      width: 100%;
       height: 136px;
       display: grid;
       place-items: center;
@@ -702,8 +711,10 @@
       width: 128px;
       height: 128px;
       flex: 0 0 128px;
-      display: block;
+      display: grid;
+      place-items: center;
       margin: 0 auto;
+      transform: translateY(-8px);
       overflow: hidden;
       filter: none;
     }
@@ -723,6 +734,7 @@
       width: 128px;
       height: 128px;
       display: block;
+      margin: auto;
       image-rendering: auto;
     }
 
