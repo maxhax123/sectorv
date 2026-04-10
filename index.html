@@ -2313,16 +2313,16 @@
           teaser: "A towering hopper crystal that folds into itself like an infinite rainbow staircase. Expect dense Touhou-style square curtains, refracting beams, spiral loops, and a prismatic geometric rain."
         },
         {
-          name: "Spot Reserved",
-          active: false,
-          status: "RESERVED",
-          teaser: "This containment slot is reserved for a future boss encounter."
+          name: "The Bleach Baron",
+          active: true,
+          status: "ACTIVE",
+          teaser: "A violent chlorine molecule flooding the arena with toxic clouds, ionic bond hazards, bleach rain, and corrosive survival pressure."
         },
         {
-          name: "Spot Reserved",
-          active: false,
-          status: "RESERVED",
-          teaser: "This containment slot is reserved for a future boss encounter."
+          name: "Ambitious Alarmist-Am",
+          active: true,
+          status: "ACTIVE",
+          teaser: "A radioactive puck wrapped in industrial iris-blades. Expect tripwire alarms, scanning sweeps, decoy cores, overload webs, and a final radiation storm."
         },
         {
           name: "Spot Reserved",
@@ -2459,6 +2459,8 @@
         sili_down: { title: "Overclock Crashed", desc: "Defeat The Sili Overclock." },
         caesar_down: { title: "Polarity Broken", desc: "Defeat Caesar Dy." },
         beauty_down: { title: "Iridescence Lost", desc: "Defeat Beauty Bismuth." },
+        bleach_down: { title: "Baron Neutralized", desc: "Defeat The Bleach Baron." },
+        alarmist_down: { title: "Alarm Silenced", desc: "Defeat Ambitious Alarmist-Am." },
         arsenal_tuned: { title: "Arsenal Tuned", desc: "Purchase your first shop upgrade." },
         score_2500: { title: "Signal Ascendant", desc: "Reach a score of 2500." },
         score_5000: { title: "Signal Unbroken", desc: "Reach a score of 5000." },
@@ -2473,11 +2475,7 @@
       const evolutionTierPrices = {
         5: 5999,
         6: 7999,
-        7: 9999,
-        8: 12999,
-        9: 16099,
-        10: 21999,
-        11: 39999
+        7: 9999
       };
 
       const defaultControlBindings = {
@@ -2638,7 +2636,9 @@
             luminosity: Boolean(source.bossRecords?.luminosity),
             sili: Boolean(source.bossRecords?.sili),
             caesar: Boolean(source.bossRecords?.caesar),
-            beauty: Boolean(source.bossRecords?.beauty)
+            beauty: Boolean(source.bossRecords?.beauty),
+            bleach: Boolean(source.bossRecords?.bleach),
+            alarmist: Boolean(source.bossRecords?.alarmist)
           },
           skin: {
             preset: source.skin?.preset || "gold",
@@ -2943,6 +2943,67 @@
           debris: [],
           fragments: []
         },
+        bleach: {
+          x: 0,
+          y: 0,
+          vx: 0,
+          vy: 0,
+          phase: 1,
+          rotation: 0,
+          driftTimer: 0,
+          targetX: 0,
+          targetY: 0,
+          splitLerp: 0,
+          bondPulse: 0,
+          mistTimer: 0,
+          shardTimer: 0,
+          dropletTimer: 0,
+          purgeTimer: 0,
+          missileTimer: 0,
+          flashTimer: 0,
+          saturationTimer: 0,
+          causticTimer: 0,
+          jetAngle: 0,
+          sporeTimer: 0,
+          survivalTimer: 0,
+          shockwaveTimer: 0,
+          shockwaves: [],
+          projectiles: [],
+          toxicTrail: [],
+          fragments: []
+        },
+        alarmist: {
+          x: 0,
+          y: 0,
+          vx: 0,
+          vy: 0,
+          phase: 1,
+          rotation: 0,
+          targetX: 0,
+          targetY: 0,
+          driftTimer: 0,
+          orbitAnchorX: 0,
+          orbitAnchorY: 0,
+          bladeOrbit: 0,
+          bladeSpread: 0,
+          hitFxCooldown: 0,
+          tripTimer: 0,
+          pulseCooldown: 0,
+          ashTimer: 0,
+          sweepTimer: 0,
+          smokeTimer: 0,
+          warningTimer: 0,
+          redFlashTimer: 0,
+          freezeTimer: 0,
+          burstSpeedTimer: 0,
+          waveTimer: 0,
+          webTimer: 0,
+          needleTimer: 0,
+          projectiles: [],
+          blades: [],
+          floorBlades: [],
+          fragments: []
+        },
         settings: {
           volume: Number.isFinite(storedVolume) ? clamp(storedVolume, 0, 1) : 0.65,
           screenShake: storedShake === null ? true : storedShake === "true",
@@ -3155,7 +3216,7 @@
         if (state.currentBoss === "cesium") return boss3Music;
         if (state.currentBoss === "tantalum") return boss3Music;
         if (state.currentBoss === "luminosity") return boss3Music;
-        if (state.currentBoss === "sili" || state.currentBoss === "caesar" || state.currentBoss === "beauty") return boss3Music;
+        if (state.currentBoss === "sili" || state.currentBoss === "caesar" || state.currentBoss === "beauty" || state.currentBoss === "bleach" || state.currentBoss === "alarmist") return boss3Music;
         return boss1Music;
       }
 
@@ -3391,11 +3452,11 @@
       }
 
       function getBossRecordKey(index) {
-        return index === 1 ? "sovereign" : index === 2 ? "monarch" : index === 3 ? "cesium" : index === 4 ? "tantalum" : index === 5 ? "luminosity" : index === 6 ? "sili" : index === 7 ? "caesar" : index === 8 ? "beauty" : "architect";
+        return index === 1 ? "sovereign" : index === 2 ? "monarch" : index === 3 ? "cesium" : index === 4 ? "tantalum" : index === 5 ? "luminosity" : index === 6 ? "sili" : index === 7 ? "caesar" : index === 8 ? "beauty" : index === 9 ? "bleach" : index === 10 ? "alarmist" : "architect";
       }
 
       function getBossIndexFromKey(key) {
-        return key === "sovereign" ? 1 : key === "monarch" ? 2 : key === "cesium" ? 3 : key === "tantalum" ? 4 : key === "luminosity" ? 5 : key === "sili" ? 6 : key === "caesar" ? 7 : key === "beauty" ? 8 : 0;
+        return key === "sovereign" ? 1 : key === "monarch" ? 2 : key === "cesium" ? 3 : key === "tantalum" ? 4 : key === "luminosity" ? 5 : key === "sili" ? 6 : key === "caesar" ? 7 : key === "beauty" ? 8 : key === "bleach" ? 9 : key === "alarmist" ? 10 : 0;
       }
 
       function getBossPayoutCents(key) {
@@ -3518,6 +3579,7 @@
 
       function purchaseEvolutionTier(tier) {
         const price = evolutionTierPrices[tier];
+        if (tier > 7) return;
         if (!price || tier !== getMaxEvolutionTier() + 1) return;
         if (!spendOperationsFunds(price)) {
           state.operationsFeedback = `Insufficient Operations funds for Evolution ${roman[tier - 1]}.`;
@@ -4584,11 +4646,11 @@
             </article>
           `;
         }).join("");
-        const evolutionMarkup = Array.from({ length: 8 }, (_, index) => {
+        const evolutionMarkup = Array.from({ length: 4 }, (_, index) => {
           const tier = index + 4;
           const owned = tier <= getMaxEvolutionTier();
           const nextTier = getMaxEvolutionTier() + 1;
-          const canBuy = tier === nextTier && tier <= 11;
+          const canBuy = tier === nextTier && tier <= 7;
           const price = evolutionTierPrices[tier];
           const priceLabel = price ? formatMoney(price) : "Included";
           return `
@@ -4821,6 +4883,8 @@
           beamSweep: 0,
           beamActive: 0,
           beamAngle: 0,
+          beamOriginX: centerX,
+          beamOriginY: height * 0.27,
           flicker: 0,
           shards: []
         };
@@ -4934,18 +4998,85 @@
         };
       }
 
+      function resetBleachState() {
+        state.bleach = {
+          x: centerX,
+          y: height * 0.19,
+          vx: 0,
+          vy: 0,
+          phase: 1,
+          rotation: 0,
+          driftTimer: 1.2,
+          targetX: centerX,
+          targetY: height * 0.18,
+          splitLerp: 0,
+          bondPulse: 0,
+          mistTimer: 1,
+          shardTimer: 2.8,
+          dropletTimer: 0.05,
+          purgeTimer: 1.8,
+          missileTimer: 1,
+          flashTimer: 0,
+          saturationTimer: 0.06,
+          causticTimer: 1.4,
+          jetAngle: -Math.PI * 0.5,
+          sporeTimer: 0.02,
+          survivalTimer: 13,
+          shockwaveTimer: 1.1,
+          shockwaves: [],
+          projectiles: [],
+          toxicTrail: [],
+          fragments: []
+        };
+      }
+
+      function resetAlarmistState() {
+        state.alarmist = {
+          x: centerX,
+          y: height * 0.2,
+          vx: 0,
+          vy: 0,
+          phase: 1,
+          rotation: 0,
+          targetX: centerX,
+          targetY: height * 0.2,
+          driftTimer: 1.1,
+          orbitAnchorX: centerX,
+          orbitAnchorY: height * 0.38,
+          bladeOrbit: 0,
+          bladeSpread: 1,
+          hitFxCooldown: 0,
+          tripTimer: 0,
+          pulseCooldown: 0,
+          ashTimer: 0.04,
+          sweepTimer: 3.5,
+          smokeTimer: 0.1,
+          warningTimer: 2,
+          redFlashTimer: 0,
+          freezeTimer: 0,
+          burstSpeedTimer: 0,
+          waveTimer: 0.5,
+          webTimer: 0.18,
+          needleTimer: 0.028,
+          projectiles: [],
+          blades: [],
+          floorBlades: [],
+          fragments: []
+        };
+      }
+
       function startBossEncounter(index) {
         if (state.profile.bossRecords[getBossRecordKey(index)]) {
           awardAchievement("resurrected");
         }
-        state.currentBoss = index === 1 ? "sovereign" : index === 2 ? "monarch" : index === 3 ? "cesium" : index === 4 ? "tantalum" : index === 5 ? "luminosity" : index === 6 ? "sili" : index === 7 ? "caesar" : index === 8 ? "beauty" : "architect";
+        state.currentBoss = index === 1 ? "sovereign" : index === 2 ? "monarch" : index === 3 ? "cesium" : index === 4 ? "tantalum" : index === 5 ? "luminosity" : index === 6 ? "sili" : index === 7 ? "caesar" : index === 8 ? "beauty" : index === 9 ? "bleach" : index === 10 ? "alarmist" : "architect";
         if (state.currentBoss === "architect") {
           startArchitectCutscene();
           return;
         }
         resetGame("cutscene");
-        state.currentBoss = index === 8 ? "beauty" : index === 7 ? "caesar" : index === 6 ? "sili" : index === 5 ? "luminosity" : index === 4 ? "tantalum" : index === 3 ? "cesium" : index === 2 ? "monarch" : "sovereign";
-        state.bossMaxHealth = state.currentBoss === "monarch" ? 2100 : state.currentBoss === "cesium" ? 3200 : state.currentBoss === "tantalum" ? 3600 : state.currentBoss === "luminosity" ? 3900 : state.currentBoss === "sili" ? 4300 : state.currentBoss === "caesar" ? 4700 : state.currentBoss === "beauty" ? 5400 : 2400;
+        state.currentBoss = index === 10 ? "alarmist" : index === 9 ? "bleach" : index === 8 ? "beauty" : index === 7 ? "caesar" : index === 6 ? "sili" : index === 5 ? "luminosity" : index === 4 ? "tantalum" : index === 3 ? "cesium" : index === 2 ? "monarch" : "sovereign";
+        state.bossMaxHealth = state.currentBoss === "monarch" ? 2100 : state.currentBoss === "cesium" ? 3200 : state.currentBoss === "tantalum" ? 3600 : state.currentBoss === "luminosity" ? 3900 : state.currentBoss === "sili" ? 4300 : state.currentBoss === "caesar" ? 4700 : state.currentBoss === "beauty" ? 5400 : state.currentBoss === "bleach" ? 6200 : state.currentBoss === "alarmist" ? 6900 : 2400;
         state.bossHealth = state.bossMaxHealth;
         state.bossPhase = 1;
         state.cutsceneTime = 0;
@@ -4958,6 +5089,8 @@
         resetSiliState();
         resetCaesarState();
         resetBeautyState();
+        resetBleachState();
+        resetAlarmistState();
         playMusic("boss");
         overlay.innerHTML = `<div class="warning-shell"><div class="warning-text" id="warningText"></div></div>`;
         overlay.classList.add("show");
@@ -4978,7 +5111,7 @@
       }
 
       function restartCurrentEncounter() {
-        const bossIndex = state.currentBoss === "sovereign" ? 1 : state.currentBoss === "monarch" ? 2 : state.currentBoss === "cesium" ? 3 : state.currentBoss === "tantalum" ? 4 : state.currentBoss === "luminosity" ? 5 : state.currentBoss === "sili" ? 6 : state.currentBoss === "caesar" ? 7 : state.currentBoss === "beauty" ? 8 : 0;
+        const bossIndex = state.currentBoss === "sovereign" ? 1 : state.currentBoss === "monarch" ? 2 : state.currentBoss === "cesium" ? 3 : state.currentBoss === "tantalum" ? 4 : state.currentBoss === "luminosity" ? 5 : state.currentBoss === "sili" ? 6 : state.currentBoss === "caesar" ? 7 : state.currentBoss === "beauty" ? 8 : state.currentBoss === "bleach" ? 9 : state.currentBoss === "alarmist" ? 10 : 0;
         startBossEncounter(bossIndex);
       }
 
@@ -5028,6 +5161,8 @@
         resetSiliState();
         resetCaesarState();
         resetBeautyState();
+        resetBleachState();
+        resetAlarmistState();
         player.x = centerX;
         player.y = height * 0.82;
         player.pullVx = 0;
@@ -5095,7 +5230,11 @@
       }
 
       function getCurrentBossPhaseCount() {
-        return state.currentBoss === "sili" || state.currentBoss === "caesar" || state.currentBoss === "beauty"
+        return state.currentBoss === "bleach"
+          ? 5
+          : state.currentBoss === "alarmist"
+          ? 5
+          : state.currentBoss === "sili" || state.currentBoss === "caesar" || state.currentBoss === "beauty"
           ? 4
           : state.currentBoss === "architect"
           ? 1
@@ -5111,6 +5250,17 @@
             ? state.bossMaxHealth * 0.5
             : state.bossMaxHealth * 0.18;
         }
+        if (phaseCount === 5) {
+          return phase === 1
+            ? state.bossMaxHealth * 0.92
+            : phase === 2
+            ? state.bossMaxHealth * 0.72
+            : phase === 3
+            ? state.bossMaxHealth * 0.5
+            : phase === 4
+            ? state.bossMaxHealth * 0.28
+            : state.bossMaxHealth * 0.1;
+        }
         return phase === 1
           ? state.bossMaxHealth * 0.88
           : phase === 2
@@ -5125,7 +5275,7 @@
         state.mode = "playing";
         overlay.classList.remove("show");
         updateHudVisibility();
-        damageBoss(state.bossHealth, { awardCharge: false });
+        damageBoss(state.bossHealth, { awardCharge: false, allowSurvivalFinish: true });
       }
 
       function selectBossPhaseFromPause(phase) {
@@ -5146,6 +5296,8 @@
           state.caesar.lastPhase = phase;
         }
         if (state.currentBoss === "beauty") state.beauty.phase = phase;
+        if (state.currentBoss === "bleach") state.bleach.phase = phase;
+        if (state.currentBoss === "alarmist") state.alarmist.phase = phase;
         state.pausePhasePanelOpen = false;
         renderPauseOverlay();
       }
@@ -5278,6 +5430,14 @@
         state.beauty.projectiles.length = 0;
         state.beauty.debris.length = 0;
         state.beauty.fragments.length = 0;
+        state.bleach.projectiles.length = 0;
+        state.bleach.shockwaves.length = 0;
+        state.bleach.toxicTrail.length = 0;
+        state.bleach.fragments.length = 0;
+        state.alarmist.projectiles.length = 0;
+        state.alarmist.blades.length = 0;
+        state.alarmist.floorBlades.length = 0;
+        state.alarmist.fragments.length = 0;
       }
 
       function updateEvolutionProgressFromBossDamage() {
@@ -5532,6 +5692,35 @@
               remove: () => state.beauty.debris.splice(index, 1)
             });
           }
+        } else if (state.currentBoss === "bleach") {
+          if (state.bleach.projectiles.length) {
+            const index = Math.floor(Math.random() * state.bleach.projectiles.length);
+            const projectile = state.bleach.projectiles[index];
+            candidates.push({
+              x: projectile.x,
+              y: projectile.y,
+              remove: () => state.bleach.projectiles.splice(index, 1)
+            });
+          }
+          if (state.bleach.toxicTrail.length) {
+            const index = Math.floor(Math.random() * state.bleach.toxicTrail.length);
+            const trail = state.bleach.toxicTrail[index];
+            candidates.push({
+              x: trail.x,
+              y: trail.y,
+              remove: () => state.bleach.toxicTrail.splice(index, 1)
+            });
+          }
+        } else if (state.currentBoss === "alarmist") {
+          if (state.alarmist.projectiles.length) {
+            const index = Math.floor(Math.random() * state.alarmist.projectiles.length);
+            const projectile = state.alarmist.projectiles[index];
+            candidates.push({
+              x: projectile.x,
+              y: projectile.y,
+              remove: () => state.alarmist.projectiles.splice(index, 1)
+            });
+          }
         }
         if (!candidates.length || Math.random() > 0.3) return;
         const chosen = candidates[Math.floor(Math.random() * candidates.length)];
@@ -5609,6 +5798,10 @@
           ? { x: state.sili.x, y: state.sili.y }
           : state.currentBoss === "beauty"
           ? { x: state.beauty.x, y: state.beauty.y }
+          : state.currentBoss === "bleach"
+          ? { x: state.bleach.x, y: state.bleach.y }
+          : state.currentBoss === "alarmist"
+          ? { x: state.alarmist.x, y: state.alarmist.y }
           : { x: state.caesar.x, y: state.caesar.y },
           radius: state.currentBoss === "architect"
             ? 58
@@ -5626,6 +5819,10 @@
             ? 82
             : state.currentBoss === "beauty"
             ? getBeautyCoreRadius()
+            : state.currentBoss === "bleach"
+            ? 74
+            : state.currentBoss === "alarmist"
+            ? getAlarmistCoreRadius()
             : getCaesarCoreRadius()
         };
       }
@@ -6279,14 +6476,14 @@
         const c = state.cesium;
         if (c.magnetDuration <= 0) return null;
         const coneStates = getCesiumConeStates();
-        const pullStrength = c.phase === 3 ? 3100 : c.phase === 2 ? 2450 : 1900;
+        const pullStrength = c.phase === 3 ? 1850 : c.phase === 2 ? 1480 : 1120;
         let strongestPull = null;
 
         for (const index of c.activePullIndices) {
           const cone = coneStates[index];
           if (!cone) continue;
           const distanceToCone = Math.hypot(cone.x - x, cone.y - y);
-          const releaseDistance = targetRadius + cone.width * 0.92;
+          const releaseDistance = targetRadius + cone.width * 1.45 + 26;
           if (distanceToCone < releaseDistance) continue;
           const useOuterTarget = distanceToCone > 170;
           const targetX = useOuterTarget ? cone.x : cone.x - Math.cos(cone.angle) * cone.length * 0.3;
@@ -6298,14 +6495,14 @@
             const directionX = dx / distance;
             const directionY = dy / distance;
             const influence = 1 - distance / cone.pullRadius;
-            const nearTargetRelease = clamp((distanceToCone - releaseDistance) / 96, 0.12, 1);
-            const pullAccel = (influence * pullStrength + 380) * nearTargetRelease;
+            const nearTargetRelease = clamp((distanceToCone - releaseDistance) / 132, 0.08, 1);
+            const pullAccel = (influence * pullStrength + 160) * nearTargetRelease;
             if (!strongestPull || pullAccel > strongestPull.pullAccel) {
               strongestPull = {
                 directionX,
                 directionY,
                 pullAccel,
-                maxSpeed: c.phase === 3 ? 430 : c.phase === 2 ? 360 : 300,
+                maxSpeed: c.phase === 3 ? 260 : c.phase === 2 ? 225 : 195,
                 targetX,
                 targetY
               };
@@ -6318,19 +6515,19 @@
           const dy = c.y - y;
           const distance = Math.max(20, Math.hypot(dx, dy));
           const bossRadius = 420;
-          const bossReleaseDistance = targetRadius + 72 * getCesiumBossScale();
+          const bossReleaseDistance = targetRadius + 104 * getCesiumBossScale();
           if (distance < bossRadius && distance > bossReleaseDistance) {
             const directionX = dx / distance;
             const directionY = dy / distance;
             const influence = 1 - distance / bossRadius;
-            const nearTargetRelease = clamp((distance - bossReleaseDistance) / 116, 0.16, 1);
-            const pullAccel = (influence * 1850 + 260) * nearTargetRelease;
+            const nearTargetRelease = clamp((distance - bossReleaseDistance) / 148, 0.08, 1);
+            const pullAccel = (influence * 980 + 120) * nearTargetRelease;
             if (!strongestPull || pullAccel > strongestPull.pullAccel) {
               strongestPull = {
                 directionX,
                 directionY,
                 pullAccel,
-                maxSpeed: 390,
+                maxSpeed: 235,
                 targetX: c.x,
                 targetY: c.y
               };
@@ -6352,7 +6549,7 @@
           addSpark(c.x, c.y, "rgba(255, 235, 160, 0.96)", 32 + nextPhase * 10, 220 + nextPhase * 30);
         }
         const coreRadius = 48 * getCesiumBossScale();
-        const territorialRadius = c.phase === 3 ? 260 : c.phase === 2 ? 235 : 210;
+        const territorialRadius = c.phase === 3 ? 180 : c.phase === 2 ? 165 : 150;
         const minX = 88;
         const maxX = width - 88;
         const minY = 78;
@@ -6392,15 +6589,17 @@
           if (playerDistance < territorialRadius && c.dashCooldown > 0.18) {
             c.dashCooldown = 0.18;
           }
-          if (c.dashCooldown <= 0) {
+          if (c.dashCooldown <= 0 && playerDistance < territorialRadius) {
             c.dashTelegraph = c.phase === 3 ? 0.34 : c.phase === 2 ? 0.42 : 0.5;
             c.dashCooldown = 0;
             state.shake = Math.max(state.shake, 10 + c.phase * 2);
             state.glitch = Math.max(state.glitch, 0.16 + c.phase * 0.04);
+          } else if (c.dashCooldown <= 0) {
+            c.dashCooldown = 0.55;
           }
         }
 
-        if (!c.dashActive && c.dashTelegraph <= 0 && c.dashRecover <= 0 && c.dashCooldown === 0) {
+        if (!c.dashActive && c.dashTelegraph <= 0 && c.dashRecover <= 0 && c.dashCooldown === 0 && Math.hypot(player.x - c.x, player.y - c.y) < territorialRadius) {
           const dx = player.x - c.x;
           const dy = player.y - c.y;
           const dist = Math.hypot(dx, dy) || 1;
@@ -7054,6 +7253,8 @@
         const beamLength = Math.max(width, height) * 1.15;
         const dirX = Math.cos(l.beamAngle);
         const dirY = Math.sin(l.beamAngle);
+        const originX = l.beamOriginX ?? l.x;
+        const originY = l.beamOriginY ?? l.y;
         const gapCenters = [0.14, 0.27, 0.41, 0.56].map((ratio) => beamLength * ratio);
         const gapHalf = 38;
         const segments = [];
@@ -7065,20 +7266,20 @@
             const gapEnd = Math.min(beamLength - 28, center + gapHalf);
             if (gapStart > start + 18) {
               segments.push({
-                x1: l.x + dirX * start * direction,
-                y1: l.y + dirY * start * direction,
-                x2: l.x + dirX * gapStart * direction,
-                y2: l.y + dirY * gapStart * direction
+                x1: originX + dirX * start * direction,
+                y1: originY + dirY * start * direction,
+                x2: originX + dirX * gapStart * direction,
+                y2: originY + dirY * gapStart * direction
               });
             }
             start = gapEnd;
           }
           if (beamLength > start + 18) {
             segments.push({
-              x1: l.x + dirX * start * direction,
-              y1: l.y + dirY * start * direction,
-              x2: l.x + dirX * beamLength * direction,
-              y2: l.y + dirY * beamLength * direction
+              x1: originX + dirX * start * direction,
+              y1: originY + dirY * start * direction,
+              x2: originX + dirX * beamLength * direction,
+              y2: originY + dirY * beamLength * direction
             });
           }
         };
@@ -7162,12 +7363,11 @@
           x: fromLeft ? -70 : width + 70,
           y,
           vx: fromLeft ? 180 : -180,
-          vy: (Math.random() - 0.5) * 28,
+          vy: 0,
           width: 94,
           height: 58,
           side,
-          life: 8,
-          bounces: 4,
+          life: 12,
           spin: (Math.random() - 0.5) * 0.8,
           angle: 0
         });
@@ -7192,7 +7392,7 @@
               anchorMode: "ring",
               anchorIndex: electron.index
             })));
-        const picks = source.slice(0, l.phase === 3 ? 3 : 2);
+        const picks = source.slice(0, 2);
         for (const electron of picks) {
           l.detachedElectrons.push({
             x: electron.x,
@@ -7314,25 +7514,23 @@
           let moveTargetX = homeX;
           let moveTargetY = homeY;
           if (l.phase === 3) {
-            l.wanderTimer -= dt;
-            if (l.wanderTimer <= 0) {
-              l.wanderTimer = 0.8 + Math.random() * 1.45;
-              l.wanderTargetX = 118 + Math.random() * Math.max(40, width - 236);
-              l.wanderTargetY = 96 + Math.random() * Math.max(32, Math.min(height - 120, height * 0.62) - 96);
-            }
-            moveTargetX = l.wanderTargetX;
-            moveTargetY = l.wanderTargetY;
+            const roamCenterX = centerX + Math.sin(state.elapsed * 0.22) * width * 0.08;
+            const roamCenterY = height * 0.27 + Math.cos(state.elapsed * 0.18) * 18;
+            moveTargetX = roamCenterX + Math.sin(state.elapsed * 0.58 + 0.8) * width * 0.16 + Math.cos(state.elapsed * 0.31) * 36;
+            moveTargetY = roamCenterY + Math.cos(state.elapsed * 0.44 + 0.35) * 34 + Math.sin(state.elapsed * 0.27) * 14;
           }
-          const easeX = Math.min(1, dt * (l.phase === 3 ? 2.4 : 3.05));
-          const easeY = Math.min(1, dt * (l.phase === 3 ? 2.15 : 2.7));
-          l.vx *= Math.max(0, 1 - dt * 5.2);
-          l.vy *= Math.max(0, 1 - dt * 5.4);
-          l.x += (moveTargetX - l.x) * easeX + l.vx * dt * 0.22;
-          l.y += (moveTargetY - l.y) * easeY + l.vy * dt * 0.22;
+          const easeX = Math.min(1, dt * (l.phase === 3 ? 1.95 : 3.05));
+          const easeY = Math.min(1, dt * (l.phase === 3 ? 1.8 : 2.7));
+          l.vx *= Math.max(0, 1 - dt * (l.phase === 3 ? 3.8 : 5.2));
+          l.vy *= Math.max(0, 1 - dt * (l.phase === 3 ? 3.9 : 5.4));
+          l.x += (moveTargetX - l.x) * easeX + l.vx * dt * (l.phase === 3 ? 0.12 : 0.22);
+          l.y += (moveTargetY - l.y) * easeY + l.vy * dt * (l.phase === 3 ? 0.12 : 0.22);
         }
         l.x = clamp(l.x, minX, maxX);
         const maxY = l.phase === 3 ? roamMaxY : l.dashActive > 0 ? height - 30 : roamMaxY;
         l.y = clamp(l.y, minY, maxY);
+        l.beamOriginX += (l.x - l.beamOriginX) * Math.min(1, dt * 5.4);
+        l.beamOriginY += (l.y - l.beamOriginY) * Math.min(1, dt * 5.4);
         l.innerAngle += dt * 0.85;
         l.outerAngle += dt * (l.phase >= 2 ? 3.8 : 1.2);
         l.flashBlindTimer = Math.max(0, l.flashBlindTimer - dt);
@@ -7368,9 +7566,9 @@
 
         if (l.phase >= 2) {
           l.detachTimer -= dt;
-          if (l.detachTimer <= 0 && l.detachedElectrons.length === 0) {
+          if (l.detachTimer <= 0 && l.detachedElectrons.length < 2) {
             spawnLuminosityDetachedElectrons();
-            l.detachTimer = l.phase === 3 ? 0.95 + Math.random() * 1.7 : 1 + Math.random() * 2;
+            l.detachTimer = l.phase === 3 ? 0.9 + Math.random() * 1.15 : 1 + Math.random() * 2;
           }
         }
 
@@ -7437,6 +7635,9 @@
           const accel = electron.returning ? 240 : 310;
           electron.vx += (dx / distance) * accel * dt;
           electron.vy += (dy / distance) * accel * dt;
+          if (!electron.returning && l.phase === 3) {
+            electron.vy -= 110 * dt;
+          }
           const speed = Math.hypot(electron.vx, electron.vy);
           const maxSpeed = electron.returning ? 240 : 320;
           if (speed > maxSpeed) {
@@ -7449,7 +7650,7 @@
           nearest = Math.min(nearest, dist);
           if (dist < 100) closeCount++;
           if (dist < player.hitRadius + electron.size) damagePlayer(0.5, "impact");
-          if (electron.returning && Math.hypot(electron.x - anchorX, electron.y - anchorY) < 16) {
+          if (electron.returning && Math.hypot(electron.x - anchorX, electron.y - anchorY) < 24) {
             l.detachedElectrons.splice(i, 1);
           }
         }
@@ -7489,30 +7690,10 @@
           barrier.life -= dt;
           const halfW = barrier.width * 0.5;
           const halfH = barrier.height * 0.5;
-          let bounced = false;
-          if (barrier.x <= halfW) {
-            barrier.x = halfW;
-            barrier.vx = Math.abs(barrier.vx);
-            bounced = true;
-          } else if (barrier.x >= width - halfW) {
-            barrier.x = width - halfW;
-            barrier.vx = -Math.abs(barrier.vx);
-            bounced = true;
-          }
           if (barrier.y <= halfH) {
             barrier.y = halfH;
-            barrier.vy = Math.abs(barrier.vy || 26);
-            bounced = true;
           } else if (barrier.y >= height - halfH) {
             barrier.y = height - halfH;
-            barrier.vy = -Math.abs(barrier.vy || 26);
-            bounced = true;
-          }
-          if (bounced) {
-            barrier.bounces -= 1;
-            barrier.spin = -barrier.spin * 0.92;
-            addSpark(barrier.x, barrier.y, "rgba(255, 112, 112, 0.92)", 8, 120);
-            addFlash(barrier.x, barrier.y, "rgba(255, 92, 92, 0.22)", 42);
           }
           const dist = Math.hypot(player.x - barrier.x, player.y - barrier.y);
           nearest = Math.min(nearest, dist);
@@ -7520,7 +7701,7 @@
           if (Math.abs(player.x - barrier.x) < barrier.width * 0.5 + player.hitRadius && Math.abs(player.y - barrier.y) < barrier.height * 0.5 + player.hitRadius) {
             damagePlayer(1, "impact");
           }
-          if (barrier.life <= 0 || barrier.bounces < 0) l.barriers.splice(i, 1);
+          if (barrier.life <= 0 || barrier.x < -barrier.width - 120 || barrier.x > width + barrier.width + 120) l.barriers.splice(i, 1);
         }
 
         if (l.phase === 3 && l.beamActive > 0) {
@@ -8413,6 +8594,8 @@
 
         for (let i = c.pointerShots.length - 1; i >= 0; i--) {
           const shot = c.pointerShots[i];
+          const prevShotX = shot.x;
+          const prevShotY = shot.y;
           shot.x += shot.vx * dt;
           shot.y += shot.vy * dt;
           shot.life -= dt;
@@ -8822,10 +9005,9 @@
             if (target.type !== "hopper") continue;
             const dist = Math.hypot(projectile.x - target.x, projectile.y - target.y);
             if (dist > projectile.size + target.size * 0.9) continue;
-            b.projectiles.splice(i, 1);
-            if (Math.random() < 0.5) {
+            if (Math.random() < 0.7) {
               const splitSpeed = Math.max(120, Math.hypot(target.vx, target.vy) * 0.82);
-              for (const offset of [-0.38, 0.38]) {
+              for (const offset of [-0.52, 0, 0.52]) {
                 const angle = Math.atan2(target.vy, target.vx) + offset;
                 b.projectiles.push({
                   type: "hopper",
@@ -8833,10 +9015,10 @@
                   y: target.y,
                   vx: Math.cos(angle) * splitSpeed,
                   vy: Math.sin(angle) * splitSpeed,
-                  size: Math.max(10, target.size * 0.68),
+                  size: Math.max(9, target.size * 0.58),
                   splitLeft: 0,
                   splitTimer: 999,
-                  life: Math.max(1.8, target.life * 0.72),
+                  life: Math.max(1.6, target.life * 0.68),
                   color: target.color
                 });
               }
@@ -9096,6 +9278,16 @@
               state.cutsceneTime > 1.65
                 ? "Containment 09 Iridescing... Beauty Bismuth Folding The Prism Corridor."
                 : "Hopper Crystal Refraction Building Into A Rainbow Fractal...";
+          } else if (state.currentBoss === "bleach") {
+            warningText.textContent =
+              state.cutsceneTime > 1.65
+                ? "Containment 10 Venting... The Bleach Baron Flooding The Hall With Chlorine."
+                : "Chemical Aggression Rising In A Pale Green Mist...";
+          } else if (state.currentBoss === "alarmist") {
+            warningText.textContent =
+              state.cutsceneTime > 1.65
+                ? "Containment 11 Escalating... Ambitious Alarmist-Am Raising A Full Facility Alarm."
+                : "Tripwire Sensors Heating Into A Radioactive Orange...";
           } else {
             warningText.textContent =
               state.cutsceneTime > 1.45
@@ -9127,9 +9319,11 @@
         state.sili.fragments.length = 0;
         state.caesar.fragments.length = 0;
         state.beauty.fragments.length = 0;
+        state.bleach.fragments.length = 0;
+        state.alarmist.fragments.length = 0;
         overlay.innerHTML = `
           <div class="warning-shell">
-            <div class="warning-text" id="victoryText">${state.currentBoss === "architect" ? "Hertz's Harmony Disassembled. Neural Corridor Stabilizing." : state.currentBoss === "sovereign" ? "Protium Sovereign Destabilized. Fission Cascade Imminent." : state.currentBoss === "monarch" ? "Monarch Null Shattering Across The Lattice." : state.currentBoss === "cesium" ? "Cesium Fracturing Into Hazardous Debris." : state.currentBoss === "tantalum" ? "Tantalum Overloading. Charge Integrity Failing." : state.currentBoss === "luminosity" ? "Lord Luminosity Dimming. Noble Neon Structure Failing." : state.currentBoss === "sili" ? "Sili Overclock Destabilizing. Binary Merge Failure Imminent." : state.currentBoss === "caesar" ? "Caesar Dy Overheating. Rail Polarity Failure Imminent." : "Beauty Bismuth Dulling. Hopper Crystal Collapse Imminent."}</div>
+            <div class="warning-text" id="victoryText">${state.currentBoss === "architect" ? "Hertz's Harmony Disassembled. Neural Corridor Stabilizing." : state.currentBoss === "sovereign" ? "Protium Sovereign Destabilized. Fission Cascade Imminent." : state.currentBoss === "monarch" ? "Monarch Null Shattering Across The Lattice." : state.currentBoss === "cesium" ? "Cesium Fracturing Into Hazardous Debris." : state.currentBoss === "tantalum" ? "Tantalum Overloading. Charge Integrity Failing." : state.currentBoss === "luminosity" ? "Lord Luminosity Dimming. Noble Neon Structure Failing." : state.currentBoss === "sili" ? "Sili Overclock Destabilizing. Binary Merge Failure Imminent." : state.currentBoss === "caesar" ? "Caesar Dy Overheating. Rail Polarity Failure Imminent." : state.currentBoss === "beauty" ? "Beauty Bismuth Dulling. Hopper Crystal Collapse Imminent." : state.currentBoss === "bleach" ? "The Bleach Baron Liquefying. Corrosive Bond Failure Imminent." : "Ambitious Alarmist-Am Burning Out. Shutters Falling Silent."}</div>
           </div>
         `;
         overlay.classList.add("show");
@@ -9155,6 +9349,10 @@
           ? { x: state.sili.x, y: state.sili.y }
           : state.victoryBoss === "beauty"
           ? { x: state.beauty.x, y: state.beauty.y }
+          : state.victoryBoss === "bleach"
+          ? { x: state.bleach.x, y: state.bleach.y }
+          : state.victoryBoss === "alarmist"
+          ? { x: state.alarmist.x, y: state.alarmist.y }
           : { x: state.caesar.x, y: state.caesar.y };
 
         if (!state.victoryExplosionTriggered && state.victoryTime > 0.15) {
@@ -9315,6 +9513,41 @@
               });
             }
             state.beauty.fragments.push({ x: vortex.x, y: vortex.y, vx: 0, vy: 22, size: 16, life: 3.8, color: "rgba(142, 146, 152, 0.96)" });
+          } else if (state.victoryBoss === "bleach") {
+            for (let i = 0; i < 44; i++) {
+              const angle = Math.random() * TAU;
+              state.bleach.fragments.push({
+                x: vortex.x + Math.cos(angle) * (16 + Math.random() * 68),
+                y: vortex.y + Math.sin(angle) * (16 + Math.random() * 42),
+                vx: Math.cos(angle) * (30 + Math.random() * 110),
+                vy: Math.sin(angle) * (20 + Math.random() * 90) + 16,
+                size: 8 + Math.random() * 14,
+                life: 3 + Math.random() * 1.2,
+                color: i % 2 === 0 ? "rgba(196,255,132,0.84)" : "rgba(154,154,160,0.88)"
+              });
+            }
+          } else if (state.victoryBoss === "alarmist") {
+            for (let i = 0; i < 3; i++) {
+              state.alarmist.fragments.push({
+                x: width * (0.23 + i * 0.27),
+                y: height - 82 - (i % 2) * 32,
+                vx: 0,
+                vy: 0,
+                width: 130,
+                height: 38,
+                life: 4.6,
+                color: "rgba(96,90,82,0.96)"
+              });
+            }
+            state.alarmist.fragments.push({
+              x: vortex.x,
+              y: vortex.y,
+              vx: 0,
+              vy: 16,
+              size: 22,
+              life: 4.2,
+              color: "rgba(118,92,74,0.94)"
+            });
           } else {
             for (let i = 0; i < 6; i++) {
               const angle = (i / 6) * TAU;
@@ -9372,6 +9605,10 @@
             victoryText.textContent = "Caesar Dy Imploded. A Tiny Silver Speck Falls Away.";
           } else if (state.victoryBoss === "beauty" && state.victoryTime > 3.2) {
             victoryText.textContent = "Beauty Bismuth Collapsed. Only A Dull Grey Cube Remains.";
+          } else if (state.victoryBoss === "bleach" && state.victoryTime > 3.2) {
+            victoryText.textContent = "The Bleach Baron Melted Down. Only Dull Grey Sludge Remains.";
+          } else if (state.victoryBoss === "alarmist" && state.victoryTime > 3.2) {
+            victoryText.textContent = "Alarmist-Am Burned Out. Only Rusted Blades And Coal Remain.";
           } else if (state.victoryBoss === "sovereign" && state.victoryTime > 3.2) {
             victoryText.textContent = "Sovereign Fission Complete. Containment Restored.";
           } else if (state.victoryTime > 3.2) {
@@ -9393,6 +9630,10 @@
               ? "Sili Halves Overclocking. Merge Failure Cascading Into Pixel Rain."
               : state.victoryBoss === "beauty"
               ? "Beauty Bismuth Folding Into A Dead Grey House Of Cards."
+              : state.victoryBoss === "bleach"
+              ? "Bleach Baron Bond Cracking. Corrosive Sludge Pool Expanding."
+              : state.victoryBoss === "alarmist"
+              ? "Alarmist-Am Falling Quiet. The Iris Blades Are Rusting Midair."
               : "Caesar Rails Losing Polarity. Core Implosion Starting.";
           } else {
             victoryText.textContent = state.victoryBoss === "architect"
@@ -9411,6 +9652,10 @@
               ? "Sili Overclock Vibrating Beyond Tolerance. Binary Collapse Imminent."
               : state.victoryBoss === "beauty"
               ? "Beauty Bismuth Losing Its Iridescence. Hopper Collapse Imminent."
+              : state.victoryBoss === "bleach"
+              ? "The Bleach Baron Melting Down. Corrosive Flood Imminent."
+              : state.victoryBoss === "alarmist"
+              ? "Ambitious Alarmist-Am Overheating. Shutdown Failure Imminent."
               : "Caesar Dy Cracking Silver. Magnetic Collapse Imminent.";
           }
           const fadeStart = 5.6;
@@ -9453,6 +9698,14 @@
           state.beauty.projectiles.length = 0;
           state.beauty.debris.length = 0;
           state.beauty.fragments.length = 0;
+          state.bleach.projectiles.length = 0;
+          state.bleach.shockwaves.length = 0;
+          state.bleach.toxicTrail.length = 0;
+          state.bleach.fragments.length = 0;
+          state.alarmist.projectiles.length = 0;
+          state.alarmist.blades.length = 0;
+          state.alarmist.floorBlades.length = 0;
+          state.alarmist.fragments.length = 0;
           state.victoryProjectilesCleared = true;
         }
 
@@ -9544,6 +9797,21 @@
           fragment.life -= dt;
           if (fragment.life <= 0) state.beauty.fragments.splice(i, 1);
         }
+        for (let i = state.bleach.fragments.length - 1; i >= 0; i--) {
+          const fragment = state.bleach.fragments[i];
+          fragment.x += fragment.vx * dt;
+          fragment.y += fragment.vy * dt;
+          fragment.vx *= 0.992;
+          fragment.vy = fragment.vy * 0.992 + 18 * dt;
+          fragment.life -= dt;
+          if (fragment.life <= 0) state.bleach.fragments.splice(i, 1);
+        }
+        for (let i = state.alarmist.fragments.length - 1; i >= 0; i--) {
+          const fragment = state.alarmist.fragments[i];
+          fragment.y += fragment.vy * dt;
+          fragment.life -= dt;
+          if (fragment.life <= 0) state.alarmist.fragments.splice(i, 1);
+        }
       }
 
       function returnToMenu() {
@@ -9607,6 +9875,14 @@
         state.beauty.projectiles.length = 0;
         state.beauty.debris.length = 0;
         state.beauty.fragments.length = 0;
+        state.bleach.projectiles.length = 0;
+        state.bleach.shockwaves.length = 0;
+        state.bleach.toxicTrail.length = 0;
+        state.bleach.fragments.length = 0;
+        state.alarmist.projectiles.length = 0;
+        state.alarmist.blades.length = 0;
+        state.alarmist.floorBlades.length = 0;
+        state.alarmist.fragments.length = 0;
         renderMainMenu();
       }
 
@@ -9646,6 +9922,14 @@
           addFlash(state.beauty.x, state.beauty.y, "rgba(255, 234, 244, 0.84)", 300);
           addSpark(state.beauty.x, state.beauty.y, "rgba(255, 220, 238, 0.96)", 140, 360);
           awardAchievement("beauty_down");
+        } else if (state.currentBoss === "bleach") {
+          addFlash(state.bleach.x, state.bleach.y, "rgba(230, 255, 188, 0.84)", 320);
+          addSpark(state.bleach.x, state.bleach.y, "rgba(242, 255, 226, 0.96)", 150, 360);
+          awardAchievement("bleach_down");
+        } else if (state.currentBoss === "alarmist") {
+          addFlash(state.alarmist.x, state.alarmist.y, "rgba(255, 208, 154, 0.82)", 320);
+          addSpark(state.alarmist.x, state.alarmist.y, "rgba(255, 224, 182, 0.96)", 150, 360);
+          awardAchievement("alarmist_down");
         } else {
           addFlash(state.caesar.x, state.caesar.y, "rgba(220, 255, 232, 0.82)", 290);
           addSpark(state.caesar.x, state.caesar.y, "rgba(214, 255, 224, 0.96)", 136, 340);
@@ -9660,7 +9944,7 @@
 
       function damageBoss(amount, options = {}) {
         if (state.mode !== "playing" || state.bossHealth <= 0) return;
-        const { awardCharge = true } = options;
+        const { awardCharge = true, allowSurvivalFinish = false } = options;
         state.bossHealth = Math.max(0, state.bossHealth - amount);
         if (awardCharge) {
           state.ultimateCharge = clamp(state.ultimateCharge + (amount / Math.max(1, state.bossMaxHealth)) * 42, 0, 100);
@@ -10026,6 +10310,19 @@
               }
             }
             if (hitCaesar) continue;
+          } else if (state.currentBoss === "bleach") {
+            let hitBleach = false;
+            for (const nucleus of getBleachNucleiStates()) {
+              const nucleusDist = Math.hypot(shot.x - nucleus.x, shot.y - nucleus.y);
+              if (nucleusDist < nucleus.radius + shot.size + 2) {
+                damageBoss(shot.damage);
+                addSpark(shot.x, shot.y, "rgba(238, 255, 224, 0.96)", 6, 120);
+                state.playerShots.splice(i, 1);
+                hitBleach = true;
+                break;
+              }
+            }
+            if (hitBleach) continue;
           }
           shot.x += shot.vx * dt;
           shot.y += shot.vy * dt;
@@ -10109,9 +10406,29 @@
             if (ricocheted) continue;
           }
 
+          const prevShotX = shot.x;
+          const prevShotY = shot.y;
+          shot.x += shot.vx * dt;
+          shot.y += shot.vy * dt;
+          shot.life -= dt;
+
+          if (state.currentBoss === "alarmist") {
+            const coreHitRadius = getAlarmistCoreRadius() + shot.size;
+            const coreDist = distanceToSegment(state.alarmist.x, state.alarmist.y, prevShotX, prevShotY, shot.x, shot.y);
+            if (coreDist < coreHitRadius) {
+              damageBoss(shot.damage);
+              if (state.alarmist.hitFxCooldown <= 0) {
+                addSpark(shot.x, shot.y, "rgba(255, 220, 184, 0.9)", 4, 96);
+                state.alarmist.hitFxCooldown = 0.05;
+              }
+              state.playerShots.splice(i, 1);
+              continue;
+            }
+          }
+
           const dx = shot.x - bossPos.x;
           const dy = shot.y - bossPos.y;
-          const allowCentralHit = (state.currentBoss !== "sili" || state.sili.phase === 4) && (state.currentBoss !== "caesar" || !state.caesar.prismInvuln);
+          const allowCentralHit = (state.currentBoss !== "sili" || state.sili.phase === 4) && (state.currentBoss !== "caesar" || !state.caesar.prismInvuln) && state.currentBoss !== "bleach" && state.currentBoss !== "alarmist";
           if (allowCentralHit && dx * dx + dy * dy < bossHitRadius * bossHitRadius) {
             if (state.currentBoss === "tantalum" && state.tantalum.flashTimer > 0 && state.tantalum.absorbShotsRemaining > 0) {
               state.tantalum.absorbShotsRemaining -= 1;
@@ -10327,6 +10644,10 @@
           if (state.fpsUnlockTimer <= 0) updateCaesarBoss(dt * enemyTimeScale);
         } else if (state.currentBoss === "beauty") {
           if (state.fpsUnlockTimer <= 0) updateBeautyBoss(dt * enemyTimeScale);
+        } else if (state.currentBoss === "bleach") {
+          if (state.fpsUnlockTimer <= 0) updateBleachBoss(dt * enemyTimeScale);
+        } else if (state.currentBoss === "alarmist") {
+          if (state.fpsUnlockTimer <= 0) updateAlarmistBoss(dt * enemyTimeScale);
         }
         if (state.mode !== "playing") return;
         updatePlayerShots(dt);
@@ -10440,6 +10761,7 @@
       }
 
       function drawBossDamageIndicator() {
+        if (state.currentBoss === "alarmist") return;
         const alpha = clamp(state.bossDamageFlash / 0.16, 0, 1);
         if (alpha <= 0) return;
 
@@ -10456,6 +10778,8 @@
         else if (state.currentBoss === "sili") drawSiliBoss();
         else if (state.currentBoss === "caesar") drawCaesarBoss();
         else if (state.currentBoss === "beauty") drawBeautyBoss();
+        else if (state.currentBoss === "bleach") drawBleachBoss();
+        else if (state.currentBoss === "alarmist") drawAlarmistBoss();
         ctx.restore();
       }
 
@@ -10772,7 +11096,7 @@
       function drawTantalumPreview(ctxPreview, time) {
         const x = 64;
         const y = 64;
-        const rotation = time * 0.22;
+        const sway = Math.sin(time * 0.7) * 0.08;
         const aura = ctxPreview.createRadialGradient(x, y, 0, x, y, 62);
         aura.addColorStop(0, "rgba(78, 90, 102, 0.9)");
         aura.addColorStop(0.3, "rgba(56, 68, 78, 0.58)");
@@ -10784,46 +11108,49 @@
 
         ctxPreview.save();
         ctxPreview.translate(x, y);
-        ctxPreview.rotate(rotation * 0.8);
-        const topFace = [[-26, -20], [10, -28], [24, -12], [-12, -4]];
-        const sideFace = [[10, -28], [28, -14], [28, 22], [10, 10]];
-        const frontFace = [[-26, -4], [10, -12], [10, 28], [-26, 36]];
-        const frontGradient = ctxPreview.createLinearGradient(-28, -6, 12, 34);
-        frontGradient.addColorStop(0, "rgba(96,108,122,0.98)");
-        frontGradient.addColorStop(0.55, "rgba(52,64,76,0.98)");
-        frontGradient.addColorStop(1, "rgba(28,36,46,0.98)");
-        const sideGradient = ctxPreview.createLinearGradient(8, -28, 28, 24);
-        sideGradient.addColorStop(0, "rgba(62,74,88,0.98)");
-        sideGradient.addColorStop(1, "rgba(20,28,38,0.98)");
-        ctxPreview.fillStyle = "rgba(86,96,110,0.98)";
-        ctxPreview.beginPath();
-        ctxPreview.moveTo(topFace[0][0], topFace[0][1]);
-        for (const point of topFace.slice(1)) ctxPreview.lineTo(point[0], point[1]);
-        ctxPreview.closePath();
-        ctxPreview.fill();
-        ctxPreview.fillStyle = sideGradient;
-        ctxPreview.beginPath();
-        ctxPreview.moveTo(sideFace[0][0], sideFace[0][1]);
-        for (const point of sideFace.slice(1)) ctxPreview.lineTo(point[0], point[1]);
-        ctxPreview.closePath();
-        ctxPreview.fill();
-        ctxPreview.fillStyle = frontGradient;
-        ctxPreview.beginPath();
-        ctxPreview.moveTo(frontFace[0][0], frontFace[0][1]);
-        for (const point of frontFace.slice(1)) ctxPreview.lineTo(point[0], point[1]);
-        ctxPreview.closePath();
-        ctxPreview.fill();
-        ctxPreview.strokeStyle = "rgba(162,244,255,0.22)";
-        ctxPreview.lineWidth = 1.2;
-        for (const shape of [topFace, sideFace, frontFace]) {
-          ctxPreview.beginPath();
-          ctxPreview.moveTo(shape[0][0], shape[0][1]);
-          for (const point of shape.slice(1)) ctxPreview.lineTo(point[0], point[1]);
-          ctxPreview.closePath();
-          ctxPreview.stroke();
+        ctxPreview.rotate(sway);
+        ctxPreview.globalCompositeOperation = "lighter";
+        for (let cage = 0; cage < 3; cage++) {
+          const size = 64 - cage * 12;
+          ctxPreview.strokeStyle = cage === 0 ? "rgba(214, 252, 255, 0.18)" : "rgba(102, 244, 255, 0.14)";
+          ctxPreview.lineWidth = 1.3 + cage * 0.25;
+          ctxPreview.strokeRect(-size * 0.5, -size * 0.5, size, size);
         }
-        ctxPreview.fillStyle = "rgba(108,246,255,0.14)";
-        ctxPreview.fillRect(-6, -26, 10, 50);
+        ctxPreview.globalCompositeOperation = "source-over";
+        const plateStates = [
+          { y: -24, w: 64, h: 14 },
+          { y: -8, w: 72, h: 16 },
+          { y: 10, w: 76, h: 16 },
+          { y: 30, w: 68, h: 14 }
+        ];
+        for (const plate of plateStates) {
+          const gradient = ctxPreview.createLinearGradient(-plate.w * 0.5, plate.y - plate.h * 0.5, plate.w * 0.5, plate.y + plate.h * 0.5);
+          gradient.addColorStop(0, "rgba(98,110,124,0.98)");
+          gradient.addColorStop(0.55, "rgba(52,64,76,0.98)");
+          gradient.addColorStop(1, "rgba(24,32,42,0.98)");
+          ctxPreview.fillStyle = gradient;
+          ctxPreview.fillRect(-plate.w * 0.5, plate.y - plate.h * 0.5, plate.w, plate.h);
+          ctxPreview.strokeStyle = "rgba(166,240,255,0.22)";
+          ctxPreview.lineWidth = 1.2;
+          ctxPreview.strokeRect(-plate.w * 0.5, plate.y - plate.h * 0.5, plate.w, plate.h);
+        }
+        for (let seam = 0; seam < 3; seam++) {
+          const seamY = -16 + seam * 18;
+          ctxPreview.save();
+          ctxPreview.globalCompositeOperation = "lighter";
+          ctxPreview.strokeStyle = "rgba(104, 246, 255, 0.94)";
+          ctxPreview.lineWidth = 3.2;
+          ctxPreview.beginPath();
+          ctxPreview.moveTo(-28, seamY);
+          ctxPreview.lineTo(-12, seamY + 7);
+          ctxPreview.lineTo(2, seamY - 5);
+          ctxPreview.lineTo(16, seamY + 7);
+          ctxPreview.lineTo(30, seamY - 4);
+          ctxPreview.stroke();
+          ctxPreview.restore();
+        }
+        ctxPreview.fillStyle = "rgba(112,242,255,0.18)";
+        ctxPreview.fillRect(-7, -31, 14, 62);
         ctxPreview.restore();
 
         const corners = [
@@ -10837,7 +11164,7 @@
           const jitterY = Math.cos(time * 14 + i) * 3;
           ctxPreview.save();
           ctxPreview.translate(x + corners[i][0] + jitterX, y + corners[i][1] + jitterY);
-          ctxPreview.rotate(rotation + Math.sin(time * 18 + i) * 0.14);
+          ctxPreview.rotate(sway + Math.sin(time * 18 + i) * 0.14);
           ctxPreview.fillStyle = "rgba(110, 246, 255, 0.95)";
           ctxPreview.strokeStyle = "rgba(235, 253, 255, 0.72)";
           ctxPreview.lineWidth = 1.3;
@@ -10955,6 +11282,8 @@
         else if (index === 6) drawSiliPreview(targetCtx, time);
         else if (index === 7) drawCaesarPreview(targetCtx, time);
         else if (index === 8) drawBeautyPreview(targetCtx, time);
+        else if (index === 9) drawBleachPreview(targetCtx, time);
+        else if (index === 10) drawAlarmistPreview(targetCtx, time);
       }
 
       function getMenuAmbientBossIndices() {
@@ -11004,7 +11333,9 @@
           5: 0.5,
           6: 0.5,
           7: 0.46,
-          8: 0.42
+          8: 0.42,
+          9: 0.44,
+          10: 0.46
         };
         const scale = (bossScaleMap[ambient.index] || 0.24) * (ambient.scale / 0.28);
 
@@ -11221,6 +11552,36 @@
           };
           drawBeautyBoss();
           state.beauty = previous;
+        } else if (ambient.index === 9) {
+          const previous = state.bleach;
+          state.bleach = {
+            ...previous,
+            x: 0,
+            y: 0,
+            phase: 1,
+            rotation: time * 0.6 + ambient.seed,
+            bondPulse: time * 1.3,
+            projectiles: [],
+            toxicTrail: [],
+            fragments: []
+          };
+          drawBleachBoss();
+          state.bleach = previous;
+        } else if (ambient.index === 10) {
+          const previous = state.alarmist;
+          state.alarmist = {
+            ...previous,
+            x: 0,
+            y: 0,
+            phase: 1,
+            rotation: time * 0.6 + ambient.seed,
+            projectiles: [],
+            blades: [],
+            floorBlades: [],
+            fragments: []
+          };
+          drawAlarmistBoss();
+          state.alarmist = previous;
         }
 
         ctx.restore();
@@ -13903,6 +14264,1362 @@
         ctx.restore();
       }
 
+      function getBleachCoreRadius() {
+        const b = state.bleach;
+        return b.phase >= 5 ? 124 : b.phase >= 4 ? 108 : 94;
+      }
+
+      function getBleachBondLength() {
+        return state.bleach.phase === 2 ? Math.min(width * 0.46, 380) : state.bleach.phase >= 4 ? 172 : 148;
+      }
+
+      function getBleachNucleiStates() {
+        const b = state.bleach;
+        const radius = getBleachCoreRadius();
+        const split = b.phase === 2 ? 1 : 0;
+        const separation = getBleachBondLength() * (0.34 + split * 0.66);
+        const angle = b.rotation;
+        const offsetX = Math.cos(angle) * separation * 0.5;
+        const offsetY = Math.sin(angle) * separation * 0.5;
+        return [
+          { x: b.x - offsetX, y: b.y - offsetY, radius },
+          { x: b.x + offsetX, y: b.y + offsetY, radius }
+        ];
+      }
+
+      function spawnBleachGasCloud() {
+        const b = state.bleach;
+        const angle = Math.PI * 0.4 + Math.random() * Math.PI * 0.2;
+        const speed = 90 + Math.random() * 35;
+        b.projectiles.push({
+          type: "gas",
+          x: b.x + (Math.random() - 0.5) * 70,
+          y: b.y + 24,
+          vx: Math.cos(angle) * speed * (Math.random() > 0.5 ? 1 : -1),
+          vy: Math.abs(Math.sin(angle) * speed) + 32,
+          radius: 30 + Math.random() * 10,
+          grow: 16 + Math.random() * 8,
+          life: 6.6
+        });
+      }
+
+      function spawnBleachShards() {
+        const b = state.bleach;
+        const spreadCount = 8;
+        for (let i = 0; i < spreadCount; i++) {
+          const angle = Math.PI * 0.28 + (i / (spreadCount - 1)) * Math.PI * 0.44;
+          const speed = 250 + Math.random() * 50;
+          b.projectiles.push({
+            type: "shard",
+            x: b.x,
+            y: b.y + 18,
+            vx: Math.cos(angle) * speed,
+            vy: Math.sin(angle) * speed,
+            zigzag: (Math.random() > 0.5 ? 1 : -1) * (120 + Math.random() * 80),
+            phase: Math.random() * TAU,
+            size: 11 + Math.random() * 4,
+            life: 5.2
+          });
+        }
+      }
+
+      function spawnBleachDroplets(count = 8) {
+        const b = state.bleach;
+        for (let i = 0; i < count; i++) {
+          b.projectiles.push({
+            type: "droplet",
+            x: 20 + Math.random() * Math.max(40, width - 40),
+            y: -10 - Math.random() * 30,
+            vx: (Math.random() - 0.5) * 28,
+            vy: 210 + Math.random() * 80,
+            radius: 4 + Math.random() * 2,
+            life: 4.8
+          });
+        }
+      }
+
+      function spawnBleachPurgeCursor(side = "left") {
+        const fromLeft = side === "left";
+        state.bleach.projectiles.push({
+          type: "cursor",
+          x: fromLeft ? -32 : width + 32,
+          y: 88 + Math.random() * Math.max(40, height - 210),
+          vx: fromLeft ? 210 : -210,
+          vy: 0,
+          size: 15,
+          life: 4.2,
+          side
+        });
+      }
+
+      function spawnBleachLaserStream(sourceX, sourceY) {
+        const dx = player.x - sourceX;
+        const dy = player.y - sourceY;
+        const dist = Math.hypot(dx, dy) || 1;
+        state.bleach.projectiles.push({
+          type: "laser_stream",
+          x: sourceX,
+          y: sourceY,
+          vx: (dx / dist) * 520,
+          vy: (dy / dist) * 520,
+          width: 20,
+          height: 10,
+          life: 2.8
+        });
+      }
+
+      function spawnBleachDanmakuCircle(ring = 0) {
+        const b = state.bleach;
+        const count = 9 + ring * 2;
+        const baseAngle = b.rotation + ring * 0.22;
+        for (let i = 0; i < count; i++) {
+          const angle = baseAngle + (i / count) * TAU;
+          const speed = 112 + ring * 16;
+          b.projectiles.push({
+            type: "danmaku_circle",
+            x: b.x,
+            y: b.y,
+            vx: Math.cos(angle) * speed,
+            vy: Math.sin(angle) * speed,
+            radius: 9 + (i % 2) * 2,
+            spin: (i % 2 === 0 ? 1 : -1) * (1.4 + ring * 0.2),
+            angle,
+            life: 7
+          });
+        }
+      }
+
+      function spawnBleachCausticBurst() {
+        const b = state.bleach;
+        const snapshots = [
+          { x: player.x, y: player.y },
+          { x: player.x - player.pullVx * 0.08, y: player.y - player.pullVy * 0.08 },
+          { x: player.x - player.pullVx * 0.16, y: player.y - player.pullVy * 0.16 }
+        ];
+        for (let i = 0; i < 10; i++) {
+          const target = snapshots[i % snapshots.length];
+          const angle = Math.atan2(target.y - b.y, target.x - b.x) + (i - 9) * 0.06;
+          const speed = 250 + (i % 3) * 24;
+          b.projectiles.push({
+            type: "caustic_arrow",
+            x: b.x,
+            y: b.y,
+            vx: Math.cos(angle) * speed,
+            vy: Math.sin(angle) * speed,
+            size: 14,
+            life: 4.6,
+            homing: 0.7
+          });
+        }
+      }
+
+      function spawnBleachSpores() {
+        const b = state.bleach;
+        for (let i = 0; i < 5; i++) {
+          let spawnX = 0;
+          let spawnY = 0;
+          let attempts = 0;
+          do {
+            spawnX = 28 + Math.random() * Math.max(40, width - 56);
+            spawnY = height + 14 + Math.random() * 36;
+            attempts += 1;
+          } while (attempts < 8 && Math.hypot(spawnX - player.x, spawnY - player.y) < 120);
+          b.projectiles.push({
+            type: "spore",
+            x: spawnX,
+            y: spawnY,
+            vx: (Math.random() - 0.5) * 18,
+            vy: -(170 + Math.random() * 45),
+            radius: 3 + Math.random() * 2,
+            jitter: Math.random() * TAU,
+            life: 8
+          });
+        }
+      }
+
+      function spawnBleachGasMissiles() {
+        const b = state.bleach;
+        for (let i = 0; i < 2; i++) {
+          const offset = i === 0 ? -46 : 46;
+          b.projectiles.push({
+            type: "gas_missile",
+            x: b.x + offset,
+            y: b.y + 12,
+            vx: offset * 0.35,
+            vy: -92,
+            radius: 11,
+            turnRate: 2.6,
+            speed: 190,
+            life: 5.8,
+            drift: Math.random() * TAU
+          });
+        }
+      }
+
+      function updateBleachBoss(dt) {
+        const b = state.bleach;
+        const healthRatio = state.bossHealth / Math.max(1, state.bossMaxHealth);
+        const nextPhase = healthRatio > 0.8 ? 1 : healthRatio > 0.6 ? 2 : healthRatio > 0.4 ? 3 : healthRatio > 0.2 ? 4 : 5;
+        if (nextPhase !== b.phase) {
+          b.phase = nextPhase;
+          state.bossPhase = nextPhase;
+          addFlash(b.x, b.y, "rgba(220, 255, 184, 0.34)", 180 + nextPhase * 28);
+          addSpark(b.x, b.y, "rgba(238, 255, 224, 0.96)", 24 + nextPhase * 6, 220);
+          b.jetAngle = -Math.PI * 0.5;
+          if (nextPhase === 5) {
+            b.survivalTimer = 13;
+            b.projectiles.length = 0;
+            b.toxicTrail.length = 0;
+          }
+        }
+        state.bossPhase = b.phase;
+        b.rotation += dt * (b.phase === 3 ? 2.1 : b.phase === 2 ? 1.45 : b.phase >= 4 ? 0.42 : 0.8);
+        b.bondPulse += dt * (2.2 + b.phase * 0.4);
+        b.flashTimer = Math.max(0, b.flashTimer - dt);
+
+        const minX = 120;
+        const maxX = width - 120;
+        const minY = 110;
+        const maxY = b.phase >= 4 ? height * 0.62 : height * 0.3;
+        b.driftTimer -= dt;
+        if (b.phase >= 4) {
+          b.targetX = centerX;
+          b.targetY = centerY;
+        } else if (b.driftTimer <= 0) {
+          b.driftTimer = b.phase >= 4 ? 0.75 + Math.random() * 0.8 : 1.1 + Math.random() * 1.1;
+          b.targetX = minX + Math.random() * Math.max(30, maxX - minX);
+          b.targetY = minY + Math.random() * Math.max(20, maxY - minY);
+        }
+        const driftForce = b.phase === 2 ? 3.6 : b.phase >= 4 ? 2.3 : 3.4;
+        b.vx += (b.targetX - b.x) * dt * driftForce;
+        b.vy += (b.targetY - b.y) * dt * driftForce;
+        b.vx *= b.phase === 2 ? 0.995 : 0.94;
+        b.vy *= b.phase === 2 ? 0.995 : 0.94;
+        if (b.phase === 5) {
+          b.vx *= 0.84;
+          b.vy *= 0.84;
+        }
+        b.x = clamp(b.x + b.vx * dt, minX, maxX);
+        b.y = clamp(b.y + b.vy * dt, minY, maxY);
+
+        if (b.phase <= 4) {
+          b.toxicTrail.push({ x: b.x, y: b.y, radius: 28 + Math.random() * 8, life: 1.8 + Math.random() * 0.6 });
+        }
+
+        if (b.phase === 1) {
+          b.mistTimer -= dt;
+          b.shardTimer -= dt;
+          b.purgeTimer -= dt;
+          if (b.mistTimer <= 0) {
+            b.mistTimer = 0.36;
+            spawnBleachGasCloud();
+          }
+          if (b.shardTimer <= 0) {
+            b.shardTimer = 4.2;
+            spawnBleachShards();
+          }
+          if (b.purgeTimer <= 0) {
+            b.purgeTimer = 1.2;
+            spawnBleachDroplets(4);
+            const side = Math.random() > 0.5 ? "left" : "right";
+            spawnBleachPurgeCursor(side);
+          }
+        } else if (b.phase === 2) {
+          b.splitLerp = Math.min(1, b.splitLerp + dt * 1.6);
+          b.dropletTimer -= dt;
+          b.purgeTimer -= dt;
+          if (b.dropletTimer <= 0) {
+            b.dropletTimer = 0.14;
+            spawnBleachDroplets(6);
+          }
+          if (b.purgeTimer <= 0) {
+            b.purgeTimer = 3.2 + Math.random() * 1.6;
+            for (let i = 0; i < 2; i++) {
+              const angle = b.rotation + i * (TAU / 3);
+              const sourceX = b.x + Math.cos(angle) * (getBleachBondLength() * 0.52);
+              const sourceY = b.y + Math.sin(angle) * (getBleachBondLength() * 0.52);
+              spawnBleachLaserStream(sourceX, sourceY);
+            }
+          }
+          const nuclei = getBleachNucleiStates();
+          for (let idx = 0; idx < nuclei.length; idx++) {
+            const nucleus = nuclei[idx];
+            if (nucleus.x < nucleus.radius || nucleus.x > width - nucleus.radius) b.vx *= -1;
+            if (nucleus.y < nucleus.radius || nucleus.y > height - nucleus.radius) b.vy *= -1;
+          }
+        } else if (b.phase === 3) {
+          b.splitLerp = Math.max(0, b.splitLerp - dt * 1.8);
+          b.purgeTimer -= dt;
+          if (b.purgeTimer <= 0) {
+            b.purgeTimer = 0.95;
+            spawnBleachPurgeCursor(Math.random() > 0.5 ? "left" : "right");
+          }
+          if (b.flashTimer <= 0) {
+            b.flashTimer = 3.5;
+          }
+        } else if (b.phase === 4) {
+          b.splitLerp = Math.max(0, b.splitLerp - dt * 1.8);
+          b.saturationTimer -= dt;
+          b.causticTimer -= dt;
+          b.jetAngle += dt * 0.22;
+          if (b.saturationTimer <= 0) {
+            b.saturationTimer = 0.42;
+            spawnBleachDanmakuCircle(0);
+            if (Math.random() < 0.5) spawnBleachDanmakuCircle(1);
+          }
+          if (b.causticTimer <= 0) {
+            b.causticTimer = 2.8;
+            spawnBleachCausticBurst();
+          }
+        } else {
+          b.splitLerp = 0;
+          b.targetX = centerX;
+          b.targetY = centerY;
+          b.vx *= 0.82;
+          b.vy *= 0.82;
+          b.jetAngle += dt * 0.34;
+          b.sporeTimer -= dt;
+          b.missileTimer -= dt;
+          b.shockwaveTimer -= dt;
+          if (b.sporeTimer <= 0) {
+            b.sporeTimer = 0.28;
+            spawnBleachSpores();
+          }
+          if (b.missileTimer <= 0) {
+            b.missileTimer = 1.35;
+            spawnBleachGasMissiles();
+          }
+          if (b.shockwaveTimer <= 0) {
+            b.shockwaveTimer = 1.9 + Math.random() * 0.8;
+            b.shockwaves.push({
+              radius: getBleachCoreRadius() * 0.55,
+              speed: 340,
+              width: 22,
+              life: 2.4,
+              hit: false
+            });
+            addFlash(b.x, b.y, "rgba(234,255,214,0.22)", 140);
+          }
+        }
+
+        let nearest = Infinity;
+        let closeCount = 0;
+        const nuclei = getBleachNucleiStates();
+        for (const nucleus of nuclei) {
+          const dist = Math.hypot(player.x - nucleus.x, player.y - nucleus.y);
+          nearest = Math.min(nearest, dist);
+          if (dist < 130) closeCount++;
+          if (dist < nucleus.radius + player.hitRadius) damagePlayer(1, "impact");
+        }
+        if (distanceToSegment(player.x, player.y, nuclei[0].x, nuclei[0].y, nuclei[1].x, nuclei[1].y) < 16 + player.hitRadius) {
+          damagePlayer(1, "impact");
+          nearest = Math.min(nearest, 16);
+        }
+
+        for (let i = b.toxicTrail.length - 1; i >= 0; i--) {
+          const trail = b.toxicTrail[i];
+          trail.life -= dt;
+          trail.radius += dt * 10;
+          const dist = Math.hypot(player.x - trail.x, player.y - trail.y);
+          nearest = Math.min(nearest, dist);
+          if (dist < trail.radius + player.hitRadius) damagePlayer(0.5, "corrosion");
+          if (trail.life <= 0) b.toxicTrail.splice(i, 1);
+        }
+
+        if (b.phase === 4 && player.y > height - 88) {
+          damagePlayer(0.5, "corrosion");
+          nearest = Math.min(nearest, Math.abs(height - 88 - player.y));
+        }
+        if (b.phase >= 4) {
+          const jetLength = Math.max(width, height) * 0.72;
+          const jetX2 = b.x + Math.cos(b.jetAngle) * jetLength;
+          const jetY2 = b.y + Math.sin(b.jetAngle) * jetLength;
+          const beamDist = distanceToSegment(player.x, player.y, b.x, b.y, jetX2, jetY2);
+          nearest = Math.min(nearest, beamDist);
+          const beamWidth = b.phase === 4 ? 12 : 14;
+          if (beamDist < beamWidth + player.hitRadius) damagePlayer(1, "impact");
+        }
+
+        for (let i = b.shockwaves.length - 1; i >= 0; i--) {
+          const shockwave = b.shockwaves[i];
+          shockwave.radius += shockwave.speed * dt;
+          shockwave.life -= dt;
+          const dist = Math.hypot(player.x - b.x, player.y - b.y);
+          nearest = Math.min(nearest, Math.abs(dist - shockwave.radius));
+          if (!shockwave.hit && Math.abs(dist - shockwave.radius) < shockwave.width + player.hitRadius) {
+            shockwave.hit = true;
+            const dx = player.x - b.x;
+            const dy = player.y - b.y;
+            const safeDist = Math.hypot(dx, dy) || 1;
+            player.pullVx += (dx / safeDist) * 480;
+            player.pullVy += (dy / safeDist) * 480;
+            state.shake = Math.max(state.shake, 24);
+            addFlash(player.x, player.y, "rgba(236,255,220,0.22)", 96);
+          }
+          if (shockwave.life <= 0 || shockwave.radius > Math.max(width, height)) {
+            b.shockwaves.splice(i, 1);
+          }
+        }
+
+        for (let i = b.projectiles.length - 1; i >= 0; i--) {
+          const projectile = b.projectiles[i];
+          projectile.life -= dt;
+          if (projectile.type === "gas") {
+            projectile.x += projectile.vx * dt;
+            projectile.y += projectile.vy * dt;
+            projectile.radius += projectile.grow * dt;
+            const dist = Math.hypot(player.x - projectile.x, player.y - projectile.y);
+            nearest = Math.min(nearest, dist);
+            if (dist < projectile.radius + player.hitRadius) damagePlayer(0.5, "corrosion");
+          } else if (projectile.type === "shard") {
+            projectile.phase += dt * 9;
+            const dirX = projectile.vx === 0 ? 1 : Math.sign(projectile.vx);
+            projectile.x += projectile.vx * dt;
+            projectile.y += projectile.vy * dt + Math.sin(projectile.phase) * projectile.zigzag * dt * 0.16;
+            projectile.vx += Math.sin(projectile.phase * 0.8) * dirX * 30 * dt;
+            const dist = Math.hypot(player.x - projectile.x, player.y - projectile.y);
+            nearest = Math.min(nearest, dist);
+            if (dist < projectile.size + player.hitRadius) damagePlayer(1, "impact");
+          } else if (projectile.type === "droplet") {
+            projectile.x += projectile.vx * dt;
+            projectile.y += projectile.vy * dt;
+            const dist = Math.hypot(player.x - projectile.x, player.y - projectile.y);
+            nearest = Math.min(nearest, dist);
+            if (dist < projectile.radius + player.hitRadius) damagePlayer(0.5, "corrosion");
+          } else if (projectile.type === "cursor") {
+            const dx = b.x - projectile.x;
+            const dy = b.y - projectile.y;
+            const distBoss = Math.hypot(dx, dy) || 1;
+            projectile.vx += (dx / distBoss) * 220 * dt;
+            projectile.vy += (dy / distBoss) * 220 * dt;
+            projectile.x += projectile.vx * dt;
+            projectile.y += projectile.vy * dt;
+            const dist = Math.hypot(player.x - projectile.x, player.y - projectile.y);
+            nearest = Math.min(nearest, dist);
+            if (dist < projectile.size + player.hitRadius) damagePlayer(0.5, "impact");
+            if (distBoss < 46) {
+              spawnBleachLaserStream(projectile.x, projectile.y);
+              b.projectiles.splice(i, 1);
+              continue;
+            }
+          } else if (projectile.type === "laser_stream") {
+            projectile.x += projectile.vx * dt;
+            projectile.y += projectile.vy * dt;
+            const dist = Math.hypot(player.x - projectile.x, player.y - projectile.y);
+            nearest = Math.min(nearest, dist);
+            if (Math.abs(player.x - projectile.x) < projectile.width * 0.5 + player.hitRadius && Math.abs(player.y - projectile.y) < projectile.height * 0.5 + player.hitRadius) {
+              damagePlayer(1, "impact");
+            }
+          } else if (projectile.type === "danmaku_circle") {
+            projectile.angle += projectile.spin * dt;
+            const dirX = Math.cos(projectile.angle);
+            const dirY = Math.sin(projectile.angle);
+            projectile.x += (projectile.vx + dirX * 20) * dt;
+            projectile.y += (projectile.vy + dirY * 20) * dt;
+            const dist = Math.hypot(player.x - projectile.x, player.y - projectile.y);
+            nearest = Math.min(nearest, dist);
+            if (dist < projectile.radius + player.hitRadius) damagePlayer(0.5, "impact");
+          } else if (projectile.type === "caustic_arrow") {
+            if (projectile.homing > 0) {
+              const dx = player.x - projectile.x;
+              const dy = player.y - projectile.y;
+              const dist = Math.hypot(dx, dy) || 1;
+              projectile.vx += (dx / dist) * 180 * dt;
+              projectile.vy += (dy / dist) * 180 * dt;
+              projectile.homing -= dt;
+            }
+            projectile.x += projectile.vx * dt;
+            projectile.y += projectile.vy * dt;
+            const dist = Math.hypot(player.x - projectile.x, player.y - projectile.y);
+            nearest = Math.min(nearest, dist);
+            if (dist < projectile.size + player.hitRadius) damagePlayer(1, "impact");
+          } else if (projectile.type === "gas_missile") {
+            projectile.drift += dt * 6;
+            const targetX = player.x;
+            const targetY = Math.max(36, player.y - 110);
+            const dx = targetX - projectile.x;
+            const dy = targetY - projectile.y;
+            const dist = Math.hypot(dx, dy) || 1;
+            const desiredVx = (dx / dist) * projectile.speed;
+            const desiredVy = (dy / dist) * projectile.speed - 48;
+            const steer = Math.min(1, dt * projectile.turnRate);
+            projectile.vx += (desiredVx - projectile.vx) * steer;
+            projectile.vy += (desiredVy - projectile.vy) * steer;
+            projectile.x += projectile.vx * dt + Math.cos(projectile.drift) * 8 * dt;
+            projectile.y += projectile.vy * dt;
+            projectile.radius = Math.max(8, projectile.radius + Math.sin(projectile.drift) * 0.05);
+            const distPlayer = Math.hypot(player.x - projectile.x, player.y - projectile.y);
+            nearest = Math.min(nearest, distPlayer);
+            if (distPlayer < projectile.radius + player.hitRadius) damagePlayer(0.5, "corrosion");
+          } else if (projectile.type === "spore") {
+            projectile.jitter += dt * 12;
+            projectile.x += projectile.vx * dt + Math.cos(projectile.jitter) * 14 * dt;
+            projectile.y += projectile.vy * dt + Math.sin(projectile.jitter * 1.2) * 8 * dt;
+            const dist = Math.hypot(player.x - projectile.x, player.y - projectile.y);
+            nearest = Math.min(nearest, dist);
+            if (dist < projectile.radius + player.hitRadius) damagePlayer(0.5, "corrosion");
+          }
+          if (projectile.life <= 0 || projectile.x < -220 || projectile.x > width + 220 || projectile.y < -220 || projectile.y > height + 220) {
+            b.projectiles.splice(i, 1);
+          }
+        }
+
+        applyThreatResponse(dt, nearest, closeCount);
+      }
+
+      function drawBleachBoss() {
+        const b = state.bleach;
+        const nuclei = getBleachNucleiStates();
+        const glowRadius = getBleachCoreRadius() * 2.7;
+        ctx.save();
+        const aura = ctx.createRadialGradient(b.x, b.y, 0, b.x, b.y, glowRadius);
+        aura.addColorStop(0, b.phase >= 5 ? "rgba(212,255,138,0.18)" : "rgba(232,255,188,0.16)");
+        aura.addColorStop(0.42, b.phase >= 4 ? "rgba(92,170,76,0.24)" : "rgba(178,226,88,0.18)");
+        aura.addColorStop(1, "rgba(0,0,0,0)");
+        ctx.fillStyle = aura;
+        ctx.beginPath();
+        ctx.arc(b.x, b.y, glowRadius, 0, TAU);
+        ctx.fill();
+
+        ctx.globalCompositeOperation = "lighter";
+        for (let ring = 0; ring < 3; ring++) {
+          ctx.strokeStyle = ring === 0 ? "rgba(232,255,188,0.1)" : ring === 1 ? "rgba(162,255,132,0.1)" : "rgba(255,255,235,0.08)";
+          ctx.lineWidth = 5 - ring;
+          ctx.beginPath();
+          ctx.arc(b.x, b.y, glowRadius * (0.52 + ring * 0.14), 0, TAU);
+          ctx.stroke();
+        }
+        ctx.strokeStyle = b.phase >= 5 ? "rgba(182,255,128,0.82)" : "rgba(142,255,112,0.76)";
+        ctx.lineWidth = 18 + Math.sin(b.bondPulse * 5) * 4;
+        ctx.beginPath();
+        ctx.moveTo(nuclei[0].x, nuclei[0].y);
+        ctx.lineTo(nuclei[1].x, nuclei[1].y);
+        ctx.stroke();
+        ctx.strokeStyle = "rgba(240,255,236,0.6)";
+        ctx.lineWidth = 6;
+        ctx.stroke();
+        ctx.strokeStyle = "rgba(208,255,176,0.3)";
+        ctx.lineWidth = 2.4;
+        ctx.beginPath();
+        ctx.moveTo(nuclei[0].x, nuclei[0].y);
+        ctx.lineTo(b.x, b.y + Math.sin(b.bondPulse * 6) * 14);
+        ctx.lineTo(nuclei[1].x, nuclei[1].y);
+        ctx.stroke();
+
+        for (const [index, nucleus] of nuclei.entries()) {
+          const outerHalo = ctx.createRadialGradient(nucleus.x, nucleus.y, nucleus.radius * 0.2, nucleus.x, nucleus.y, nucleus.radius * 1.55);
+          outerHalo.addColorStop(0, "rgba(250,255,232,0.18)");
+          outerHalo.addColorStop(0.45, index === 0 ? "rgba(214,255,154,0.18)" : "rgba(186,255,120,0.14)");
+          outerHalo.addColorStop(1, "rgba(0,0,0,0)");
+          ctx.fillStyle = outerHalo;
+          ctx.beginPath();
+          ctx.arc(nucleus.x, nucleus.y, nucleus.radius * 1.55, 0, TAU);
+          ctx.fill();
+          const gas = ctx.createRadialGradient(nucleus.x - 10, nucleus.y - 12, 0, nucleus.x, nucleus.y, nucleus.radius);
+          gas.addColorStop(0, b.phase >= 5 ? "rgba(244,255,224,0.88)" : "rgba(246,255,220,0.82)");
+          gas.addColorStop(0.34, b.phase >= 4 ? "rgba(160,210,104,0.78)" : "rgba(210,238,118,0.78)");
+          gas.addColorStop(1, b.phase >= 4 ? "rgba(56,104,36,0.74)" : "rgba(128,170,52,0.7)");
+          ctx.fillStyle = gas;
+          ctx.beginPath();
+          ctx.arc(nucleus.x, nucleus.y, nucleus.radius, 0, TAU);
+          ctx.fill();
+          ctx.strokeStyle = "rgba(250,255,238,0.34)";
+          ctx.lineWidth = 3;
+          ctx.stroke();
+          ctx.strokeStyle = "rgba(255,255,240,0.2)";
+          ctx.lineWidth = 1.4;
+          ctx.beginPath();
+          ctx.arc(nucleus.x - nucleus.radius * 0.12, nucleus.y - nucleus.radius * 0.08, nucleus.radius * 0.38, 0, TAU);
+          ctx.stroke();
+          for (let vent = 0; vent < 4; vent++) {
+            const angle = b.rotation * 0.4 + index * Math.PI + vent * (TAU / 4);
+            const inner = nucleus.radius * 0.3;
+            const outer = nucleus.radius * 0.84;
+            ctx.strokeStyle = vent % 2 === 0 ? "rgba(236,255,216,0.18)" : "rgba(162,255,132,0.18)";
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(nucleus.x + Math.cos(angle) * inner, nucleus.y + Math.sin(angle) * inner);
+            ctx.lineTo(nucleus.x + Math.cos(angle) * outer, nucleus.y + Math.sin(angle) * outer);
+            ctx.stroke();
+          }
+        }
+        ctx.restore();
+      }
+
+      function drawBleachProjectiles() {
+        const b = state.bleach;
+        ctx.save();
+        ctx.globalCompositeOperation = "lighter";
+        for (const trail of b.toxicTrail) {
+          const alpha = clamp(trail.life / 2.4, 0, 1) * 0.32;
+          const cloud = ctx.createRadialGradient(trail.x, trail.y, 0, trail.x, trail.y, trail.radius * 1.6);
+          cloud.addColorStop(0, `rgba(220,255,180,${alpha})`);
+          cloud.addColorStop(0.45, `rgba(160,220,118,${alpha * 0.76})`);
+          cloud.addColorStop(1, "rgba(0,0,0,0)");
+          ctx.fillStyle = cloud;
+          ctx.beginPath();
+          ctx.arc(trail.x, trail.y, trail.radius * 1.6, 0, TAU);
+          ctx.fill();
+        }
+        for (const projectile of b.projectiles) {
+          if (projectile.type === "gas") {
+            const gas = ctx.createRadialGradient(projectile.x, projectile.y, 0, projectile.x, projectile.y, projectile.radius);
+            gas.addColorStop(0, "rgba(246,255,224,0.22)");
+            gas.addColorStop(0.42, "rgba(210,238,118,0.24)");
+            gas.addColorStop(1, "rgba(110,150,48,0)");
+            ctx.fillStyle = gas;
+            ctx.beginPath();
+            ctx.arc(projectile.x, projectile.y, projectile.radius, 0, TAU);
+            ctx.fill();
+            continue;
+          }
+          ctx.save();
+          ctx.translate(projectile.x, projectile.y);
+          if (projectile.type === "shard") {
+            ctx.rotate(Math.atan2(projectile.vy, projectile.vx));
+            ctx.fillStyle = "rgba(244,255,176,0.92)";
+            ctx.beginPath();
+            ctx.moveTo(projectile.size, 0);
+            ctx.lineTo(-projectile.size * 0.46, projectile.size * 0.42);
+            ctx.lineTo(-projectile.size * 0.22, 0);
+            ctx.lineTo(-projectile.size * 0.46, -projectile.size * 0.42);
+            ctx.closePath();
+            ctx.fill();
+          } else if (projectile.type === "droplet") {
+            ctx.fillStyle = "rgba(255,255,255,0.94)";
+            ctx.beginPath();
+            ctx.arc(0, 0, projectile.radius, 0, TAU);
+            ctx.fill();
+          } else if (projectile.type === "cursor") {
+            ctx.fillStyle = "rgba(245,255,238,0.84)";
+            ctx.beginPath();
+            ctx.moveTo(-8, -10);
+            ctx.lineTo(10, 0);
+            ctx.lineTo(-2, 3);
+            ctx.lineTo(4, 14);
+            ctx.lineTo(-10, 5);
+            ctx.closePath();
+            ctx.fill();
+          } else if (projectile.type === "laser_stream") {
+            ctx.rotate(Math.atan2(projectile.vy, projectile.vx));
+            ctx.fillStyle = "rgba(244,255,246,0.92)";
+            ctx.fillRect(-projectile.width * 0.5, -projectile.height * 0.5, projectile.width, projectile.height);
+            ctx.fillStyle = "rgba(166,255,120,0.72)";
+            ctx.fillRect(-projectile.width * 0.2, -projectile.height * 0.2, projectile.width * 0.4, projectile.height * 0.4);
+          } else if (projectile.type === "danmaku_circle") {
+            ctx.fillStyle = Math.sin(projectile.angle * 2) > 0 ? "rgba(156,255,116,0.92)" : "rgba(255,255,255,0.9)";
+            ctx.beginPath();
+            ctx.arc(0, 0, projectile.radius, 0, TAU);
+            ctx.fill();
+          } else if (projectile.type === "caustic_arrow") {
+            ctx.rotate(Math.atan2(projectile.vy, projectile.vx));
+            ctx.fillStyle = "rgba(196,255,132,0.94)";
+            ctx.beginPath();
+            ctx.moveTo(projectile.size, 0);
+            ctx.lineTo(-projectile.size * 0.55, projectile.size * 0.55);
+            ctx.lineTo(-projectile.size * 0.2, 0);
+            ctx.lineTo(-projectile.size * 0.55, -projectile.size * 0.55);
+            ctx.closePath();
+            ctx.fill();
+          } else if (projectile.type === "gas_missile") {
+            const gas = ctx.createRadialGradient(0, 0, 0, 0, 0, projectile.radius);
+            gas.addColorStop(0, "rgba(246,255,224,0.82)");
+            gas.addColorStop(0.42, "rgba(210,238,118,0.68)");
+            gas.addColorStop(1, "rgba(110,150,48,0.18)");
+            ctx.fillStyle = gas;
+            ctx.beginPath();
+            ctx.arc(0, 0, projectile.radius, 0, TAU);
+            ctx.fill();
+            ctx.strokeStyle = "rgba(250,255,240,0.28)";
+            ctx.lineWidth = 1.2;
+            ctx.stroke();
+          } else if (projectile.type === "spore") {
+            ctx.fillStyle = "rgba(228,255,214,0.9)";
+            ctx.beginPath();
+            ctx.arc(0, 0, projectile.radius, 0, TAU);
+            ctx.fill();
+          }
+          ctx.restore();
+        }
+        if (b.phase === 4) {
+          ctx.fillStyle = "rgba(116,190,84,0.22)";
+          ctx.fillRect(0, height - 88, width, 88);
+        }
+        if (b.phase >= 4) {
+          const length = Math.max(width, height) * 0.72;
+          ctx.save();
+          ctx.translate(b.x, b.y);
+          ctx.rotate(b.jetAngle);
+          ctx.fillStyle = b.phase === 4 ? "rgba(136,255,108,0.16)" : "rgba(182,255,120,0.22)";
+          ctx.fillRect(0, -18, length, 36);
+          ctx.fillStyle = b.phase === 4 ? "rgba(220,255,210,0.34)" : "rgba(244,255,230,0.38)";
+          ctx.fillRect(0, -6, length, 12);
+          ctx.fillStyle = "rgba(255,255,246,0.24)";
+          ctx.fillRect(0, -2, length, 4);
+          ctx.restore();
+        }
+        for (const shockwave of b.shockwaves) {
+          ctx.strokeStyle = "rgba(220,255,196,0.26)";
+          ctx.lineWidth = shockwave.width;
+          ctx.beginPath();
+          ctx.arc(b.x, b.y, shockwave.radius, 0, TAU);
+          ctx.stroke();
+          ctx.strokeStyle = "rgba(255,255,244,0.4)";
+          ctx.lineWidth = Math.max(4, shockwave.width * 0.22);
+          ctx.beginPath();
+          ctx.arc(b.x, b.y, shockwave.radius, 0, TAU);
+          ctx.stroke();
+        }
+        ctx.restore();
+      }
+
+      function drawBleachPreview(ctxPreview, time) {
+        const cx = 64;
+        const cy = 64;
+        const radius = 20;
+        const bondAngle = time * 0.8;
+        const dx = Math.cos(bondAngle) * 22;
+        const dy = Math.sin(bondAngle) * 8;
+        ctxPreview.save();
+        ctxPreview.globalCompositeOperation = "lighter";
+        ctxPreview.strokeStyle = "rgba(142,255,112,0.76)";
+        ctxPreview.lineWidth = 8;
+        ctxPreview.beginPath();
+        ctxPreview.moveTo(cx - dx, cy - dy);
+        ctxPreview.lineTo(cx + dx, cy + dy);
+        ctxPreview.stroke();
+        for (const point of [{ x: cx - dx, y: cy - dy }, { x: cx + dx, y: cy + dy }]) {
+          const gas = ctxPreview.createRadialGradient(point.x - 6, point.y - 8, 0, point.x, point.y, radius);
+          gas.addColorStop(0, "rgba(246,255,220,0.88)");
+          gas.addColorStop(0.35, "rgba(210,238,118,0.8)");
+          gas.addColorStop(1, "rgba(118,162,54,0.74)");
+          ctxPreview.fillStyle = gas;
+          ctxPreview.beginPath();
+          ctxPreview.arc(point.x, point.y, radius, 0, TAU);
+          ctxPreview.fill();
+        }
+        ctxPreview.restore();
+      }
+
+      function drawBleachSigil(progress) {
+        const alpha = clamp(progress * 1.15, 0, 1);
+        ctx.save();
+        ctx.translate(centerX, centerY);
+        ctx.rotate(progress * 0.75);
+        ctx.strokeStyle = `rgba(184,255,142,${0.2 + alpha * 0.34})`;
+        ctx.lineWidth = 5;
+        ctx.beginPath();
+        ctx.arc(-84, 0, 74, 0, TAU);
+        ctx.arc(84, 0, 74, 0, TAU);
+        ctx.stroke();
+        ctx.lineWidth = 18;
+        ctx.beginPath();
+        ctx.moveTo(-10, 0);
+        ctx.lineTo(10, 0);
+        ctx.stroke();
+        ctx.restore();
+      }
+
+      function getAlarmistCoreRadius() {
+        return state.alarmist.phase === 5 ? 104 : state.alarmist.phase >= 4 ? 88 : 76;
+      }
+
+      function getAlarmistBladeStates() {
+        const a = state.alarmist;
+        const blades = [];
+        const orbitRadius = (a.phase === 2 ? 148 : a.phase >= 4 ? 112 : 124) * a.bladeSpread;
+        const arcSpan = a.phase >= 4 ? 1.08 : a.phase === 3 ? 0.96 : 0.86;
+        for (let i = 0; i < 3; i++) {
+          const angle = a.rotation + i * (TAU / 3);
+          const anchorX = a.phase === 2 ? a.orbitAnchorX : a.x;
+          const anchorY = a.phase === 2 ? a.orbitAnchorY : a.y;
+          blades.push({
+            index: i,
+            x: anchorX + Math.cos(angle) * orbitRadius,
+            y: anchorY + Math.sin(angle) * orbitRadius,
+            rotation: angle,
+            radius: 44,
+            width: 124,
+            height: 32,
+            arcSpan
+          });
+        }
+        return blades;
+      }
+
+      function getAlarmistTripwires() {
+        const a = state.alarmist;
+        const wires = [];
+        if (a.phase === 1) {
+          for (let i = 0; i < 6; i++) {
+            const angle = a.rotation * 0.5 + i * (TAU / 6);
+            wires.push({
+              x1: a.x + Math.cos(angle) * 36,
+              y1: a.y + Math.sin(angle) * 36,
+              x2: a.x + Math.cos(angle) * Math.max(width, height),
+              y2: a.y + Math.sin(angle) * Math.max(width, height),
+              damage: false
+            });
+          }
+        } else if (a.phase === 4) {
+          for (let i = 0; i < 10; i++) {
+            const angle = a.rotation + i * (TAU / 10) + Math.sin(state.elapsed * 0.8 + i) * 0.3;
+            const radius = 24 + (i % 3) * 16;
+            wires.push({
+              x1: a.x + Math.cos(angle) * radius,
+              y1: a.y + Math.sin(angle) * radius,
+              x2: a.x + Math.cos(angle + Math.PI * 0.08) * Math.max(width, height),
+              y2: a.y + Math.sin(angle + Math.PI * 0.08) * Math.max(width, height),
+              damage: true
+            });
+          }
+        }
+        return wires;
+      }
+
+      function spawnAlarmPulse() {
+        const a = state.alarmist;
+        for (let i = 0; i < 50; i++) {
+          const angle = (i / 50) * TAU;
+          a.projectiles.push({
+            type: "alarm_pellet",
+            x: a.x,
+            y: a.y,
+            vx: Math.cos(angle) * 220,
+            vy: Math.sin(angle) * 220,
+            size: 5,
+            life: 3.8
+          });
+        }
+      }
+
+      function spawnAlarmTripBurst(count = 18, speed = 240) {
+        const a = state.alarmist;
+        const base = a.rotation * 0.6;
+        for (let i = 0; i < count; i++) {
+          const angle = base + (i / count) * TAU;
+          a.projectiles.push({
+            type: "alarm_pellet",
+            x: a.x,
+            y: a.y,
+            vx: Math.cos(angle) * speed,
+            vy: Math.sin(angle) * speed,
+            size: 5,
+            life: 4.4
+          });
+        }
+      }
+
+      function spawnAlarmAsh() {
+        state.alarmist.projectiles.push({
+          type: "ash",
+          x: 20 + Math.random() * Math.max(40, width - 40),
+          y: -12,
+          vx: (Math.random() - 0.5) * 12,
+          vy: 120 + Math.random() * 36,
+          size: 7 + Math.random() * 5,
+          life: 14
+        });
+      }
+
+      function spawnAlarmSweepCone(blade) {
+        const originX = blade.x;
+        const originY = blade.y;
+        const centerAngle = Math.atan2(centerY - originY, centerX - originX);
+        for (let i = 0; i < 18; i++) {
+          const angle = centerAngle - 0.46 + (i / 17) * 0.92;
+          state.alarmist.projectiles.push({
+            type: "sweep_bullet",
+            x: originX,
+            y: originY,
+            vx: Math.cos(angle) * 250,
+            vy: Math.sin(angle) * 250,
+            radius: 5,
+            life: 4.8
+          });
+        }
+      }
+
+      function spawnAlarmSmoke() {
+        const a = state.alarmist;
+        for (let i = 0; i < 4; i++) {
+          const angle = a.rotation + i * (TAU / 4);
+          a.projectiles.push({
+            type: "smoke_oval",
+            x: a.x,
+            y: a.y,
+            vx: Math.cos(angle) * 120,
+            vy: Math.sin(angle) * 120,
+            angle,
+            spin: (i % 2 === 0 ? 1 : -1) * 0.8,
+            width: 16,
+            height: 10,
+            life: 5.2
+          });
+        }
+      }
+
+      function spawnAlarmWave() {
+        state.alarmist.projectiles.push({
+          type: "alarm_wave",
+          x: state.alarmist.x,
+          y: state.alarmist.y,
+          radius: 24,
+          speed: 260,
+          width: 16,
+          life: 3.6
+        });
+      }
+
+      function spawnAlarmNeedles() {
+        const a = state.alarmist;
+        const base = a.rotation * 1.6;
+        for (let i = 0; i < 6; i++) {
+          const angle = base + i * 0.31;
+          const radius = 8 + i * 3.5;
+          a.projectiles.push({
+            type: "needle",
+            x: a.x + Math.cos(angle) * radius,
+            y: a.y + Math.sin(angle) * radius,
+            vx: Math.cos(angle) * (240 + i * 16),
+            vy: Math.sin(angle) * (240 + i * 16),
+            width: 16,
+            height: 4,
+            life: 4.8
+          });
+        }
+      }
+
+      function getAlarmistDecoys() {
+        const a = state.alarmist;
+        return [
+          { x: a.x + 120, y: a.y + 14 },
+          { x: a.x - 120, y: a.y + 16 },
+          { x: a.x, y: a.y - 88 }
+        ];
+      }
+
+      function updateAlarmistBoss(dt) {
+        const a = state.alarmist;
+        const healthRatio = state.bossHealth / Math.max(1, state.bossMaxHealth);
+        const nextPhase = healthRatio > 0.8 ? 1 : healthRatio > 0.6 ? 2 : healthRatio > 0.4 ? 3 : healthRatio > 0.2 ? 4 : 5;
+        if (nextPhase !== a.phase) {
+          a.phase = nextPhase;
+          state.bossPhase = nextPhase;
+          a.projectiles.length = 0;
+          addFlash(a.x, a.y, "rgba(255, 172, 106, 0.34)", 180 + nextPhase * 24);
+          addSpark(a.x, a.y, "rgba(255, 202, 154, 0.94)", 28 + nextPhase * 6, 220);
+          if (nextPhase === 5) {
+            a.floorBlades = getAlarmistBladeStates().map((blade, index) => ({
+              x: width * (0.23 + index * 0.27),
+              y: -120 - index * 40,
+              targetY: height - 82 - (index % 2) * 32,
+              rotation: blade.rotation,
+              width: 130,
+              height: 38
+            }));
+          } else {
+            a.floorBlades.length = 0;
+          }
+        }
+        state.bossPhase = a.phase;
+        a.pulseCooldown = Math.max(0, a.pulseCooldown - dt);
+        a.hitFxCooldown = Math.max(0, a.hitFxCooldown - dt);
+        a.redFlashTimer = Math.max(0, a.redFlashTimer - dt);
+        a.freezeTimer = Math.max(0, a.freezeTimer - dt);
+        a.burstSpeedTimer = Math.max(0, a.burstSpeedTimer - dt);
+
+        const desiredBladeSpread = a.phase === 2 ? 1.12 : a.phase >= 4 ? 0.9 : 1;
+        a.bladeSpread += (desiredBladeSpread - a.bladeSpread) * Math.min(1, dt * 3.4);
+        a.rotation += dt * (a.phase === 5 ? 1.65 : a.phase === 4 ? 2.1 : a.phase === 3 ? 1.18 : 0.82);
+        a.bladeOrbit += dt * (a.phase === 2 ? 1.28 : 0.7);
+
+        if (a.phase === 1) {
+          a.targetX = centerX + Math.sin(state.elapsed * 0.45) * Math.min(110, width * 0.1);
+          a.targetY = height * 0.2 + Math.sin(state.elapsed * 0.7) * 10;
+        } else if (a.phase === 2) {
+          a.targetX = centerX;
+          a.targetY = height * 0.24;
+        } else if (a.phase === 3) {
+          a.targetX = centerX + Math.sin(state.elapsed * 0.5) * Math.min(70, width * 0.07);
+          a.targetY = height * 0.22;
+        } else if (a.phase === 4) {
+          a.driftTimer -= dt;
+          if (a.driftTimer <= 0) {
+            a.driftTimer = 0.85 + Math.random() * 0.5;
+            a.targetX = 130 + Math.random() * Math.max(40, width - 260);
+            a.targetY = 92 + Math.random() * Math.max(24, height * 0.28);
+          }
+        } else {
+          a.targetX = centerX;
+          a.targetY = height * 0.22;
+        }
+
+        const driftForce = a.phase === 4 ? 3.8 : a.phase === 2 ? 2.2 : 2.8;
+        a.vx += (a.targetX - a.x) * dt * driftForce;
+        a.vy += (a.targetY - a.y) * dt * driftForce;
+        a.vx *= a.phase === 4 ? 0.92 : 0.95;
+        a.vy *= a.phase === 4 ? 0.92 : 0.95;
+        a.x = clamp(a.x + a.vx * dt, 110, width - 110);
+        a.y = clamp(a.y + a.vy * dt, 86, height * (a.phase >= 4 ? 0.46 : 0.34));
+
+        if (a.phase === 2) {
+          a.orbitAnchorX += (player.x - a.orbitAnchorX) * Math.min(1, dt * 1.05);
+          a.orbitAnchorY += (player.y - a.orbitAnchorY) * Math.min(1, dt * 1.05);
+        } else {
+          a.orbitAnchorX = a.x;
+          a.orbitAnchorY = a.y;
+        }
+
+        if (a.phase === 1) {
+          a.tripTimer -= dt;
+          a.ashTimer -= dt;
+          if (a.tripTimer <= 0) {
+            a.tripTimer = 2.25;
+            spawnAlarmTripBurst(22, 235);
+          }
+          if (a.ashTimer <= 0) {
+            a.ashTimer = 0.28;
+            spawnAlarmAsh();
+          }
+        } else if (a.phase === 2) {
+          a.sweepTimer -= dt;
+          a.smokeTimer -= dt;
+          if (a.sweepTimer <= 0) {
+            a.sweepTimer = 3.1 + Math.random() * 1.8;
+            for (const blade of getAlarmistBladeStates()) spawnAlarmSweepCone(blade);
+          }
+          if (a.smokeTimer <= 0) {
+            a.smokeTimer = 0.14;
+            spawnAlarmSmoke();
+          }
+        } else if (a.phase === 3) {
+          a.warningTimer -= dt;
+          a.smokeTimer -= dt;
+          if (a.smokeTimer <= 0) {
+            a.smokeTimer = 0.16;
+            spawnAlarmSmoke();
+          }
+          if (a.warningTimer <= 0) {
+            a.warningTimer = 2.2;
+            a.redFlashTimer = 0.5;
+            a.freezeTimer = 0.9;
+            a.burstSpeedTimer = 1;
+            spawnAlarmTripBurst(14, 250);
+          }
+        } else if (a.phase === 4) {
+          a.webTimer -= dt;
+          a.waveTimer -= dt;
+          a.tripTimer -= dt;
+          if (a.webTimer <= 0) {
+            a.webTimer = 0.2;
+            for (const line of getAlarmistTripwires()) {
+              a.projectiles.push({
+                type: "web_marker",
+                x: line.x1,
+                y: line.y1,
+                x2: line.x2,
+                y2: line.y2,
+                life: 0.3
+              });
+            }
+          }
+          if (a.waveTimer <= 0) {
+            a.waveTimer = 0.6;
+            spawnAlarmWave();
+          }
+          if (a.tripTimer <= 0) {
+            a.tripTimer = 1.35;
+            spawnAlarmTripBurst(18, 270);
+          }
+        } else {
+          a.needleTimer -= dt;
+          a.waveTimer -= dt;
+          if (a.needleTimer <= 0) {
+            a.needleTimer = 0.04;
+            spawnAlarmNeedles();
+          }
+          if (a.waveTimer <= 0) {
+            a.waveTimer = 1.15;
+            spawnAlarmTripBurst(16, 290);
+          }
+          for (const blade of a.floorBlades) {
+            blade.y += (blade.targetY - blade.y) * Math.min(1, dt * 4.6);
+            blade.rotation += dt * 0.5;
+          }
+        }
+
+        let nearest = Infinity;
+        let closeCount = 0;
+        const coreRadius = getAlarmistCoreRadius() - 8;
+        const coreDist = Math.hypot(player.x - a.x, player.y - a.y);
+        nearest = Math.min(nearest, coreDist);
+        if (coreDist < coreRadius + player.hitRadius) damagePlayer(1, "impact");
+
+        for (const blade of getAlarmistBladeStates()) {
+          const dist = Math.hypot(player.x - blade.x, player.y - blade.y);
+          nearest = Math.min(nearest, dist);
+          if (dist < blade.radius + player.hitRadius) damagePlayer(0.5, "impact");
+        }
+        for (const blade of a.floorBlades) {
+          const dist = Math.hypot(player.x - blade.x, player.y - blade.y);
+          nearest = Math.min(nearest, dist);
+          if (Math.abs(player.x - blade.x) < blade.width * 0.45 + player.hitRadius && Math.abs(player.y - blade.y) < blade.height * 0.45 + player.hitRadius) {
+            damagePlayer(1, "impact");
+          }
+        }
+        for (const wire of getAlarmistTripwires()) {
+          const wireDist = distanceToSegment(player.x, player.y, wire.x1, wire.y1, wire.x2, wire.y2);
+          nearest = Math.min(nearest, wireDist);
+          if (wireDist < 5 + player.hitRadius) {
+            if (a.phase === 1 && a.pulseCooldown <= 0) {
+              a.pulseCooldown = 0.5;
+              spawnAlarmPulse();
+              addFlash(a.x, a.y, "rgba(255, 172, 106, 0.2)", 120);
+            } else if (a.phase === 4) {
+              damagePlayer(0.5, "impact");
+            }
+          }
+        }
+
+        const speedMultiplier = a.burstSpeedTimer > 0 ? 2 : 1;
+        const frozen = a.freezeTimer > 0;
+        for (let i = a.projectiles.length - 1; i >= 0; i--) {
+          const projectile = a.projectiles[i];
+          projectile.life -= dt;
+          if (projectile.type === "ash") {
+            projectile.x += projectile.vx * dt;
+            projectile.y += projectile.vy * dt;
+            const dist = Math.hypot(player.x - projectile.x, player.y - projectile.y);
+            nearest = Math.min(nearest, dist);
+            if (dist < projectile.size * 0.7 + player.hitRadius) {
+              damagePlayer(0.5, "impact");
+              a.projectiles.splice(i, 1);
+              continue;
+            }
+          } else if (projectile.type === "alarm_pellet") {
+            if (!frozen) {
+              projectile.x += projectile.vx * dt * speedMultiplier;
+              projectile.y += projectile.vy * dt * speedMultiplier;
+            }
+            const dist = Math.hypot(player.x - projectile.x, player.y - projectile.y);
+            nearest = Math.min(nearest, dist);
+            if (dist < projectile.size + player.hitRadius) damagePlayer(0.5, "impact");
+          } else if (projectile.type === "sweep_bullet") {
+            projectile.x += projectile.vx * dt;
+            projectile.y += projectile.vy * dt;
+            const dist = Math.hypot(player.x - projectile.x, player.y - projectile.y);
+            nearest = Math.min(nearest, dist);
+            if (dist < projectile.radius + player.hitRadius) damagePlayer(0.5, "impact");
+          } else if (projectile.type === "smoke_oval") {
+            if (!frozen) {
+              projectile.angle += projectile.spin * dt * 1.2;
+              const dirX = Math.cos(projectile.angle);
+              const dirY = Math.sin(projectile.angle);
+              projectile.x += (projectile.vx + dirX * 36) * dt * speedMultiplier;
+              projectile.y += (projectile.vy + dirY * 36) * dt * speedMultiplier;
+            }
+            const dist = Math.hypot(player.x - projectile.x, player.y - projectile.y);
+            nearest = Math.min(nearest, dist);
+            if (dist < Math.max(projectile.width, projectile.height) * 0.6 + player.hitRadius) damagePlayer(0.5, "impact");
+          } else if (projectile.type === "alarm_wave") {
+            projectile.radius += projectile.speed * dt;
+            const ringDist = Math.abs(Math.hypot(player.x - projectile.x, player.y - projectile.y) - projectile.radius);
+            nearest = Math.min(nearest, ringDist);
+            if (ringDist < projectile.width + player.hitRadius) damagePlayer(0.5, "impact");
+          } else if (projectile.type === "needle") {
+            projectile.x += projectile.vx * dt;
+            projectile.y += projectile.vy * dt;
+            const dist = Math.hypot(player.x - projectile.x, player.y - projectile.y);
+            nearest = Math.min(nearest, dist);
+            if (dist < projectile.width * 0.4 + player.hitRadius) damagePlayer(0.5, "impact");
+          }
+          if (projectile.life <= 0 || projectile.x < -160 || projectile.x > width + 160 || projectile.y < -160 || projectile.y > height + 160) {
+            a.projectiles.splice(i, 1);
+          }
+        }
+        applyThreatResponse(dt, nearest, closeCount);
+      }
+
+      function drawAlarmistBoss() {
+        const a = state.alarmist;
+        const blades = getAlarmistBladeStates();
+        const coreRadius = a.phase === 5 ? 82 : 54;
+        ctx.save();
+        const aura = ctx.createRadialGradient(a.x, a.y, 0, a.x, a.y, coreRadius * 3);
+        aura.addColorStop(0, a.phase === 5 ? "rgba(255,255,238,0.2)" : "rgba(255,196,132,0.16)");
+        aura.addColorStop(0.45, "rgba(255,134,42,0.2)");
+        aura.addColorStop(1, "rgba(0,0,0,0)");
+        ctx.fillStyle = aura;
+        ctx.beginPath();
+        ctx.arc(a.x, a.y, coreRadius * 3, 0, TAU);
+        ctx.fill();
+        for (const blade of blades) {
+          ctx.save();
+          ctx.translate(blade.x, blade.y);
+          ctx.rotate(blade.rotation);
+          ctx.fillStyle = "rgba(92,92,98,0.94)";
+          ctx.beginPath();
+          ctx.arc(0, 0, blade.radius, -blade.arcSpan, blade.arcSpan);
+          ctx.arc(0, 0, blade.radius * 0.48, blade.arcSpan, -blade.arcSpan, true);
+          ctx.closePath();
+          ctx.fill();
+          ctx.strokeStyle = "rgba(156,156,164,0.28)";
+          ctx.lineWidth = 2;
+          ctx.stroke();
+          ctx.restore();
+        }
+        const core = ctx.createRadialGradient(a.x - 10, a.y - 12, 0, a.x, a.y, coreRadius);
+        core.addColorStop(0, a.phase === 5 ? "rgba(255,255,248,0.96)" : "rgba(255,222,182,0.92)");
+        core.addColorStop(0.35, a.phase === 5 ? "rgba(255,212,120,0.9)" : "rgba(255,158,72,0.86)");
+        core.addColorStop(1, "rgba(162,70,18,0.82)");
+        ctx.fillStyle = core;
+        ctx.beginPath();
+        ctx.arc(a.x, a.y, coreRadius, 0, TAU);
+        ctx.fill();
+        ctx.strokeStyle = "rgba(255,242,214,0.28)";
+        ctx.lineWidth = 3;
+        ctx.stroke();
+        for (const blade of a.floorBlades) {
+          ctx.save();
+          ctx.translate(blade.x, blade.y);
+          ctx.rotate(blade.rotation);
+          ctx.fillStyle = "rgba(82,78,74,0.96)";
+          ctx.fillRect(-blade.width * 0.5, -blade.height * 0.5, blade.width, blade.height);
+          ctx.strokeStyle = "rgba(128, 98, 72, 0.3)";
+          ctx.lineWidth = 2;
+          ctx.strokeRect(-blade.width * 0.5, -blade.height * 0.5, blade.width, blade.height);
+          ctx.restore();
+        }
+      }
+
+      function drawAlarmistProjectiles() {
+        const a = state.alarmist;
+        ctx.save();
+        ctx.globalCompositeOperation = "lighter";
+        for (const wire of getAlarmistTripwires()) {
+          ctx.strokeStyle = a.phase === 4 ? "rgba(255, 128, 78, 0.3)" : "rgba(255, 182, 118, 0.22)";
+          ctx.lineWidth = a.phase === 4 ? 3 : 2;
+          ctx.beginPath();
+          ctx.moveTo(wire.x1, wire.y1);
+          ctx.lineTo(wire.x2, wire.y2);
+          ctx.stroke();
+        }
+        const ashParticles = [];
+        for (const projectile of a.projectiles) {
+          if (projectile.type === "ash") {
+            ashParticles.push(projectile);
+            continue;
+          }
+          if (projectile.type === "alarm_wave") {
+            ctx.strokeStyle = "rgba(255, 166, 82, 0.38)";
+            ctx.lineWidth = projectile.width;
+            ctx.beginPath();
+            ctx.arc(projectile.x, projectile.y, projectile.radius, 0, TAU);
+            ctx.stroke();
+            continue;
+          }
+          ctx.save();
+          ctx.translate(projectile.x, projectile.y);
+          if (projectile.type === "alarm_pellet") {
+            ctx.fillStyle = "rgba(255, 166, 82, 0.94)";
+            ctx.beginPath();
+            ctx.arc(0, 0, projectile.size, 0, TAU);
+            ctx.fill();
+          } else if (projectile.type === "sweep_bullet") {
+            ctx.fillStyle = "rgba(255,255,255,0.92)";
+            ctx.beginPath();
+            ctx.arc(0, 0, projectile.radius, 0, TAU);
+            ctx.fill();
+          } else if (projectile.type === "smoke_oval") {
+            ctx.rotate(projectile.angle);
+            ctx.fillStyle = "rgba(88,88,92,0.92)";
+            ctx.beginPath();
+            ctx.ellipse(0, 0, projectile.width, projectile.height, 0, 0, TAU);
+            ctx.fill();
+          } else if (projectile.type === "needle") {
+            ctx.rotate(Math.atan2(projectile.vy, projectile.vx));
+            ctx.fillStyle = "rgba(255, 188, 126, 0.94)";
+            ctx.fillRect(-projectile.width * 0.5, -projectile.height * 0.5, projectile.width, projectile.height);
+          } else if (projectile.type === "web_marker") {
+            ctx.strokeStyle = "rgba(255, 146, 90, 0.28)";
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(0, 0);
+            ctx.lineTo(projectile.x2 - projectile.x, projectile.y2 - projectile.y);
+            ctx.stroke();
+          }
+          ctx.restore();
+        }
+        for (const projectile of ashParticles) {
+          ctx.fillStyle = "rgba(132,132,138,0.32)";
+          ctx.fillRect(projectile.x - projectile.size * 0.5, projectile.y - projectile.size * 0.5, projectile.size, projectile.size);
+          ctx.fillStyle = "rgba(188,188,194,0.12)";
+          ctx.fillRect(projectile.x - projectile.size * 0.18, projectile.y - projectile.size * 0.18, projectile.size * 0.36, projectile.size * 0.36);
+        }
+        if (a.phase === 3) {
+          for (const decoy of getAlarmistDecoys()) {
+            const core = ctx.createRadialGradient(decoy.x, decoy.y, 0, decoy.x, decoy.y, 32);
+            core.addColorStop(0, "rgba(255, 208, 146, 0.22)");
+            core.addColorStop(1, "rgba(255, 122, 54, 0)");
+            ctx.fillStyle = core;
+            ctx.beginPath();
+            ctx.arc(decoy.x, decoy.y, 32, 0, TAU);
+            ctx.fill();
+          }
+        }
+        ctx.restore();
+      }
+
+      function drawAlarmistPreview(ctxPreview, time) {
+        const cx = 64;
+        const cy = 64;
+        const rotation = time * 0.5;
+        for (let i = 0; i < 3; i++) {
+          const angle = rotation + i * (TAU / 3);
+          ctxPreview.save();
+          ctxPreview.translate(cx + Math.cos(angle) * 26, cy + Math.sin(angle) * 26);
+          ctxPreview.rotate(angle);
+          ctxPreview.fillStyle = "rgba(96,96,102,0.94)";
+          ctxPreview.beginPath();
+          ctxPreview.arc(0, 0, 28, -0.78, 0.78);
+          ctxPreview.arc(0, 0, 13, 0.78, -0.78, true);
+          ctxPreview.closePath();
+          ctxPreview.fill();
+          ctxPreview.restore();
+        }
+        const core = ctxPreview.createRadialGradient(cx - 6, cy - 6, 0, cx, cy, 24);
+        core.addColorStop(0, "rgba(255,236,204,0.96)");
+        core.addColorStop(0.34, "rgba(255,162,82,0.92)");
+        core.addColorStop(1, "rgba(150,72,22,0.84)");
+        ctxPreview.fillStyle = core;
+        ctxPreview.beginPath();
+        ctxPreview.arc(cx, cy, 24, 0, TAU);
+        ctxPreview.fill();
+      }
+
+      function drawAlarmistSigil(progress) {
+        const alpha = clamp(progress * 1.15, 0, 1);
+        ctx.save();
+        ctx.translate(centerX, centerY);
+        for (let i = 0; i < 3; i++) {
+          ctx.save();
+          ctx.rotate(progress * 0.8 + i * (TAU / 3));
+          ctx.strokeStyle = `rgba(255, 176, 96, ${0.16 + alpha * 0.3})`;
+          ctx.lineWidth = 5;
+          ctx.beginPath();
+          ctx.arc(0, 0, 112, -0.62, 0.62);
+          ctx.stroke();
+          ctx.restore();
+        }
+        ctx.strokeStyle = `rgba(255, 214, 172, ${0.18 + alpha * 0.32})`;
+        ctx.lineWidth = 4;
+        ctx.beginPath();
+        ctx.arc(0, 0, 70, 0, TAU);
+        ctx.stroke();
+        ctx.restore();
+      }
+
       function drawChronoField() {
         const snapStrength = 1 - Math.min(state.chronoScale, 1);
         if (snapStrength <= 0.02) return;
@@ -13943,6 +15660,10 @@
           ? "Caesar"
           : state.currentBoss === "beauty"
           ? "Bismuth"
+          : state.currentBoss === "bleach"
+          ? "Bleach"
+          : state.currentBoss === "alarmist"
+          ? "Alarmist"
           : "Hertz's Harmony";
         bossValue.textContent = `${bossLabel} P${state.bossPhase} - ${bossPercent}%`;
         bossFill.style.width = `${bossPercent}%`;
@@ -14038,6 +15759,10 @@
           drawCaesarBoss();
         } else if (state.currentBoss === "beauty" && ["playing", "paused", "gameover", "victory"].includes(state.mode)) {
           drawBeautyBoss();
+        } else if (state.currentBoss === "bleach" && ["playing", "paused", "gameover", "victory"].includes(state.mode)) {
+          drawBleachBoss();
+        } else if (state.currentBoss === "alarmist" && ["playing", "paused", "gameover", "victory"].includes(state.mode)) {
+          drawAlarmistBoss();
         } else if (state.mode === "loading") {
           // Keep loading visuals isolated to the overlay shell.
         } else if (["menu", "operations", "boss_select", "config", "achievements", "edit_attacks", "severed"].includes(state.mode)) {
@@ -14069,6 +15794,10 @@
             drawCaesarSigil(progress);
           } else if (state.currentBoss === "beauty") {
             drawBeautySigil(progress);
+          } else if (state.currentBoss === "bleach") {
+            drawBleachSigil(progress);
+          } else if (state.currentBoss === "alarmist") {
+            drawAlarmistSigil(progress);
           } else {
             drawArchitectSigil(progress);
           }
@@ -14312,6 +16041,31 @@
               ctx.fillRect(fragment.x - fragment.size * 0.5, fragment.y - fragment.size * 0.5, fragment.size, fragment.size);
             }
             ctx.restore();
+          } else if (state.victoryBoss === "bleach") {
+            ctx.save();
+            ctx.globalCompositeOperation = "lighter";
+            for (const fragment of state.bleach.fragments) {
+              ctx.fillStyle = fragment.color;
+              ctx.beginPath();
+              ctx.arc(fragment.x, fragment.y, fragment.size * 0.6, 0, TAU);
+              ctx.fill();
+            }
+            ctx.restore();
+          } else if (state.victoryBoss === "alarmist") {
+            ctx.save();
+            ctx.globalCompositeOperation = "lighter";
+            for (const fragment of state.alarmist.fragments) {
+              if (fragment.width) {
+                ctx.fillStyle = fragment.color;
+                ctx.fillRect(fragment.x - fragment.width * 0.5, fragment.y - fragment.height * 0.5, fragment.width, fragment.height);
+              } else {
+                ctx.fillStyle = fragment.color;
+                ctx.beginPath();
+                ctx.arc(fragment.x, fragment.y, fragment.size, 0, TAU);
+                ctx.fill();
+              }
+            }
+            ctx.restore();
           } else {
             drawArchitectSigil(0.8 + bloom * 0.7);
           }
@@ -14335,6 +16089,10 @@
             drawCaesarProjectiles();
           } else if (state.currentBoss === "beauty") {
             drawBeautyProjectiles();
+          } else if (state.currentBoss === "bleach") {
+            drawBleachProjectiles();
+          } else if (state.currentBoss === "alarmist") {
+            drawAlarmistProjectiles();
           }
           drawXlMissiles();
           drawPlayerShots();
@@ -14358,6 +16116,16 @@
           wash.addColorStop(0.35, `rgba(255, 80, 80, ${0.18 + blindAlpha * 0.4})`);
           wash.addColorStop(1, `rgba(120, 0, 0, ${blindAlpha * 0.16})`);
           ctx.fillStyle = wash;
+          ctx.fillRect(0, 0, width, height);
+        }
+        if (state.currentBoss === "bleach" && state.bleach.phase === 3 && state.bleach.flashTimer > 3 && ["playing", "paused", "gameover"].includes(state.mode)) {
+          const flashAlpha = clamp((state.bleach.flashTimer - 3) / 0.5, 0, 1);
+          ctx.fillStyle = `rgba(255, 255, 255, ${0.22 + flashAlpha * 0.36})`;
+          ctx.fillRect(0, 0, width, height);
+        }
+        if (state.currentBoss === "alarmist" && state.alarmist.redFlashTimer > 0 && ["playing", "paused", "gameover"].includes(state.mode)) {
+          const flashAlpha = clamp(state.alarmist.redFlashTimer / 0.5, 0, 1);
+          ctx.fillStyle = `rgba(255, 56, 56, ${0.12 + flashAlpha * 0.22})`;
           ctx.fillRect(0, 0, width, height);
         }
         drawHud();
