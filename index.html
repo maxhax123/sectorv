@@ -3055,6 +3055,7 @@
       let boss1Music = null;
       let boss2Music = null;
       let boss3Music = null;
+      let boss7Music = null;
       let achievementSound = null;
       let currentMusicTarget = null;
       let loadingAssets = [];
@@ -3115,6 +3116,11 @@
           boss3Music.loop = true;
           boss3Music.preload = "auto";
         }
+        if (!boss7Music) {
+          boss7Music = new Audio("boss7.m4a");
+          boss7Music.loop = true;
+          boss7Music.preload = "auto";
+        }
         if (!achievementSound) {
           achievementSound = new Audio("youachievedsomethinginlife.mp3");
           achievementSound.loop = false;
@@ -3124,6 +3130,7 @@
         boss1Music.volume = getBossMusicVolume();
         boss2Music.volume = getBossMusicVolume();
         boss3Music.volume = getBossMusicVolume();
+        boss7Music.volume = getBossMusicVolume();
         achievementSound.volume = state.settings.volume;
       }
 
@@ -3200,6 +3207,7 @@
         trackAudioLoad("Architect Track", boss1Music);
         trackAudioLoad("Sovereign Track", boss2Music);
         trackAudioLoad("Monarch Track", boss3Music);
+        trackAudioLoad("Sili Track", boss7Music);
         trackAudioLoad("Achievement Cue", achievementSound);
         const customDataUrl = state.profile.skin?.customDataUrl;
         if (customDataUrl) {
@@ -3217,7 +3225,8 @@
         if (state.currentBoss === "cesium") return boss3Music;
         if (state.currentBoss === "tantalum") return boss3Music;
         if (state.currentBoss === "luminosity") return boss3Music;
-        if (state.currentBoss === "sili" || state.currentBoss === "caesar" || state.currentBoss === "beauty" || state.currentBoss === "bleach" || state.currentBoss === "alarmist") return boss3Music;
+        if (state.currentBoss === "sili") return boss7Music;
+        if (state.currentBoss === "caesar" || state.currentBoss === "beauty" || state.currentBoss === "bleach" || state.currentBoss === "alarmist") return boss3Music;
         return boss1Music;
       }
 
@@ -3243,12 +3252,15 @@
           boss1Music.pause();
           boss2Music.pause();
           boss3Music.pause();
+          boss7Music.pause();
           boss1Music.currentTime = 0;
           boss2Music.currentTime = 0;
           boss3Music.currentTime = 0;
+          boss7Music.currentTime = 0;
           boss1Music.playbackRate = 1;
           boss2Music.playbackRate = 1;
           boss3Music.playbackRate = 1;
+          boss7Music.playbackRate = 1;
           menuMusic.volume = getMenuMusicVolume();
           menuMusic.play().catch(() => {});
           return;
@@ -3256,7 +3268,7 @@
 
         if (target === "boss") {
           const activeBossMusic = getActiveBossMusic();
-          const inactiveBossTracks = [boss1Music, boss2Music, boss3Music].filter((audio) => audio !== activeBossMusic);
+          const inactiveBossTracks = [boss1Music, boss2Music, boss3Music, boss7Music].filter((audio) => audio !== activeBossMusic);
           menuMusic.pause();
           menuMusic.currentTime = 0;
           menuMusic.playbackRate = 1;
@@ -3277,12 +3289,13 @@
         boss1Music.pause();
         boss2Music.pause();
         boss3Music.pause();
+        boss7Music.pause();
       }
 
       function updateMusicForState(dt) {
         ensureMusicPlayers();
         const activeBossMusic = getActiveBossMusic();
-        const inactiveBossTracks = [boss1Music, boss2Music, boss3Music].filter((audio) => audio !== activeBossMusic);
+        const inactiveBossTracks = [boss1Music, boss2Music, boss3Music, boss7Music].filter((audio) => audio !== activeBossMusic);
         if (state.mode === "gameover") {
           if (!activeBossMusic.paused) {
             activeBossMusic.playbackRate = Math.max(0.58, activeBossMusic.playbackRate - dt * 0.28);
@@ -3399,6 +3412,7 @@
         if (boss1Music) boss1Music.volume = bossVolume;
         if (boss2Music) boss2Music.volume = bossVolume;
         if (boss3Music) boss3Music.volume = bossVolume;
+        if (boss7Music) boss7Music.volume = bossVolume;
       }
 
       function setShowBossTimer(enabled) {
