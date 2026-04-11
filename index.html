@@ -2611,7 +2611,7 @@
             ? source.shop.selectedXlBullet
             : "twin_hunter",
           maxEvolutionTier: Number.isFinite(source.shop?.maxEvolutionTier)
-            ? clamp(Math.round(source.shop.maxEvolutionTier), 4, 11)
+            ? clamp(Math.round(source.shop.maxEvolutionTier), 4, 7)
             : 4
         };
         const selectedLoadout = shop.ownedUltimates[source.attackLoadout] ? source.attackLoadout : "graphic_reset";
@@ -3000,6 +3000,10 @@
           waveTimer: 0,
           webTimer: 0,
           needleTimer: 0,
+          phase4CrossCount: 0,
+          phase5BladeStage: "idle",
+          phase5ShockwaveBurstsLeft: 0,
+          phase5ShockwaveTimer: 0,
           projectiles: [],
           blades: [],
           floorBlades: [],
@@ -3549,7 +3553,7 @@
       }
 
       function getMaxEvolutionTier() {
-        return clamp(state.profile.shop?.maxEvolutionTier || 4, 4, 11);
+        return clamp(state.profile.shop?.maxEvolutionTier || 4, 4, 7);
       }
 
       function spendOperationsFunds(costCents) {
@@ -5073,6 +5077,10 @@
           waveTimer: 0.5,
           webTimer: 0.18,
           needleTimer: 0.028,
+          phase4CrossCount: 0,
+          phase5BladeStage: "idle",
+          phase5ShockwaveBurstsLeft: 0,
+          phase5ShockwaveTimer: 0,
           projectiles: [],
           blades: [],
           floorBlades: [],
@@ -10428,6 +10436,16 @@
           shot.life -= dt;
 
           if (state.currentBoss === "alarmist") {
+            let hitAlarmBlade = false;
+            for (const blade of getAlarmistBladeStates()) {
+              if (alarmistBladeContainsPoint(blade, shot.x, shot.y, shot.size + 2)) {
+                addSpark(shot.x, shot.y, "rgba(255, 194, 132, 0.92)", 4, 92);
+                state.playerShots.splice(i, 1);
+                hitAlarmBlade = true;
+                break;
+              }
+            }
+            if (hitAlarmBlade) continue;
             const coreHitRadius = getAlarmistCoreRadius() + shot.size;
             const coreDist = distanceToSegment(state.alarmist.x, state.alarmist.y, prevShotX, prevShotY, shot.x, shot.y);
             if (coreDist < coreHitRadius) {
@@ -10776,6 +10794,7 @@
       }
 
       function drawBossDamageIndicator() {
+        if (state.currentBoss === "alarmist") return;
         const alpha = clamp(state.bossDamageFlash / 0.16, 0, 1);
         if (alpha <= 0) return;
 
@@ -15035,13 +15054,14 @@
       }
 
       function getAlarmistCoreRadius() {
-        return state.alarmist.phase === 5 ? 104 : state.alarmist.phase >= 4 ? 88 : 76;
+        return state.alarmist.phase === 5 ? 124 : state.alarmist.phase >= 4 ? 104 : state.alarmist.phase >= 2 ? 90 : 84;
       }
 
       function getAlarmistBladeStates() {
         const a = state.alarmist;
+        if (a.phase === 5) return [];
         const blades = [];
-        const orbitRadius = (a.phase === 2 ? 148 : a.phase >= 4 ? 112 : 124) * a.bladeSpread;
+        const orbitRadius = (a.phase === 2 ? 156 : a.phase >= 4 ? 118 : 132) * a.bladeSpread;
         const arcSpan = a.phase >= 4 ? 1.08 : a.phase === 3 ? 0.96 : 0.86;
         for (let i = 0; i < 3; i++) {
           const angle = a.rotation + i * (TAU / 3);
@@ -15052,13 +15072,41 @@
             x: anchorX + Math.cos(angle) * orbitRadius,
             y: anchorY + Math.sin(angle) * orbitRadius,
             rotation: angle,
-            radius: 44,
-            width: 124,
-            height: 32,
+            radius: 58,
+            width: 168,
+            height: 42,
             arcSpan
           });
         }
         return blades;
+      }
+
+      function createAlarmistDetachedBlade(blade, index) {
+        return {
+          x: blade.x,
+          y: blade.y,
+          rotation: blade.rotation,
+          radius: blade.radius,
+          width: blade.width,
+          height: blade.height,
+          arcSpan: blade.arcSpan,
+          vx: Math.cos(blade.rotation) * (40 + index * 18),
+          vy: 280 + index * 44,
+          targetX: blade.x,
+          targetY: height + 180,
+          wanderTimer: 0.5 + index * 0.12,
+          mode: "falling"
+        };
+      }
+
+      function alarmistBladeContainsPoint(blade, x, y, padding = 0) {
+        const dx = x - blade.x;
+        const dy = y - blade.y;
+        const cos = Math.cos(-blade.rotation);
+        const sin = Math.sin(-blade.rotation);
+        const localX = dx * cos - dy * sin;
+        const localY = dx * sin + dy * cos;
+        return Math.abs(localX) <= blade.width * 0.5 + padding && Math.abs(localY) <= blade.height * 0.5 + padding;
       }
 
       function getAlarmistTripwires() {
@@ -15093,16 +15141,16 @@
 
       function spawnAlarmPulse() {
         const a = state.alarmist;
-        for (let i = 0; i < 50; i++) {
-          const angle = (i / 50) * TAU;
+        for (let i = 0; i < 34; i++) {
+          const angle = (i / 34) * TAU;
           a.projectiles.push({
             type: "alarm_pellet",
             x: a.x,
             y: a.y,
             vx: Math.cos(angle) * 220,
             vy: Math.sin(angle) * 220,
-            size: 5,
-            life: 3.8
+            size: 4.5,
+            life: 5.4
           });
         }
       }
@@ -15119,7 +15167,7 @@
             vx: Math.cos(angle) * speed,
             vy: Math.sin(angle) * speed,
             size: 5,
-            life: 4.4
+            life: 5.2
           });
         }
       }
@@ -15132,7 +15180,7 @@
           vx: (Math.random() - 0.5) * 12,
           vy: 120 + Math.random() * 36,
           size: 7 + Math.random() * 5,
-          life: 14
+          life: 24
         });
       }
 
@@ -15162,13 +15210,13 @@
             type: "smoke_oval",
             x: a.x,
             y: a.y,
-            vx: Math.cos(angle) * 120,
-            vy: Math.sin(angle) * 120,
+            vx: Math.cos(angle) * 150,
+            vy: Math.sin(angle) * 150,
             angle,
             spin: (i % 2 === 0 ? 1 : -1) * 0.8,
-            width: 16,
-            height: 10,
-            life: 5.2
+            width: 22,
+            height: 13,
+            life: 12
           });
         }
       }
@@ -15181,8 +15229,27 @@
           radius: 24,
           speed: 260,
           width: 16,
-          life: 3.6
+          life: 3.6,
+          hitPlayer: false
         });
+      }
+
+      function spawnAlarmHunterCircles() {
+        const a = state.alarmist;
+        for (let i = 0; i < 5; i++) {
+          const angle = -Math.PI * 0.7 + (i / 4) * Math.PI * 1.4;
+          a.projectiles.push({
+            type: "alarm_homing",
+            x: a.x + Math.cos(angle) * 48,
+            y: a.y + Math.sin(angle) * 48,
+            vx: Math.cos(angle) * 110,
+            vy: Math.sin(angle) * 110,
+            size: 9,
+            turnRate: 1.65,
+            maxSpeed: 220,
+            life: 5.5
+          });
+        }
       }
 
       function spawnAlarmNeedles() {
@@ -15217,23 +15284,24 @@
         const a = state.alarmist;
         const healthRatio = state.bossHealth / Math.max(1, state.bossMaxHealth);
         const nextPhase = healthRatio > 0.8 ? 1 : healthRatio > 0.6 ? 2 : healthRatio > 0.4 ? 3 : healthRatio > 0.2 ? 4 : 5;
+        const currentBlades = getAlarmistBladeStates();
         if (nextPhase !== a.phase) {
           a.phase = nextPhase;
           state.bossPhase = nextPhase;
           a.projectiles.length = 0;
+          a.phase4CrossCount = 0;
           addFlash(a.x, a.y, "rgba(255, 172, 106, 0.34)", 180 + nextPhase * 24);
           addSpark(a.x, a.y, "rgba(255, 202, 154, 0.94)", 28 + nextPhase * 6, 220);
           if (nextPhase === 5) {
-            a.floorBlades = getAlarmistBladeStates().map((blade, index) => ({
-              x: width * (0.23 + index * 0.27),
-              y: -120 - index * 40,
-              targetY: height - 82 - (index % 2) * 32,
-              rotation: blade.rotation,
-              width: 130,
-              height: 38
-            }));
+            a.floorBlades = currentBlades.map((blade, index) => createAlarmistDetachedBlade(blade, index));
+            a.phase5BladeStage = "falling";
+            a.phase5ShockwaveBurstsLeft = 0;
+            a.phase5ShockwaveTimer = 0;
           } else {
             a.floorBlades.length = 0;
+            a.phase5BladeStage = "idle";
+            a.phase5ShockwaveBurstsLeft = 0;
+            a.phase5ShockwaveTimer = 0;
           }
         }
         state.bossPhase = a.phase;
@@ -15289,16 +15357,32 @@
           a.tripTimer -= dt;
           a.ashTimer -= dt;
           if (a.tripTimer <= 0) {
-            a.tripTimer = 2.25;
-            spawnAlarmTripBurst(22, 235);
+            a.tripTimer = 2.45;
+            spawnAlarmTripBurst(16, 230);
           }
           if (a.ashTimer <= 0) {
-            a.ashTimer = 0.28;
-            spawnAlarmAsh();
+            const ashCount = a.projectiles.reduce((count, projectile) => count + (projectile.type === "ash" ? 1 : 0), 0);
+            a.ashTimer = 0.12;
+            if (ashCount < 95) spawnAlarmAsh();
+            if (ashCount < 82) spawnAlarmAsh();
+            if (ashCount < 68) spawnAlarmAsh();
+            if (ashCount < 54 && Math.random() < 0.82) spawnAlarmAsh();
+          }
+          if (a.projectiles.length > 220) {
+            let overflow = a.projectiles.length - 220;
+            for (let i = 0; i < a.projectiles.length && overflow > 0; ) {
+              if (a.projectiles[i].type !== "ash") {
+                a.projectiles.splice(i, 1);
+                overflow -= 1;
+              } else {
+                i += 1;
+              }
+            }
           }
         } else if (a.phase === 2) {
           a.sweepTimer -= dt;
           a.smokeTimer -= dt;
+          a.ashTimer -= dt;
           if (a.sweepTimer <= 0) {
             a.sweepTimer = 3.1 + Math.random() * 1.8;
             for (const blade of getAlarmistBladeStates()) spawnAlarmSweepCone(blade);
@@ -15307,9 +15391,15 @@
             a.smokeTimer = 0.14;
             spawnAlarmSmoke();
           }
+          if (a.ashTimer <= 0) {
+            a.ashTimer = 0.6;
+            spawnAlarmAsh();
+            if (Math.random() < 0.35) spawnAlarmAsh();
+          }
         } else if (a.phase === 3) {
           a.warningTimer -= dt;
           a.smokeTimer -= dt;
+          a.ashTimer -= dt;
           if (a.smokeTimer <= 0) {
             a.smokeTimer = 0.16;
             spawnAlarmSmoke();
@@ -15321,12 +15411,17 @@
             a.burstSpeedTimer = 1;
             spawnAlarmTripBurst(14, 250);
           }
+          if (a.ashTimer <= 0) {
+            a.ashTimer = 1.05;
+            spawnAlarmAsh();
+          }
         } else if (a.phase === 4) {
           a.webTimer -= dt;
           a.waveTimer -= dt;
           a.tripTimer -= dt;
+          a.ashTimer -= dt;
           if (a.webTimer <= 0) {
-            a.webTimer = 0.2;
+            a.webTimer = 0.28;
             for (const line of getAlarmistTripwires()) {
               a.projectiles.push({
                 type: "web_marker",
@@ -15339,16 +15434,21 @@
             }
           }
           if (a.waveTimer <= 0) {
-            a.waveTimer = 0.6;
+            a.waveTimer = 0.82;
             spawnAlarmWave();
           }
           if (a.tripTimer <= 0) {
-            a.tripTimer = 1.35;
-            spawnAlarmTripBurst(18, 270);
+            a.tripTimer = 1.55;
+            spawnAlarmTripBurst(14, 246);
+          }
+          if (a.ashTimer <= 0) {
+            a.ashTimer = 1.5;
+            if (Math.random() < 0.8) spawnAlarmAsh();
           }
         } else {
           a.needleTimer -= dt;
           a.waveTimer -= dt;
+          a.ashTimer -= dt;
           if (a.needleTimer <= 0) {
             a.needleTimer = 0.04;
             spawnAlarmNeedles();
@@ -15357,9 +15457,68 @@
             a.waveTimer = 1.15;
             spawnAlarmTripBurst(16, 290);
           }
-          for (const blade of a.floorBlades) {
-            blade.y += (blade.targetY - blade.y) * Math.min(1, dt * 4.6);
-            blade.rotation += dt * 0.5;
+          if (a.ashTimer <= 0) {
+            a.ashTimer = 2.2;
+            if (Math.random() < 0.55) spawnAlarmAsh();
+          }
+          if (a.phase5BladeStage === "falling") {
+            let allGone = true;
+            for (const blade of a.floorBlades) {
+              blade.x += blade.vx * dt;
+              blade.y += blade.vy * dt;
+              blade.rotation += dt * (1.5 + Math.abs(blade.vx) * 0.004);
+              if (blade.y <= height + 180) allGone = false;
+            }
+            if (allGone && a.floorBlades.length) {
+              a.phase5BladeStage = "shockwave";
+              a.phase5ShockwaveBurstsLeft = 3;
+              a.phase5ShockwaveTimer = 0.08;
+              for (const blade of a.floorBlades) {
+                blade.x = 90 + Math.random() * Math.max(40, width - 180);
+                blade.y = height + 120 + Math.random() * 80;
+                blade.vx = 0;
+                blade.vy = 0;
+                blade.mode = "returning";
+              }
+            }
+          } else if (a.phase5BladeStage === "shockwave") {
+            a.phase5ShockwaveTimer -= dt;
+            if (a.phase5ShockwaveBurstsLeft > 0 && a.phase5ShockwaveTimer <= 0) {
+              a.phase5ShockwaveTimer = 0.34;
+              a.phase5ShockwaveBurstsLeft -= 1;
+              spawnAlarmWave();
+              state.shake = Math.max(state.shake, 20);
+            }
+            if (a.phase5ShockwaveBurstsLeft <= 0) {
+              a.phase5BladeStage = "roaming";
+              for (const blade of a.floorBlades) {
+                blade.mode = "returning";
+                blade.targetX = 120 + Math.random() * Math.max(30, width - 240);
+                blade.targetY = 96 + Math.random() * Math.max(30, height - 220);
+                blade.wanderTimer = 0.4 + Math.random() * 0.3;
+              }
+            }
+          } else if (a.phase5BladeStage === "roaming") {
+            for (const blade of a.floorBlades) {
+              blade.rotation += dt * 2.4;
+              if (blade.mode === "returning") {
+                blade.x += (blade.targetX - blade.x) * Math.min(1, dt * 4.8);
+                blade.y += (blade.targetY - blade.y) * Math.min(1, dt * 4.8);
+                if (Math.hypot(blade.x - blade.targetX, blade.y - blade.targetY) < 28) {
+                  blade.mode = "wandering";
+                  blade.wanderTimer = 0.45 + Math.random() * 0.35;
+                }
+              } else {
+                blade.wanderTimer -= dt;
+                if (blade.wanderTimer <= 0) {
+                  blade.wanderTimer = 0.35 + Math.random() * 0.28;
+                  blade.targetX = 120 + Math.random() * Math.max(30, width - 240);
+                  blade.targetY = 90 + Math.random() * Math.max(40, height - 210);
+                }
+                blade.x += (blade.targetX - blade.x) * Math.min(1, dt * 3.9);
+                blade.y += (blade.targetY - blade.y) * Math.min(1, dt * 3.9);
+              }
+            }
           }
         }
 
@@ -15373,12 +15532,12 @@
         for (const blade of getAlarmistBladeStates()) {
           const dist = Math.hypot(player.x - blade.x, player.y - blade.y);
           nearest = Math.min(nearest, dist);
-          if (dist < blade.radius + player.hitRadius) damagePlayer(0.5, "impact");
+          if (alarmistBladeContainsPoint(blade, player.x, player.y, player.hitRadius)) damagePlayer(0.5, "impact");
         }
         for (const blade of a.floorBlades) {
           const dist = Math.hypot(player.x - blade.x, player.y - blade.y);
           nearest = Math.min(nearest, dist);
-          if (Math.abs(player.x - blade.x) < blade.width * 0.45 + player.hitRadius && Math.abs(player.y - blade.y) < blade.height * 0.45 + player.hitRadius) {
+          if (alarmistBladeContainsPoint(blade, player.x, player.y, player.hitRadius)) {
             damagePlayer(1, "impact");
           }
         }
@@ -15391,7 +15550,15 @@
               spawnAlarmPulse();
               addFlash(a.x, a.y, "rgba(255, 172, 106, 0.2)", 120);
             } else if (a.phase === 4) {
-              damagePlayer(0.5, "impact");
+              if (a.pulseCooldown <= 0) {
+                a.pulseCooldown = 0.34;
+                a.phase4CrossCount += 1;
+                spawnAlarmTripBurst(12, 238);
+                addFlash(player.x, player.y, "rgba(255, 148, 82, 0.18)", 60);
+                if (a.phase4CrossCount % 4 === 0) {
+                  spawnAlarmHunterCircles();
+                }
+              }
             }
           }
         }
@@ -15440,13 +15607,33 @@
             projectile.radius += projectile.speed * dt;
             const ringDist = Math.abs(Math.hypot(player.x - projectile.x, player.y - projectile.y) - projectile.radius);
             nearest = Math.min(nearest, ringDist);
-            if (ringDist < projectile.width + player.hitRadius) damagePlayer(0.5, "impact");
+            if (!projectile.hitPlayer && ringDist < projectile.width + player.hitRadius) {
+              projectile.hitPlayer = true;
+              const knockAngle = Math.random() * TAU;
+              player.pullVx += Math.cos(knockAngle) * 260;
+              player.pullVy += Math.sin(knockAngle) * 260;
+              state.shake = Math.max(state.shake, 14);
+            }
           } else if (projectile.type === "needle") {
             projectile.x += projectile.vx * dt;
             projectile.y += projectile.vy * dt;
             const dist = Math.hypot(player.x - projectile.x, player.y - projectile.y);
             nearest = Math.min(nearest, dist);
             if (dist < projectile.width * 0.4 + player.hitRadius) damagePlayer(0.5, "impact");
+          } else if (projectile.type === "alarm_homing") {
+            const toPlayerX = player.x - projectile.x;
+            const toPlayerY = player.y - projectile.y;
+            const distance = Math.hypot(toPlayerX, toPlayerY) || 1;
+            const steer = Math.min(1, dt * projectile.turnRate);
+            const desiredVx = (toPlayerX / distance) * projectile.maxSpeed;
+            const desiredVy = (toPlayerY / distance) * projectile.maxSpeed - 32;
+            projectile.vx += (desiredVx - projectile.vx) * steer;
+            projectile.vy += (desiredVy - projectile.vy) * steer;
+            projectile.x += projectile.vx * dt;
+            projectile.y += projectile.vy * dt;
+            const dist = Math.hypot(player.x - projectile.x, player.y - projectile.y);
+            nearest = Math.min(nearest, dist);
+            if (dist < projectile.size + player.hitRadius) damagePlayer(0.5, "impact");
           }
           if (projectile.life <= 0 || projectile.x < -160 || projectile.x > width + 160 || projectile.y < -160 || projectile.y > height + 160) {
             a.projectiles.splice(i, 1);
@@ -15458,51 +15645,129 @@
       function drawAlarmistBoss() {
         const a = state.alarmist;
         const blades = getAlarmistBladeStates();
-        const coreRadius = a.phase === 5 ? 82 : 54;
+        const coreRadius = a.phase === 5 ? 102 : a.phase >= 4 ? 84 : a.phase === 3 ? 74 : a.phase === 2 ? 68 : 62;
+        const hitPulse = clamp(a.hitFxCooldown / 0.05, 0, 1);
+        const phaseGlow = a.phase === 5 ? 1 : a.phase === 4 ? 0.82 : a.phase === 3 ? 0.64 : a.phase === 2 ? 0.46 : 0.3;
         ctx.save();
-        const aura = ctx.createRadialGradient(a.x, a.y, 0, a.x, a.y, coreRadius * 3);
-        aura.addColorStop(0, a.phase === 5 ? "rgba(255,255,238,0.2)" : "rgba(255,196,132,0.16)");
-        aura.addColorStop(0.45, "rgba(255,134,42,0.2)");
+        const aura = ctx.createRadialGradient(a.x, a.y, 0, a.x, a.y, coreRadius * (3.1 + phaseGlow * 0.55));
+        aura.addColorStop(0, a.phase === 5 ? "rgba(255,255,238,0.28)" : `rgba(255,196,132,${0.14 + phaseGlow * 0.12 + hitPulse * 0.08})`);
+        aura.addColorStop(0.45, `rgba(255,134,42,${0.18 + phaseGlow * 0.16})`);
         aura.addColorStop(1, "rgba(0,0,0,0)");
         ctx.fillStyle = aura;
         ctx.beginPath();
-        ctx.arc(a.x, a.y, coreRadius * 3, 0, TAU);
+        ctx.arc(a.x, a.y, coreRadius * (3.1 + phaseGlow * 0.55), 0, TAU);
         ctx.fill();
+        if (a.phase >= 3) {
+          ctx.save();
+          ctx.translate(a.x, a.y);
+          ctx.rotate(-a.rotation * (a.phase === 5 ? 0.28 : 0.18));
+          for (let ring = 0; ring < (a.phase === 5 ? 5 : a.phase === 4 ? 4 : 3); ring++) {
+            const ringRadius = coreRadius * (1.18 + ring * 0.34);
+            ctx.strokeStyle = `rgba(255, ${170 + ring * 12}, ${94 + ring * 8}, ${0.08 + ring * 0.03 + hitPulse * 0.06})`;
+            ctx.lineWidth = 2 + ring * 0.5;
+            ctx.beginPath();
+            for (let t = -0.8; t <= 0.8; t += 0.05) {
+              const wobble = Math.sin(t * (6 + ring) + state.elapsed * (1.8 + ring * 0.25)) * (6 + ring * 2);
+              const px = Math.cos(t) * (ringRadius + wobble);
+              const py = Math.sin(t) * (ringRadius * 0.74 + wobble * 0.18);
+              if (t === -0.8) ctx.moveTo(px, py);
+              else ctx.lineTo(px, py);
+            }
+            ctx.stroke();
+          }
+          ctx.restore();
+        }
         for (const blade of blades) {
           ctx.save();
           ctx.translate(blade.x, blade.y);
           ctx.rotate(blade.rotation);
-          ctx.fillStyle = "rgba(92,92,98,0.94)";
+          const bladeGrad = ctx.createLinearGradient(-blade.width * 0.55, 0, blade.width * 0.55, 0);
+          bladeGrad.addColorStop(0, a.phase >= 4 ? "rgba(58,58,62,0.98)" : "rgba(74,74,80,0.96)");
+          bladeGrad.addColorStop(0.45, a.phase >= 4 ? "rgba(132,132,140,0.92)" : "rgba(110,110,118,0.88)");
+          bladeGrad.addColorStop(1, a.phase >= 4 ? "rgba(44,44,48,0.98)" : "rgba(66,66,72,0.96)");
+          ctx.fillStyle = bladeGrad;
           ctx.beginPath();
           ctx.arc(0, 0, blade.radius, -blade.arcSpan, blade.arcSpan);
           ctx.arc(0, 0, blade.radius * 0.48, blade.arcSpan, -blade.arcSpan, true);
           ctx.closePath();
           ctx.fill();
-          ctx.strokeStyle = "rgba(156,156,164,0.28)";
-          ctx.lineWidth = 2;
+          ctx.strokeStyle = `rgba(184,184,194,${0.2 + phaseGlow * 0.18})`;
+          ctx.lineWidth = 2.2;
           ctx.stroke();
+          ctx.strokeStyle = `rgba(255, 176, 92, ${0.16 + phaseGlow * 0.18 + hitPulse * 0.18})`;
+          ctx.lineWidth = 1.4;
+          ctx.beginPath();
+          ctx.arc(0, 0, blade.radius * 0.82, -blade.arcSpan * 0.94, blade.arcSpan * 0.94);
+          ctx.stroke();
+          if (a.phase >= 2) {
+            for (let vent = 0; vent < 4; vent++) {
+              const x = -42 + vent * 28;
+              ctx.fillStyle = `rgba(255, 204, 132, ${0.14 + phaseGlow * 0.1})`;
+              ctx.fillRect(x - 2.5, -6, 5, 12);
+            }
+          }
           ctx.restore();
         }
-        const core = ctx.createRadialGradient(a.x - 10, a.y - 12, 0, a.x, a.y, coreRadius);
-        core.addColorStop(0, a.phase === 5 ? "rgba(255,255,248,0.96)" : "rgba(255,222,182,0.92)");
-        core.addColorStop(0.35, a.phase === 5 ? "rgba(255,212,120,0.9)" : "rgba(255,158,72,0.86)");
-        core.addColorStop(1, "rgba(162,70,18,0.82)");
+        if (a.phase >= 2) {
+          for (let scan = 0; scan < 3; scan++) {
+            const scanAngle = a.rotation + scan * (TAU / 3);
+            ctx.strokeStyle = `rgba(255, 168, 82, ${0.12 + phaseGlow * 0.12})`;
+            ctx.lineWidth = 3 + phaseGlow * 2;
+            ctx.beginPath();
+            ctx.moveTo(a.x + Math.cos(scanAngle) * coreRadius * 0.8, a.y + Math.sin(scanAngle) * coreRadius * 0.8);
+            ctx.lineTo(a.x + Math.cos(scanAngle) * (coreRadius * (2.2 + phaseGlow * 0.5)), a.y + Math.sin(scanAngle) * (coreRadius * (2.2 + phaseGlow * 0.5)));
+            ctx.stroke();
+          }
+        }
+        const core = ctx.createRadialGradient(a.x - 12, a.y - 14, 0, a.x, a.y, coreRadius);
+        core.addColorStop(0, a.phase === 5 ? "rgba(255,255,248,0.98)" : `rgba(255,232,194,${0.92 + hitPulse * 0.06})`);
+        core.addColorStop(0.24, a.phase >= 4 ? "rgba(255,230,152,0.95)" : "rgba(255,196,118,0.92)");
+        core.addColorStop(0.56, a.phase === 5 ? "rgba(255,168,58,0.96)" : a.phase >= 4 ? "rgba(255,122,44,0.94)" : "rgba(255,148,68,0.88)");
+        core.addColorStop(1, a.phase === 5 ? "rgba(120,52,12,0.92)" : "rgba(162,70,18,0.84)");
         ctx.fillStyle = core;
         ctx.beginPath();
         ctx.arc(a.x, a.y, coreRadius, 0, TAU);
         ctx.fill();
-        ctx.strokeStyle = "rgba(255,242,214,0.28)";
-        ctx.lineWidth = 3;
+        ctx.strokeStyle = `rgba(255,242,214,${0.24 + hitPulse * 0.38})`;
+        ctx.lineWidth = 3.2;
         ctx.stroke();
+        ctx.save();
+        ctx.translate(a.x, a.y);
+        ctx.rotate(a.rotation * 0.42);
+        for (let iris = 0; iris < (a.phase >= 4 ? 10 : 7); iris++) {
+          const angle = (iris / (a.phase >= 4 ? 10 : 7)) * TAU;
+          const inner = coreRadius * 0.2;
+          const outer = coreRadius * (0.86 + phaseGlow * 0.08);
+          ctx.strokeStyle = `rgba(255, ${180 + (iris % 3) * 18}, ${92 + (iris % 2) * 10}, ${0.16 + phaseGlow * 0.1})`;
+          ctx.lineWidth = 1.5;
+          ctx.beginPath();
+          ctx.moveTo(Math.cos(angle) * inner, Math.sin(angle) * inner);
+          ctx.lineTo(Math.cos(angle) * outer, Math.sin(angle) * outer);
+          ctx.stroke();
+        }
+        ctx.restore();
         for (const blade of a.floorBlades) {
           ctx.save();
           ctx.translate(blade.x, blade.y);
           ctx.rotate(blade.rotation);
-          ctx.fillStyle = "rgba(82,78,74,0.96)";
-          ctx.fillRect(-blade.width * 0.5, -blade.height * 0.5, blade.width, blade.height);
-          ctx.strokeStyle = "rgba(128, 98, 72, 0.3)";
-          ctx.lineWidth = 2;
-          ctx.strokeRect(-blade.width * 0.5, -blade.height * 0.5, blade.width, blade.height);
+          const floorGrad = ctx.createLinearGradient(-blade.width * 0.55, 0, blade.width * 0.55, 0);
+          floorGrad.addColorStop(0, "rgba(58,54,50,0.98)");
+          floorGrad.addColorStop(0.5, "rgba(124,116,108,0.94)");
+          floorGrad.addColorStop(1, "rgba(50,46,42,0.98)");
+          ctx.fillStyle = floorGrad;
+          ctx.beginPath();
+          ctx.arc(0, 0, blade.radius, -blade.arcSpan, blade.arcSpan);
+          ctx.arc(0, 0, blade.radius * 0.48, blade.arcSpan, -blade.arcSpan, true);
+          ctx.closePath();
+          ctx.fill();
+          ctx.strokeStyle = "rgba(255, 176, 96, 0.26)";
+          ctx.lineWidth = 2.1;
+          ctx.stroke();
+          ctx.strokeStyle = "rgba(255, 226, 178, 0.14)";
+          ctx.lineWidth = 1.2;
+          ctx.beginPath();
+          ctx.arc(0, 0, blade.radius * 0.82, -blade.arcSpan * 0.92, blade.arcSpan * 0.92);
+          ctx.stroke();
           ctx.restore();
         }
       }
@@ -15526,7 +15791,7 @@
             continue;
           }
           if (projectile.type === "alarm_wave") {
-            ctx.strokeStyle = "rgba(255, 166, 82, 0.38)";
+            ctx.strokeStyle = "rgba(255, 166, 82, 0.22)";
             ctx.lineWidth = projectile.width;
             ctx.beginPath();
             ctx.arc(projectile.x, projectile.y, projectile.radius, 0, TAU);
@@ -15540,24 +15805,53 @@
             ctx.beginPath();
             ctx.arc(0, 0, projectile.size, 0, TAU);
             ctx.fill();
+            ctx.fillStyle = "rgba(255, 226, 176, 0.42)";
+            ctx.beginPath();
+            ctx.arc(0, 0, projectile.size * 0.46, 0, TAU);
+            ctx.fill();
           } else if (projectile.type === "sweep_bullet") {
             ctx.fillStyle = "rgba(255,255,255,0.92)";
             ctx.beginPath();
             ctx.arc(0, 0, projectile.radius, 0, TAU);
             ctx.fill();
+            ctx.strokeStyle = "rgba(255, 214, 158, 0.28)";
+            ctx.lineWidth = 1.2;
+            ctx.stroke();
           } else if (projectile.type === "smoke_oval") {
             ctx.rotate(projectile.angle);
-            ctx.fillStyle = "rgba(88,88,92,0.92)";
+            ctx.fillStyle = "rgba(74,74,82,0.96)";
             ctx.beginPath();
             ctx.ellipse(0, 0, projectile.width, projectile.height, 0, 0, TAU);
             ctx.fill();
+            ctx.strokeStyle = "rgba(255, 176, 96, 0.28)";
+            ctx.lineWidth = 1.5;
+            ctx.stroke();
+            ctx.strokeStyle = "rgba(255, 214, 148, 0.14)";
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.ellipse(0, 0, projectile.width * 0.55, projectile.height * 0.55, 0, 0, TAU);
+            ctx.stroke();
           } else if (projectile.type === "needle") {
             ctx.rotate(Math.atan2(projectile.vy, projectile.vx));
             ctx.fillStyle = "rgba(255, 188, 126, 0.94)";
             ctx.fillRect(-projectile.width * 0.5, -projectile.height * 0.5, projectile.width, projectile.height);
+            ctx.fillStyle = "rgba(255, 236, 192, 0.34)";
+            ctx.fillRect(-projectile.width * 0.12, -projectile.height * 0.5, projectile.width * 0.24, projectile.height);
+          } else if (projectile.type === "alarm_homing") {
+            ctx.fillStyle = "rgba(255, 202, 138, 0.94)";
+            ctx.beginPath();
+            ctx.arc(0, 0, projectile.size, 0, TAU);
+            ctx.fill();
+            ctx.fillStyle = "rgba(255, 128, 52, 0.84)";
+            ctx.beginPath();
+            ctx.arc(0, 0, projectile.size * 0.45, 0, TAU);
+            ctx.fill();
+            ctx.strokeStyle = "rgba(255, 228, 182, 0.24)";
+            ctx.lineWidth = 1.2;
+            ctx.stroke();
           } else if (projectile.type === "web_marker") {
-            ctx.strokeStyle = "rgba(255, 146, 90, 0.28)";
-            ctx.lineWidth = 2;
+            ctx.strokeStyle = "rgba(255, 146, 90, 0.24)";
+            ctx.lineWidth = 2.4;
             ctx.beginPath();
             ctx.moveTo(0, 0);
             ctx.lineTo(projectile.x2 - projectile.x, projectile.y2 - projectile.y);
