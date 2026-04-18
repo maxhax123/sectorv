@@ -2239,7 +2239,7 @@
       <div class="title" style="margin-top: 14px;">Evolution Level</div>
       <div id="evolutionValue" style="font-size: 22px; color: var(--gold);">I</div>
       <div class="meter"><div class="meter-fill" id="riskFill"></div></div>
-      <div class="title" style="margin-top: 14px;">The Kinetic Well</div>
+          <div class="title" style="margin-top: 14px;">Ultimate</div>
       <div id="ultimateValue" style="font-size: 18px; color: var(--gold-hot);">Graphic Reset · 0%</div>
       <div class="ultimate-meter"><div class="ultimate-meter-fill" id="ultimateFill"></div></div>
       <div class="title" style="margin-top: 14px;">XL Bullet Move</div>
@@ -4404,8 +4404,8 @@
         if (state.score >= 2500) awardAchievement("score_2500");
         if (state.score >= 5000) awardAchievement("score_5000");
         if (state.ultimateCharge >= 100) awardAchievement("ultimate_ready");
-        if (player.healthBufferBuys >= 5) awardAchievement("fully_buffered");
-        if (player.damageUpgradeLevel >= 4) awardAchievement("max_matrix");
+        if (player.healthBufferBuys >= 8) awardAchievement("fully_buffered");
+        if (player.damageUpgradeLevel >= 5) awardAchievement("max_matrix");
       }
 
       function addScore(amount) {
@@ -6038,6 +6038,7 @@
           beamSpin: 0,
           snappedBarIndex: 2,
           detachedBar: null,
+          phase5FragmentsSpawned: false,
           phase4DetachedBars: [],
           projectiles: [],
           slicks: [],
@@ -6246,18 +6247,18 @@
       }
 
       function buyDamageUpgrade() {
-        const cost = 500;
-        if (state.mode !== "paused" || player.damageUpgradeLevel >= 4 || state.score < cost || challengeBlocksInFightPurchases()) return;
+        const cost = 600;
+        if (state.mode !== "paused" || player.damageUpgradeLevel >= 5 || state.score < cost || challengeBlocksInFightPurchases()) return;
         state.score -= cost;
         player.damageUpgradeLevel += 1;
-        player.damageMultiplier = 1 + player.damageUpgradeLevel * 0.1;
+        player.damageMultiplier = 1 + player.damageUpgradeLevel * 0.05;
         awardAchievement("arsenal_tuned");
         renderPauseOverlay();
       }
 
       function buyHealthBuffer() {
         const cost = 600;
-        if (state.mode !== "paused" || player.healthBufferBuys >= 6 || state.score < cost || challengeBlocksInFightPurchases()) return;
+        if (state.mode !== "paused" || player.healthBufferBuys >= 8 || state.score < cost || challengeBlocksInFightPurchases()) return;
         state.score -= cost;
         player.healthBufferBuys += 1;
         player.maxHealth += 0.5;
@@ -6361,17 +6362,17 @@
             <div class="shop-grid">
               <div class="shop-item">
                 <strong>Damage Matrix</strong>
-                <span>+10% bullet damage per purchase.</span>
-                <span>Owned ${player.damageUpgradeLevel} / 4</span>
-                <span>Cost 500 score</span>
-                <button data-shop="damage" ${player.damageUpgradeLevel >= 4 || state.score < 500 ? "disabled" : ""}>Buy Damage</button>
+                <span>+5% bullet damage per purchase.</span>
+                <span>Owned ${player.damageUpgradeLevel} / 5</span>
+                <span>Cost 600 score</span>
+                <button data-shop="damage" ${player.damageUpgradeLevel >= 5 || state.score < 600 ? "disabled" : ""}>Buy Damage</button>
               </div>
               <div class="shop-item">
                 <strong>Hull Buffer</strong>
                 <span>+0.5 max health and heal 0.5 instantly.</span>
-                <span>Owned ${player.healthBufferBuys} / 6</span>
+                <span>Owned ${player.healthBufferBuys} / 8</span>
                 <span>Cost 600 score</span>
-                <button data-shop="health" ${player.healthBufferBuys >= 6 || state.score < 600 ? "disabled" : ""}>Buy Health</button>
+                <button data-shop="health" ${player.healthBufferBuys >= 8 || state.score < 600 ? "disabled" : ""}>Buy Health</button>
               </div>
             </div>
             <div class="config-actions" style="justify-content:center;">
@@ -16833,21 +16834,21 @@
 
       function spawnSlabhraidhPhase4Pattern() {
         const s = state.slabhraidh;
-        for (let ring = 0; ring < 3; ring++) {
-          const count = 18 + ring * 8;
+        for (let ring = 0; ring < 2; ring++) {
+          const count = 12 + ring * 6;
           for (let i = 0; i < count; i++) {
             const angle = s.rotation * (1.1 + ring * 0.1) + (i / count) * TAU;
-            const speed = 148 + ring * 30;
+            const speed = 138 + ring * 24;
             s.projectiles.push({
               type: "fan_square",
               x: s.x,
               y: s.y,
               vx: Math.cos(angle) * speed,
               vy: Math.sin(angle) * speed,
-              size: 9 + ring * 2,
-              spin: (i % 2 === 0 ? 1 : -1) * (1.5 + ring * 0.35),
+              size: 8 + ring * 2,
+              spin: (i % 2 === 0 ? 1 : -1) * (1.25 + ring * 0.28),
               angle,
-              life: 8.2,
+              life: 7.2,
               color: i % 3 === 0 ? "orange" : "white"
             });
           }
@@ -16869,10 +16870,10 @@
             y: s.y,
             vx: (dx / distance) * speed,
             vy: (dy / distance) * speed,
-            size: 12,
-            spin: Math.random() > 0.5 ? 1.6 : -1.6,
+            size: 10,
+            spin: Math.random() > 0.5 ? 1.35 : -1.35,
             angle,
-            life: 8.8,
+            life: 7.6,
             color: "orange"
           });
         }
@@ -16892,6 +16893,29 @@
             size: 3 + Math.random() * 2,
             jitter: Math.random() * TAU,
             life: 5.6
+          });
+        }
+      }
+
+      function spawnSlabhraidhPhase5Fragments() {
+        const s = state.slabhraidh;
+        for (let i = 0; i < 140; i++) {
+          const angle = Math.random() * TAU;
+          const distance = 80 + Math.random() * Math.max(120, Math.min(width, height) * 0.45);
+          const spawnX = s.x + Math.cos(angle) * distance;
+          const spawnY = s.y + Math.sin(angle) * distance;
+          const outwardX = spawnX - s.x;
+          const outwardY = spawnY - s.y;
+          const outwardDist = Math.hypot(outwardX, outwardY) || 1;
+          const speed = 90 + Math.random() * 170;
+          s.fragments.push({
+            x: spawnX,
+            y: spawnY,
+            vx: (outwardX / outwardDist) * speed,
+            vy: (outwardY / outwardDist) * speed,
+            size: 8 + Math.random() * 12,
+            rotation: Math.random() * TAU,
+            life: 6.6
           });
         }
       }
@@ -16932,6 +16956,10 @@
               targetY: s.y + Math.sin(snapAngle) * offset,
               mode: "bounce"
             };
+          } else if (s.detachedBar && nextPhase === 4) {
+            s.detachedBar.mode = "fall";
+            s.detachedBar.vx *= 0.3;
+            s.detachedBar.vy = Math.abs(s.detachedBar.vy) + 260;
           } else if (s.detachedBar && nextPhase === 5) {
             s.detachedBar.mode = "fall";
             s.detachedBar.vx *= 0.45;
@@ -16940,6 +16968,7 @@
           if (nextPhase === 5) {
             s.vx = 0;
             s.vy = 0;
+            s.phase5FragmentsSpawned = false;
           }
         }
         state.bossPhase = s.phase;
@@ -16969,14 +16998,14 @@
           s.targetY = clamp(player.y, 96, height - 120);
         }
 
-        const driftForce = s.phase === 1 ? 2.65 : s.phase === 2 ? 2.4 : s.phase === 4 ? 1.8 : s.phase === 5 ? 1.45 : 1.9;
+        const driftForce = s.phase === 1 ? 2.65 : s.phase === 2 ? 2.4 : s.phase === 4 ? 1.8 : s.phase === 5 ? 0.72 : 1.9;
         s.vx += (s.targetX - s.x) * dt * driftForce;
         s.vy += (s.targetY - s.y) * dt * driftForce;
-        s.vx *= s.phase === 1 ? 0.95 : s.phase === 2 ? 0.965 : s.phase === 5 ? 0.96 : 0.92;
-        s.vy *= s.phase === 1 ? 0.95 : s.phase === 2 ? 0.965 : s.phase === 5 ? 0.96 : 0.92;
+        s.vx *= s.phase === 1 ? 0.95 : s.phase === 2 ? 0.965 : s.phase === 5 ? 0.94 : 0.92;
+        s.vy *= s.phase === 1 ? 0.95 : s.phase === 2 ? 0.965 : s.phase === 5 ? 0.94 : 0.92;
         if (s.phase === 5) {
-          s.vx *= 0.92;
-          s.vy *= 0.92;
+          s.vx *= 0.88;
+          s.vy *= 0.88;
         }
         const bossBounds = s.phase === 1 ? 150 : 120;
         s.x = clamp(s.x + s.vx * dt, bossBounds, width - bossBounds);
@@ -17035,37 +17064,7 @@
 
         if (s.detachedBar && (s.phase === 3 || s.phase === 4 || s.phase === 5)) {
           s.detachedBar.rotation += s.detachedBar.rotationSpeed * dt;
-          if (s.phase === 4 && s.detachedBar.mode !== "fall") {
-            if (s.phase4DetachTimer <= 0) {
-              s.phase4DetachTimer = 2.4;
-              s.detachedBar.targetX = clamp(player.x, 64, width - 64);
-              s.detachedBar.targetY = clamp(player.y, 64, height - 64);
-            }
-            const chaseX = s.detachedBar.targetX;
-            const chaseY = s.detachedBar.targetY;
-            const dx = chaseX - s.detachedBar.x;
-            const dy = chaseY - s.detachedBar.y;
-            const dist = Math.hypot(dx, dy) || 1;
-            s.detachedBar.vx += (dx / dist) * 420 * dt;
-            s.detachedBar.vy += (dy / dist) * 420 * dt;
-            s.detachedBar.vx *= 0.982;
-            s.detachedBar.vy *= 0.982;
-            const speed = Math.hypot(s.detachedBar.vx, s.detachedBar.vy) || 1;
-            const maxSpeed = 420;
-            if (speed > maxSpeed) {
-              s.detachedBar.vx = (s.detachedBar.vx / speed) * maxSpeed;
-              s.detachedBar.vy = (s.detachedBar.vy / speed) * maxSpeed;
-            }
-            s.detachedBar.x += s.detachedBar.vx * dt;
-            s.detachedBar.y += s.detachedBar.vy * dt;
-            const angleTarget = Math.atan2(s.detachedBar.vy, s.detachedBar.vx);
-            s.detachedBar.rotation += Math.atan2(Math.sin(angleTarget - s.detachedBar.rotation), Math.cos(angleTarget - s.detachedBar.rotation)) * Math.min(1, dt * 3.8);
-            const margin = 64;
-            if (s.detachedBar.x < margin || s.detachedBar.x > width - margin) s.detachedBar.vx *= -1;
-            if (s.detachedBar.y < margin || s.detachedBar.y > height - margin) s.detachedBar.vy *= -1;
-            s.detachedBar.x = clamp(s.detachedBar.x, margin, width - margin);
-            s.detachedBar.y = clamp(s.detachedBar.y, margin, height - margin);
-          } else if (s.phase === 3 && s.detachedBar.mode === "bounce") {
+          if (s.phase === 3 && s.detachedBar.mode === "bounce") {
             s.detachedBar.x += s.detachedBar.vx * dt;
             s.detachedBar.y += s.detachedBar.vy * dt;
             if (s.detachedBar.x < 60 || s.detachedBar.x > width - 60) s.detachedBar.vx *= -1;
@@ -17079,21 +17078,13 @@
         }
         if (s.phase === 4) {
           if (s.patternTimer <= 0) {
-            s.patternTimer = 0.24;
+            s.patternTimer = 0.34;
             spawnSlabhraidhPhase4Pattern();
           }
         } else if (s.phase === 5) {
-          if (!s.fragments.length) {
-            for (let i = 0; i < 140; i++) {
-              const angle = Math.random() * TAU;
-              const distance = 80 + Math.random() * Math.max(120, Math.min(width, height) * 0.45);
-              s.fragments.push({
-                x: s.x + Math.cos(angle) * distance,
-                y: s.y + Math.sin(angle) * distance,
-                size: 8 + Math.random() * 12,
-                rotation: Math.random() * TAU
-              });
-            }
+          if (!s.phase5FragmentsSpawned) {
+            spawnSlabhraidhPhase5Fragments();
+            s.phase5FragmentsSpawned = true;
           }
           if (s.sparkTimer <= 0) {
             s.sparkTimer = 0.12;
@@ -17236,6 +17227,17 @@
           }
           if (projectile.life <= 0 || projectile.x < -240 || projectile.x > width + 240 || projectile.y < -240 || projectile.y > height + 240) {
             s.projectiles.splice(i, 1);
+          }
+        }
+
+        for (let i = s.fragments.length - 1; i >= 0; i--) {
+          const fragment = s.fragments[i];
+          fragment.x += fragment.vx * dt;
+          fragment.y += fragment.vy * dt;
+          fragment.rotation += dt * 2.2;
+          fragment.life -= dt;
+          if (fragment.life <= 0 || fragment.x < -260 || fragment.x > width + 260 || fragment.y < -260 || fragment.y > height + 260) {
+            s.fragments.splice(i, 1);
           }
         }
 
