@@ -3453,58 +3453,58 @@
 
       function ensureMusicPlayers() {
         if (!menuMusic) {
-          menuMusic = new Audio("MenuTheme.m4a");
+          menuMusic = new Audio("https://maxhax123.github.io/sectorv/MenuTheme.m4a");
           menuMusic.loop = true;
           menuMusic.preload = "auto";
         }
         if (!boss1Music) {
-          boss1Music = new Audio("Boss1.m4a");
+          boss1Music = new Audio("https://maxhax123.github.io/sectorv/Boss1.m4a");
           boss1Music.loop = true;
           boss1Music.preload = "auto";
         }
         if (!boss2Music) {
-          boss2Music = new Audio("boss2.m4a");
+          boss2Music = new Audio("https://maxhax123.github.io/sectorv/boss2.m4a");
           boss2Music.loop = true;
           boss2Music.preload = "auto";
         }
         if (!boss3Music) {
-          boss3Music = new Audio("boss3.m4a");
+          boss3Music = new Audio("https://maxhax123.github.io/sectorv/boss3.m4a");
           boss3Music.loop = true;
           boss3Music.preload = "auto";
         }
         if (!boss7Music) {
-          boss7Music = new Audio("boss7.m4a");
+          boss7Music = new Audio("https://maxhax123.github.io/sectorv/boss7.m4a");
           boss7Music.loop = true;
           boss7Music.preload = "auto";
         }
         if (!boss12Music) {
-          boss12Music = new Audio("boss12.m4a");
+          boss12Music = new Audio("https://maxhax123.github.io/sectorv/boss12.m4a");
           boss12Music.loop = true;
           boss12Music.preload = "auto";
         }
         if (!achievementSound) {
-          achievementSound = new Audio("youachievedsomethinginlife.mp3");
+          achievementSound = new Audio("https://maxhax123.github.io/sectorv/youachievedsomethinginlife.mp3");
           achievementSound.loop = false;
           achievementSound.preload = "auto";
         }
         if (!alarmistPingSound) {
-          alarmistPingSound = new Audio("Alarmist-Am Ping.m4a");
+          alarmistPingSound = new Audio("https://maxhax123.github.io/sectorv/Alarmist-Am%20Ping.m4a");
           alarmistPingSound.loop = false;
           alarmistPingSound.preload = "auto";
         }
         if (!hBombSound) {
-          hBombSound = new Audio("H-Bomb.m4a");
+          hBombSound = new Audio("https://maxhax123.github.io/sectorv/H-Bomb.m4a");
           hBombSound.loop = false;
           hBombSound.preload = "auto";
         }
         if (!temporalStrainDeadSound) {
-          temporalStrainDeadSound = new Audio("TemporalStrainDEAD.m4a");
+          temporalStrainDeadSound = new Audio("https://maxhax123.github.io/sectorv/TemporalStrainDEAD.m4a");
           temporalStrainDeadSound.loop = false;
           temporalStrainDeadSound.preload = "auto";
         }
         if (!deathSounds.length) {
           deathSounds = ["Death1.m4a", "Death2.m4a", "Death3.m4a"].map((file) => {
-            const audio = new Audio(file);
+            const audio = new Audio(`https://maxhax123.github.io/sectorv/${encodeURIComponent(file)}`);
             audio.loop = false;
             audio.preload = "auto";
             return audio;
@@ -3512,7 +3512,7 @@
         }
         if (!shockwaveSounds.length) {
           shockwaveSounds = ["Shockwave1.m4a", "Shockwave2.m4a", "Shockwave3.m4a"].map((file) => {
-            const audio = new Audio(file);
+            const audio = new Audio(`https://maxhax123.github.io/sectorv/${encodeURIComponent(file)}`);
             audio.loop = false;
             audio.preload = "auto";
             return audio;
