@@ -3465,6 +3465,8 @@
           neutronTimer: 0,
           u234Timer: 0,
           ringTimer: 0,
+          phaseAccentTimer: 0,
+          wallReverseState: false,
           shuckCooldown: 0,
           gammaTimer: 0,
           sideLaserTimer: 0,
@@ -6336,6 +6338,8 @@
           neutronTimer: 1.1,
           u234Timer: 4.8,
           ringTimer: 1.1,
+          phaseAccentTimer: 1.1,
+          wallReverseState: false,
           shuckCooldown: 0,
           gammaTimer: 0.02,
           sideLaserTimer: 0.9,
@@ -11029,6 +11033,11 @@
         state.slabhraidh.fragments.length = 0;
         state.radiator.fragments.length = 0;
         state.decayer.fragments.length = 0;
+        if (state.currentBoss === "radiator") {
+          state.radiator.fallenCoreY = 0;
+          state.radiator.centeringFromX = state.radiator.x;
+          state.radiator.centeringFromY = state.radiator.y;
+        }
         overlay.innerHTML = `
           <div class="warning-shell">
             <div class="warning-text" id="victoryText">${state.currentBoss === "architect" ? "Hertz's Harmony Disassembled. Neural Corridor Stabilizing." : state.currentBoss === "sovereign" ? "Protium Sovereign Destabilized. Fission Cascade Imminent." : state.currentBoss === "monarch" ? "Monarch Null Shattering Across The Lattice." : state.currentBoss === "cesium" ? "Cesium Fracturing Into Hazardous Debris." : state.currentBoss === "tantalum" ? "Tantalum Overloading. Charge Integrity Failing." : state.currentBoss === "luminosity" ? "Lord Luminosity Dimming. Noble Neon Structure Failing." : state.currentBoss === "sili" ? "Sili Overclock Destabilizing. Binary Merge Failure Imminent." : state.currentBoss === "caesar" ? "Caesar Dy Overheating. Rail Polarity Failure Imminent." : state.currentBoss === "beauty" ? "Beauty Bismuth Dulling. Hopper Crystal Collapse Imminent." : state.currentBoss === "bleach" ? "The Bleach Baron Liquefying. Corrosive Bond Failure Imminent." : state.currentBoss === "alarmist" ? "Ambitious Alarmist-Am Burning Out. Shutters Falling Silent." : state.currentBoss === "slabhraidh" ? "Stalwart Slabhraidh Seizing Up. Guide Bars Tearing Loose." : state.currentBoss === "radiator" ? "Radiator Cooling To Grey. Critical Decay Chain Finally Breaking." : "Radiator The Ultimate Decayer Is Going Cold. Corium Collapse Imminent."}</div>
@@ -11040,6 +11049,16 @@
 
       function updateVictoryCutscene(dt) {
         state.victoryTime += dt;
+        if (state.victoryBoss === "radiator") {
+          const settleBlend = clamp(state.victoryTime / 0.7, 0, 1);
+          const sourceX = Number.isFinite(state.radiator.centeringFromX) ? state.radiator.centeringFromX : state.radiator.x;
+          const sourceY = Number.isFinite(state.radiator.centeringFromY) ? state.radiator.centeringFromY : state.radiator.y;
+          state.radiator.x = lerp(sourceX, centerX, settleBlend);
+          if (state.victoryTime > 1.35) {
+            state.radiator.fallenCoreY += dt * 240;
+          }
+          state.radiator.y = lerp(sourceY, centerY, settleBlend) + state.radiator.fallenCoreY;
+        }
         const victoryText = document.getElementById("victoryText");
         const vortex = state.victoryBoss === "architect"
           ? getVortexPosition()
@@ -11614,7 +11633,10 @@
           fragment.x += fragment.vx * dt;
           fragment.y += fragment.vy * dt;
           fragment.vx *= 0.992;
-          fragment.vy = fragment.vy * 0.992 + 18 * dt;
+          fragment.vy = fragment.vy * 0.992 + (state.victoryBoss === "radiator" && state.victoryTime > 1.35 ? 46 : 18) * dt;
+          if (state.victoryBoss === "radiator" && state.victoryTime > 1.35) {
+            fragment.x += (state.radiator.x - fragment.x) * Math.min(1, dt * 0.85);
+          }
           fragment.life -= dt;
           if (fragment.life <= 0) state.radiator.fragments.splice(i, 1);
         }
@@ -12468,6 +12490,34 @@
           shot.x += shot.vx * dt;
           shot.y += shot.vy * dt;
           shot.life -= dt;
+
+          if (state.currentBoss === "radiator" && state.radiator.phase === 6) {
+            let pushedRadiatorProjectile = false;
+            for (const projectile of state.radiator.projectiles) {
+              if (projectile.type !== "gamma") continue;
+              const pushHitRadius = shot.type === "focus_beam"
+                ? (shot.beamWidth || shot.size) * 4
+                : shot.size * 4;
+              const hitDist = shot.type === "focus_beam"
+                ? getShotDistanceToPoint(projectile.x, projectile.y)
+                : Math.hypot(shot.x - projectile.x, shot.y - projectile.y);
+              if (hitDist >= projectile.size + pushHitRadius + 4) continue;
+              const pushDx = projectile.x - state.radiator.x;
+              const pushDy = projectile.y - state.radiator.y;
+              const pushDist = Math.hypot(pushDx, pushDy) || 1;
+              const pushSpeed = 240 + Math.min(180, Math.hypot(shot.vx, shot.vy) * 0.18);
+              projectile.vx = (pushDx / pushDist) * pushSpeed;
+              projectile.vy = (pushDy / pushDist) * pushSpeed;
+              projectile.wobbleAmp = Math.max(projectile.wobbleAmp || 0.02, 0.028);
+              addSpark(projectile.x, projectile.y, "rgba(255, 244, 186, 0.88)", 4, 90);
+              pushedRadiatorProjectile = true;
+              if (shot.type !== "tick_phaser" && shot.type !== "focus_beam") {
+                state.playerShots.splice(i, 1);
+              }
+              break;
+            }
+            if (pushedRadiatorProjectile && shot.type !== "tick_phaser" && shot.type !== "focus_beam") continue;
+          }
 
           if (state.currentBoss === "alarmist") {
             let hitAlarmBlade = false;
@@ -13450,11 +13500,11 @@
           rotationSpeed: (Math.random() > 0.5 ? 1 : -1) * (0.06 + Math.random() * 0.12),
           phase: index === 1 ? (Math.random() > 0.5 ? 2 : 1) : index === 3 ? (Math.random() > 0.55 ? 2 : 1) : index === 5 ? (Math.random() > 0.65 ? 2 : 1) : 1,
           laneOffset: (order - Math.max(0, ambientBosses.length - 1) * 0.5) * 18,
+          collisionRadius: 34 + (index === 11 ? 18 : index === 12 ? 16 : index >= 8 ? 12 : 10),
           currentX: 0,
           currentY: 0,
-          targetX: 0,
-          targetY: 0,
-          driftSpeed: 22
+          vx: (Math.random() > 0.5 ? 1 : -1) * (28 + Math.random() * 24),
+          vy: (Math.random() > 0.5 ? 1 : -1) * (24 + Math.random() * 22)
         }));
         return state.menuAmbientBosses;
       }
@@ -13473,7 +13523,7 @@
           9: 0.44,
           10: 0.46,
           11: 0.54,
-          12: 0.6,
+          12: 0.66,
           13: 0.66
         };
         const scale = (bossScaleMap[ambient.index] || 0.24) * (ambient.scale / 0.28);
@@ -13795,28 +13845,56 @@
         ctx.save();
         ctx.globalCompositeOperation = "lighter";
         for (const ambient of ambientBosses) {
-          const phase = ambient.seed;
           if (ambient.currentX === 0 && ambient.currentY === 0) {
             ambient.currentX = minX + Math.random() * Math.max(1, maxX - minX);
             ambient.currentY = minY + Math.random() * Math.max(1, maxY - minY);
           }
-          if (ambient.targetX === 0 && ambient.targetY === 0) {
-            ambient.targetX = minX + Math.random() * Math.max(1, maxX - minX);
-            ambient.targetY = minY + Math.random() * Math.max(1, maxY - minY);
+          ambient.currentX += ambient.vx * dt;
+          ambient.currentY += ambient.vy * dt;
+          const radius = ambient.collisionRadius;
+          if (ambient.currentX < minX + radius) {
+            ambient.currentX = minX + radius;
+            ambient.vx = Math.abs(ambient.vx);
+          } else if (ambient.currentX > maxX - radius) {
+            ambient.currentX = maxX - radius;
+            ambient.vx = -Math.abs(ambient.vx);
           }
-
-          const targetDistance = Math.hypot(ambient.targetX - ambient.currentX, ambient.targetY - ambient.currentY);
-          if (targetDistance < 20) {
-            ambient.targetX = minX + Math.random() * Math.max(1, maxX - minX);
-            ambient.targetY = minY + Math.random() * Math.max(1, maxY - minY);
+          if (ambient.currentY < minY + radius) {
+            ambient.currentY = minY + radius;
+            ambient.vy = Math.abs(ambient.vy);
+          } else if (ambient.currentY > maxY - radius) {
+            ambient.currentY = maxY - radius;
+            ambient.vy = -Math.abs(ambient.vy);
           }
+        }
 
-          if (targetDistance > 0.001) {
-            const travel = Math.min(targetDistance, ambient.driftSpeed * dt);
-            ambient.currentX += ((ambient.targetX - ambient.currentX) / targetDistance) * travel;
-            ambient.currentY += ((ambient.targetY - ambient.currentY) / targetDistance) * travel;
+        for (let i = 0; i < ambientBosses.length; i++) {
+          for (let j = i + 1; j < ambientBosses.length; j++) {
+            const a = ambientBosses[i];
+            const b = ambientBosses[j];
+            const dx = b.currentX - a.currentX;
+            const dy = b.currentY - a.currentY;
+            const dist = Math.hypot(dx, dy) || 0.001;
+            const minDist = a.collisionRadius + b.collisionRadius;
+            if (dist >= minDist) continue;
+            const nx = dx / dist;
+            const ny = dy / dist;
+            const overlap = minDist - dist;
+            a.currentX -= nx * overlap * 0.5;
+            a.currentY -= ny * overlap * 0.5;
+            b.currentX += nx * overlap * 0.5;
+            b.currentY += ny * overlap * 0.5;
+            const avn = a.vx * nx + a.vy * ny;
+            const bvn = b.vx * nx + b.vy * ny;
+            a.vx += (bvn - avn) * nx;
+            a.vy += (bvn - avn) * ny;
+            b.vx += (avn - bvn) * nx;
+            b.vy += (avn - bvn) * ny;
           }
+        }
 
+        for (const ambient of ambientBosses) {
+          const phase = ambient.seed;
           const x = ambient.currentX + Math.cos(time * (0.42 + ambient.speedX * 0.35) + phase) * 4;
           const y = ambient.currentY + Math.sin(time * (0.5 + ambient.bobSpeed * 0.4) + phase) * (ambient.bobAmp * 0.55);
           drawMenuAmbientBossSprite(ambient, x, y, time);
@@ -18391,7 +18469,7 @@
 
       function getRadiatorCoreRadius() {
         const r = state.radiator;
-        return r.phase === 6 ? 84 : r.phase === 5 ? 248 : r.phase === 4 ? 324 : r.phase === 3 ? 252 : 258;
+        return r.phase === 6 ? 72 : r.phase === 5 ? 188 : r.phase === 4 ? 214 : r.phase === 3 ? 162 : 126;
       }
 
       function spawnRadiatorBullet(angle, speed, size, color, damage = 0.5, type = "u235") {
@@ -18415,6 +18493,24 @@
         for (let i = 0; i < count; i++) {
           const angle = state.radiator.spin + (i - (count - 1) * 0.5) * 0.085 + Math.sin(state.elapsed * 1.2 + i) * 0.02;
           spawnRadiatorBullet(angle, speed + (i % 2) * 26, 5.5, "rgba(124,255,124,0.96)", 0.5, "u235");
+        }
+      }
+
+      function spawnRadiatorNeedleFan(count = 10, speed = 280, arc = 0.7, phaseOffset = 0) {
+        for (let i = 0; i < count; i++) {
+          const spread = count <= 1 ? 0 : (i / (count - 1) - 0.5);
+          const angle = state.radiator.spin + phaseOffset + spread * arc;
+          state.radiator.projectiles.push({
+            type: "u235_fan",
+            x: state.radiator.x,
+            y: state.radiator.y,
+            vx: Math.cos(angle) * (speed + Math.abs(spread) * 30),
+            vy: Math.sin(angle) * (speed + Math.abs(spread) * 30),
+            size: 6.2,
+            color: "rgba(162,255,128,0.98)",
+            damage: 0.5,
+            life: 4.8
+          });
         }
       }
 
@@ -18456,6 +18552,23 @@
         }
       }
 
+      function spawnRadiatorHeavyBurst(count = 5) {
+        for (let i = 0; i < count; i++) {
+          const angle = state.radiator.spin + (i / count) * TAU + Math.sin(state.elapsed * 1.7 + i) * 0.12;
+          state.radiator.projectiles.push({
+            type: "u238_burst",
+            x: state.radiator.x,
+            y: state.radiator.y,
+            vx: Math.cos(angle) * 152,
+            vy: Math.sin(angle) * 152,
+            size: 24,
+            color: "rgba(255,234,126,0.94)",
+            damage: 1,
+            life: 6.8
+          });
+        }
+      }
+
       function spawnRadiatorU234() {
         for (let i = 0; i < 3; i++) {
           const angle = state.radiator.spin + (i / 3) * TAU;
@@ -18487,27 +18600,52 @@
 
       function spawnRadiatorFissionWave() {
         state.radiator.shockRings.push({
+          originX: state.radiator.x,
+          originY: state.radiator.y,
           radius: 40,
           baseRadius: 40,
           pulse: Math.random() * TAU,
           life: 3.8,
-          width: 16
+          width: 16,
+          hit: false,
+          randomKick: false,
+          damage: 0.5
+        });
+      }
+
+      function spawnRadiatorReverseShockwave() {
+        const maxRadius = Math.hypot(width, height);
+        state.radiator.shockRings.push({
+          originX: state.radiator.x,
+          originY: state.radiator.y,
+          radius: 26,
+          baseRadius: 26,
+          pulse: Math.random() * TAU,
+          life: 2.4,
+          maxLife: 2.4,
+          maxRadius,
+          width: 22,
+          hit: false,
+          randomKick: true,
+          damage: 0
         });
       }
 
       function spawnRadiatorShuck() {
-        for (let i = 0; i < 10; i++) {
-          const angle = Math.random() * TAU;
+        const baseAngle = Math.atan2(player.y - state.radiator.y, player.x - state.radiator.x);
+        for (let i = 0; i < 8; i++) {
+          const spread = (i / 7 - 0.5) * 1.2;
+          const angle = baseAngle + Math.PI + spread + (Math.random() - 0.5) * 0.22;
           state.radiator.projectiles.push({
             type: "shuck",
             x: state.radiator.x,
             y: state.radiator.y,
-            vx: Math.cos(angle) * (160 + Math.random() * 120),
-            vy: Math.sin(angle) * (160 + Math.random() * 120),
+            vx: Math.cos(angle) * (180 + Math.random() * 90),
+            vy: Math.sin(angle) * (180 + Math.random() * 90),
             size: 3.8,
             color: "rgba(132,255,116,0.94)",
             damage: 0.5,
-            life: 2.3
+            life: 2.8
           });
         }
       }
@@ -18556,17 +18694,19 @@
         r.motionTimer += dt;
         r.spin += dt * (r.phase >= 2 ? 1.8 : 0.65);
         r.shuckCooldown = Math.max(0, r.shuckCooldown - dt);
+        const coreRadius = getRadiatorCoreRadius();
 
         if (r.phase <= 4) {
-          const minX = 120;
-          const maxX = width - 120;
-          const minY = 88;
-          const maxY = height - 112;
-          const travel = (Math.sin(r.motionTimer * (r.phase === 4 ? 0.92 : 0.62)) + 1) * 0.5;
+          const edgePad = Math.max(110, coreRadius * 1.05);
+          const minX = edgePad;
+          const maxX = width - edgePad;
+          const minY = 86 + coreRadius * 0.18;
+          const maxY = height - (96 + coreRadius * 0.3);
+          const travel = (Math.sin(r.motionTimer * (r.phase === 4 ? 0.56 : 0.34)) + 1) * 0.5;
           const wCurve = Math.abs(Math.sin(travel * TAU * 2));
           const targetX = lerp(minX, maxX, travel);
           const targetY = lerp(minY, maxY, wCurve);
-          const introBlend = Math.min(1, r.motionTimer / 0.9);
+          const introBlend = Math.min(1, r.motionTimer / 1.3);
           r.x = lerp(centerX, targetX, introBlend);
           r.y = lerp(centerY, targetY, introBlend);
         } else if (r.phase === 5) {
@@ -18584,53 +18724,128 @@
         r.ringTimer -= dt;
         r.gammaTimer -= dt;
         r.sideLaserTimer -= dt;
+        r.phaseAccentTimer -= dt;
 
         if (r.phase <= 3 && r.bulletTimer <= 0) {
-          r.bulletTimer = r.phase === 3 ? 0.24 : 0.38;
-          spawnRadiatorGreenNeedles(r.phase === 3 ? 12 : 8, r.phase === 3 ? 370 : 330);
+          r.bulletTimer = r.phase === 3 ? 0.22 : 0.34;
+          spawnRadiatorGreenNeedles(r.phase === 3 ? 13 : 9, r.phase === 3 ? 382 : 338);
         }
         if (r.phase <= 3 && r.heavyTimer <= 0) {
-          r.heavyTimer = r.phase === 3 ? 0.8 : 1.2;
-          spawnRadiatorHeavyWalls(r.phase === 3 ? 4 : 3);
+          r.heavyTimer = r.phase === 3 ? 0.72 : 1.05;
+          spawnRadiatorHeavyWalls(r.phase === 3 ? 5 : 4);
         }
         if (r.phase === 2 && r.neutronTimer <= 0) {
-          r.neutronTimer = 0.8 + Math.random() * 0.5;
+          r.neutronTimer = 0.62 + Math.random() * 0.42;
           spawnRadiatorLaser();
           spawnRadiatorLaser();
+          if (Math.random() > 0.45) spawnRadiatorNeedleFan(9, 260, 0.92, Math.PI * 0.33);
         }
         if (r.phase === 3 && r.u234Timer <= 0) {
-          r.u234Timer = 4 + Math.random() * 4;
+          r.u234Timer = 3.4 + Math.random() * 2.2;
           spawnRadiatorU234();
+        }
+        if (r.phase <= 3 && r.phaseAccentTimer <= 0) {
+          if (r.phase === 1) {
+            r.phaseAccentTimer = 1.55 + Math.random() * 1.1;
+            spawnRadiatorNeedleFan(11, 285, 1.08, Math.PI);
+          } else if (r.phase === 2) {
+            r.phaseAccentTimer = 1.9 + Math.random() * 1.2;
+            spawnRadiatorHeavyBurst(4);
+          } else if (r.phase === 3) {
+            r.phaseAccentTimer = 1.4 + Math.random() * 0.9;
+            spawnRadiatorNeedleFan(12, 300, 1.24, Math.PI * 0.5);
+            spawnRadiatorHeavyBurst(3);
+          }
         }
         if (r.phase === 4) {
           if (r.ringTimer <= 0) {
-            r.ringTimer = 1.15;
+            r.ringTimer = 0.96;
             spawnRadiatorFissionWave();
+            if (Math.random() > 0.4) {
+              state.radiator.shockRings.push({
+                originX: state.radiator.x,
+                originY: state.radiator.y,
+                radius: 92,
+                baseRadius: 92,
+                pulse: Math.random() * TAU,
+                life: 3.1,
+                width: 12,
+                hit: false,
+                randomKick: false,
+                damage: 0.5
+              });
+            }
           }
           if ((r.trail.length === 0 || r.trail[r.trail.length - 1].life < 3.45)) {
             spawnRadiatorTrailPiece();
           }
+          if (r.phaseAccentTimer <= 0) {
+            r.phaseAccentTimer = 1.18 + Math.random() * 0.85;
+            spawnRadiatorNeedleFan(13, 292, 1.45, Math.PI * 0.25);
+          }
+        }
+        if (r.phase === 5 && r.phaseAccentTimer <= 0) {
+          r.phaseAccentTimer = 0.95 + Math.random() * 0.7;
+          spawnRadiatorNeedleFan(10, 270, 0.98, Math.PI * (Math.random() > 0.5 ? 0.2 : 1.2));
+          spawnRadiatorHeavyBurst(3);
         }
         if (r.phase === 6) {
+          const inset = 90;
+          const horizontal = Math.max(10, width - inset * 2);
+          const vertical = Math.max(10, height - inset * 2);
+          const perimeter = horizontal * 2 + vertical * 2;
+          const segmentDuration = 5.5;
+          const reverseNow = Math.floor(r.motionTimer / segmentDuration) % 2 === 1;
+          const segmentT = (r.motionTimer % segmentDuration) / segmentDuration;
+          const rawPath = segmentT * perimeter;
+          const pathPos = reverseNow ? perimeter - rawPath : rawPath;
+          const erraticOffsetA = Math.sin(r.motionTimer * 5.6) * 10;
+          const erraticOffsetB = Math.sin(r.motionTimer * 8.4 + 1.2) * 6;
+          const wallJitter = erraticOffsetA + erraticOffsetB;
+          if (reverseNow && !r.wallReverseState) {
+            spawnRadiatorReverseShockwave();
+            state.shake = Math.max(state.shake, 26);
+          }
+          r.wallReverseState = reverseNow;
+          if (pathPos < horizontal) {
+            r.x = inset + pathPos;
+            r.y = inset + wallJitter;
+          } else if (pathPos < horizontal + vertical) {
+            r.x = width - inset + wallJitter;
+            r.y = inset + (pathPos - horizontal);
+          } else if (pathPos < horizontal * 2 + vertical) {
+            r.x = width - inset - (pathPos - (horizontal + vertical));
+            r.y = height - inset + wallJitter;
+          } else {
+            r.x = inset + wallJitter;
+            r.y = height - inset - (pathPos - (horizontal * 2 + vertical));
+          }
           if (r.gammaTimer <= 0) {
-            r.gammaTimer = 0.03;
-            for (let i = 0; i < 9; i++) {
-              const angle = state.elapsed * 3.8 + (i / 9) * TAU + Math.sin(state.elapsed * 2.4 + i) * 0.4;
+            r.gammaTimer = 0.06;
+            const gammaWave = Math.floor(r.motionTimer / 0.06);
+            const baseAngle = state.elapsed * 1.85 + (gammaWave % 12) * 0.16;
+            const spread = 0.92 + Math.sin(state.elapsed * 1.4) * 0.08;
+            for (let i = 0; i < 5; i++) {
+              const offset = (i - 2) * spread;
+              const angle = baseAngle + offset;
+              const speed = 162 + Math.abs(i - 2) * 10;
               state.radiator.projectiles.push({
                 type: "gamma",
                 x: r.x,
                 y: r.y,
-                vx: Math.cos(angle) * (180 + Math.random() * 80),
-                vy: Math.sin(angle) * (180 + Math.random() * 80),
+                vx: Math.cos(angle) * speed,
+                vy: Math.sin(angle) * speed,
                 size: 3.2,
                 color: "rgba(246,246,246,0.9)",
-                damage: 0.5,
-                life: 4.6
+                damage: 1.5,
+                life: 999,
+                wobbleSeed: gammaWave * 0.31 + i * 0.87,
+                wobbleAmp: 0.018 + i * 0.002
               });
             }
           }
           if (r.sideLaserTimer <= 0) {
-            r.sideLaserTimer = 0.55;
+            r.sideLaserTimer = 0.82;
             spawnRadiatorSideLaser("left");
             spawnRadiatorSideLaser("right");
           }
@@ -18638,15 +18853,16 @@
 
         let nearest = Infinity;
         let closeCount = 0;
-        const coreRadius = getRadiatorCoreRadius();
         const distCore = Math.hypot(player.x - r.x, player.y - r.y);
         nearest = Math.min(nearest, distCore);
         if (distCore < 110) closeCount++;
-        if (distCore < player.hitRadius + coreRadius * 0.56) damagePlayer(1, "impact");
+        if (distCore < player.hitRadius + coreRadius * 0.56) damagePlayer(r.phase === 6 ? 1.5 : 1, "impact");
 
         for (let i = r.projectiles.length - 1; i >= 0; i--) {
           const projectile = r.projectiles[i];
-          projectile.life -= dt;
+          if (projectile.type !== "gamma") {
+            projectile.life -= dt;
+          }
           if (projectile.type === "u234") {
             projectile.retargetTimer -= dt;
             if (projectile.retargetTimer <= 0) {
@@ -18664,7 +18880,7 @@
             projectile.vx *= maxSpeed / speed;
             projectile.vy *= maxSpeed / speed;
           } else if (projectile.type === "gamma") {
-            const angle = Math.atan2(projectile.vy, projectile.vx) + Math.sin(state.elapsed * 4 + projectile.x * 0.01) * 0.03;
+            const angle = Math.atan2(projectile.vy, projectile.vx) + Math.sin(state.elapsed * 4.2 + projectile.wobbleSeed) * (projectile.wobbleAmp || 0.02);
             const speed = Math.hypot(projectile.vx, projectile.vy);
             projectile.vx = Math.cos(angle) * speed;
             projectile.vy = Math.sin(angle) * speed;
@@ -18743,10 +18959,26 @@
           const ring = r.shockRings[i];
           ring.life -= dt;
           ring.pulse += dt * 3.8;
-          ring.radius = ring.baseRadius + (1 - ring.life / 3.8) * 280 + Math.sin(ring.pulse) * 32;
-          const dist = Math.abs(Math.hypot(player.x - r.x, player.y - r.y) - ring.radius);
+          const lifeSpan = ring.maxLife || 3.8;
+          const progress = clamp(1 - ring.life / lifeSpan, 0, 1);
+          const targetRadius = ring.maxRadius || (ring.baseRadius + 280);
+          ring.radius = lerp(ring.baseRadius, targetRadius, progress) + Math.sin(ring.pulse) * (ring.randomKick ? 10 : 32);
+          const originX = ring.originX ?? r.x;
+          const originY = ring.originY ?? r.y;
+          const dist = Math.abs(Math.hypot(player.x - originX, player.y - originY) - ring.radius);
           nearest = Math.min(nearest, dist);
-          if (dist < ring.width + player.hitRadius) damagePlayer(0.5, "impact");
+          if (!ring.hit && dist < ring.width + player.hitRadius) {
+            ring.hit = true;
+            if (ring.randomKick) {
+              playShockwaveSound();
+              const knockAngle = Math.random() * TAU;
+              player.pullVx += Math.cos(knockAngle) * 320;
+              player.pullVy += Math.sin(knockAngle) * 320;
+              state.shake = Math.max(state.shake, 22);
+            } else {
+              damagePlayer(ring.damage ?? 0.5, "impact");
+            }
+          }
           if (ring.life <= 0) r.shockRings.splice(i, 1);
         }
 
@@ -18756,131 +18988,145 @@
       function drawRadiatorBoss() {
         const r = state.radiator;
         const coreRadius = getRadiatorCoreRadius();
+        const phaseHeat = r.phase >= 6 ? 1 : r.phase >= 5 ? 0.82 : r.phase >= 4 ? 0.62 : r.phase >= 3 ? 0.42 : 0.22;
         ctx.save();
         ctx.translate(r.x, r.y);
         ctx.rotate(r.spin * (r.phase >= 2 ? 0.5 : 0.18));
 
-        const aura = ctx.createRadialGradient(0, 0, 0, 0, 0, coreRadius * 2.5);
-        aura.addColorStop(0, "rgba(255, 246, 176, 0.24)");
-        aura.addColorStop(0.25, "rgba(238, 255, 124, 0.18)");
-        aura.addColorStop(0.52, "rgba(214, 255, 94, 0.12)");
+        const aura = ctx.createRadialGradient(0, 0, 0, 0, 0, coreRadius * 2.15);
+        aura.addColorStop(0, `rgba(255, 250, 196, ${0.14 + phaseHeat * 0.12})`);
+        aura.addColorStop(0.35, `rgba(226, 255, 112, ${0.1 + phaseHeat * 0.1})`);
+        aura.addColorStop(0.68, `rgba(170, 224, 58, ${0.05 + phaseHeat * 0.06})`);
         aura.addColorStop(1, "rgba(255,255,255,0)");
         ctx.fillStyle = aura;
         ctx.beginPath();
-        ctx.arc(0, 0, coreRadius * 2.5, 0, TAU);
+        ctx.arc(0, 0, coreRadius * 2.15, 0, TAU);
         ctx.fill();
 
-        const fallout = ctx.createRadialGradient(0, 0, coreRadius * 0.2, 0, 0, coreRadius * 1.8);
+        const fallout = ctx.createRadialGradient(0, 0, coreRadius * 0.16, 0, 0, coreRadius * 1.55);
         fallout.addColorStop(0, "rgba(255,255,210,0)");
-        fallout.addColorStop(0.55, "rgba(186,255,96,0.08)");
+        fallout.addColorStop(0.55, `rgba(186,255,96,${0.06 + phaseHeat * 0.07})`);
         fallout.addColorStop(1, "rgba(40,60,18,0)");
         ctx.fillStyle = fallout;
         ctx.beginPath();
-        ctx.arc(0, 0, coreRadius * 1.8, 0, TAU);
+        ctx.arc(0, 0, coreRadius * 1.55, 0, TAU);
         ctx.fill();
 
-        for (let i = 0; i < 4; i++) {
+        for (let i = 0; i < 3; i++) {
           ctx.save();
-          ctx.rotate((i / 4) * TAU + Math.sin(state.elapsed * 14 + i) * 0.04);
-          const finGrad = ctx.createLinearGradient(coreRadius * 0.34, 0, coreRadius * 1.34, 0);
-          finGrad.addColorStop(0, "rgba(18,18,20,0.98)");
-          finGrad.addColorStop(0.45, "rgba(52,52,58,0.98)");
-          finGrad.addColorStop(1, "rgba(12,12,14,0.98)");
+          ctx.rotate((i / 3) * TAU + r.spin * 0.1 + Math.sin(state.elapsed * 10 + i) * 0.05);
+          const finGrad = ctx.createLinearGradient(coreRadius * 0.6, 0, coreRadius * 1.55, 0);
+          finGrad.addColorStop(0, "rgba(24,24,26,0.98)");
+          finGrad.addColorStop(0.45, "rgba(74,76,82,0.96)");
+          finGrad.addColorStop(1, "rgba(14,14,16,0.98)");
           ctx.fillStyle = finGrad;
-          ctx.fillRect(coreRadius * 0.34, -coreRadius * 0.17, coreRadius, coreRadius * 0.34);
-          ctx.fillStyle = "rgba(255,182,72,0.3)";
-          for (let fin = 0; fin < 5; fin++) {
-            const offset = coreRadius * (0.44 + fin * 0.16);
-            ctx.fillRect(offset, -coreRadius * 0.17, Math.max(8, coreRadius * 0.06), coreRadius * 0.34);
+          ctx.beginPath();
+          ctx.moveTo(coreRadius * 0.48, -coreRadius * 0.2);
+          ctx.lineTo(coreRadius * 1.52, -coreRadius * 0.34);
+          ctx.lineTo(coreRadius * 1.62, coreRadius * 0.34);
+          ctx.lineTo(coreRadius * 0.48, coreRadius * 0.2);
+          ctx.closePath();
+          ctx.fill();
+          ctx.fillStyle = `rgba(255,190,82,${0.18 + phaseHeat * 0.18})`;
+          for (let fin = 0; fin < 4; fin++) {
+            const offset = coreRadius * (0.72 + fin * 0.18);
+            ctx.fillRect(offset, -coreRadius * 0.28, Math.max(5, coreRadius * 0.07), coreRadius * 0.56);
           }
-          ctx.strokeStyle = "rgba(255,238,166,0.12)";
-          ctx.lineWidth = 2;
-          ctx.strokeRect(coreRadius * 0.34, -coreRadius * 0.17, coreRadius, coreRadius * 0.34);
+          ctx.strokeStyle = `rgba(255,238,166,${0.12 + phaseHeat * 0.1})`;
+          ctx.lineWidth = 1.8;
+          ctx.stroke();
           ctx.restore();
         }
 
         for (let i = 0; i < 3; i++) {
           ctx.save();
-          ctx.rotate(-r.spin * 0.18 + i * (TAU / 3));
-          ctx.strokeStyle = `rgba(255, 214, 110, ${0.14 + i * 0.04})`;
-          ctx.lineWidth = 3 + i * 1.4;
+          ctx.rotate(r.spin * 0.18 + i * (TAU / 3));
+          ctx.strokeStyle = `rgba(255, 232, 124, ${0.16 + phaseHeat * 0.1})`;
+          ctx.lineWidth = 2 + i * 0.8;
           ctx.beginPath();
-          ctx.moveTo(-coreRadius * (0.2 + i * 0.06), -coreRadius * (0.7 - i * 0.08));
-          ctx.lineTo(coreRadius * (0.16 + i * 0.05), -coreRadius * (0.14 - i * 0.02));
-          ctx.lineTo(-coreRadius * (0.04 + i * 0.03), coreRadius * (0.46 + i * 0.04));
+          ctx.ellipse(0, 0, coreRadius * (0.86 + i * 0.1), coreRadius * (0.28 + i * 0.03), 0, 0, TAU);
           ctx.stroke();
           ctx.restore();
         }
 
         ctx.save();
-        ctx.fillStyle = r.phase >= 6 ? "rgba(82,82,86,0.98)" : "rgba(68,70,76,0.98)";
+        ctx.fillStyle = r.phase >= 6 ? "rgba(66,68,72,0.98)" : "rgba(76,78,84,0.98)";
         ctx.beginPath();
-        ctx.moveTo(0, -coreRadius * 1.16);
-        ctx.lineTo(coreRadius * 0.52, -coreRadius * 0.94);
-        ctx.lineTo(coreRadius * 1.04, -coreRadius * 0.16);
-        ctx.lineTo(coreRadius * 0.88, coreRadius * 0.74);
-        ctx.lineTo(coreRadius * 0.22, coreRadius * 1.06);
-        ctx.lineTo(0, coreRadius * 0.72);
-        ctx.lineTo(-coreRadius * 0.22, coreRadius * 1.06);
-        ctx.lineTo(-coreRadius * 0.88, coreRadius * 0.74);
-        ctx.lineTo(-coreRadius * 1.04, -coreRadius * 0.16);
-        ctx.lineTo(-coreRadius * 0.52, -coreRadius * 0.94);
+        for (let i = 0; i < 8; i++) {
+          const angle = -Math.PI * 0.5 + (i / 8) * TAU;
+          const radius = coreRadius * (i % 2 === 0 ? 1.12 : 0.92);
+          const x = Math.cos(angle) * radius;
+          const y = Math.sin(angle) * radius;
+          if (i === 0) ctx.moveTo(x, y);
+          else ctx.lineTo(x, y);
+        }
         ctx.closePath();
         ctx.fill();
-        ctx.strokeStyle = "rgba(14,14,14,0.84)";
-        ctx.lineWidth = 5;
+        ctx.strokeStyle = "rgba(10,10,12,0.88)";
+        ctx.lineWidth = 3.5;
         ctx.stroke();
 
         const shellGlow = ctx.createLinearGradient(-coreRadius, -coreRadius, coreRadius, coreRadius);
-        shellGlow.addColorStop(0, "rgba(255,255,255,0.06)");
+        shellGlow.addColorStop(0, "rgba(255,255,255,0.08)");
         shellGlow.addColorStop(0.52, "rgba(255,255,255,0)");
-        shellGlow.addColorStop(1, "rgba(255,186,86,0.08)");
+        shellGlow.addColorStop(1, `rgba(255,216,104,${0.08 + phaseHeat * 0.08})`);
         ctx.fillStyle = shellGlow;
         ctx.beginPath();
-        ctx.moveTo(0, -coreRadius * 1.04);
-        ctx.lineTo(coreRadius * 0.46, -coreRadius * 0.8);
-        ctx.lineTo(coreRadius * 0.86, -coreRadius * 0.12);
-        ctx.lineTo(coreRadius * 0.74, coreRadius * 0.58);
-        ctx.lineTo(0, coreRadius * 0.6);
-        ctx.lineTo(-coreRadius * 0.74, coreRadius * 0.58);
-        ctx.lineTo(-coreRadius * 0.86, -coreRadius * 0.12);
-        ctx.lineTo(-coreRadius * 0.46, -coreRadius * 0.8);
+        for (let i = 0; i < 8; i++) {
+          const angle = -Math.PI * 0.5 + (i / 8) * TAU;
+          const radius = coreRadius * (i % 2 === 0 ? 0.9 : 0.72);
+          const x = Math.cos(angle) * radius;
+          const y = Math.sin(angle) * radius;
+          if (i === 0) ctx.moveTo(x, y);
+          else ctx.lineTo(x, y);
+        }
         ctx.closePath();
         ctx.fill();
 
-        ctx.strokeStyle = "rgba(146,146,150,0.34)";
-        ctx.lineWidth = 2.4;
-        for (let crack = 0; crack < 7; crack++) {
-          const bias = -coreRadius * 0.36 + crack * coreRadius * 0.12;
+        ctx.strokeStyle = `rgba(150,150,154,${0.2 + phaseHeat * 0.14})`;
+        ctx.lineWidth = 1.9;
+        for (let crack = 0; crack < 6; crack++) {
+          const bias = -coreRadius * 0.34 + crack * coreRadius * 0.14;
           ctx.beginPath();
-          ctx.moveTo(bias, -coreRadius * 0.74);
-          ctx.lineTo(bias + coreRadius * 0.08, -coreRadius * 0.42);
-          ctx.lineTo(bias - coreRadius * 0.04, -coreRadius * 0.08);
-          ctx.lineTo(bias + coreRadius * 0.1, coreRadius * 0.24);
-          ctx.lineTo(bias - coreRadius * 0.02, coreRadius * 0.54);
+          ctx.moveTo(bias, -coreRadius * 0.68);
+          ctx.lineTo(bias + coreRadius * 0.1, -coreRadius * 0.34);
+          ctx.lineTo(bias - coreRadius * 0.06, -coreRadius * 0.02);
+          ctx.lineTo(bias + coreRadius * 0.12, coreRadius * 0.28);
+          ctx.lineTo(bias - coreRadius * 0.03, coreRadius * 0.58);
           ctx.stroke();
         }
         ctx.restore();
 
-        const core = ctx.createRadialGradient(0, 0, 0, 0, 0, coreRadius * 0.94);
-        core.addColorStop(0, r.phase === 6 ? "rgba(255,255,255,0.96)" : "rgba(255,255,232,0.96)");
-        core.addColorStop(0.2, "rgba(255, 252, 176, 0.94)");
-        core.addColorStop(0.46, "rgba(238,255,120,0.92)");
-        core.addColorStop(0.78, "rgba(196,220,42,0.3)");
+        const core = ctx.createRadialGradient(0, 0, 0, 0, 0, coreRadius * 0.76);
+        core.addColorStop(0, r.phase === 6 ? "rgba(255,255,255,0.96)" : "rgba(255,255,236,0.96)");
+        core.addColorStop(0.24, "rgba(255, 248, 164, 0.94)");
+        core.addColorStop(0.54, "rgba(210,255,104,0.9)");
+        core.addColorStop(0.82, "rgba(164,206,30,0.24)");
         core.addColorStop(1, "rgba(188,214,42,0)");
         ctx.fillStyle = core;
         ctx.beginPath();
-        ctx.arc(0, 0, coreRadius * 0.94, 0, TAU);
+        ctx.arc(0, 0, coreRadius * 0.76, 0, TAU);
         ctx.fill();
 
-        ctx.strokeStyle = "rgba(255, 234, 136, 0.34)";
-        ctx.lineWidth = 3;
+        ctx.fillStyle = `rgba(255,255,244,${0.14 + phaseHeat * 0.1})`;
+        ctx.beginPath();
+        ctx.arc(-coreRadius * 0.16, -coreRadius * 0.12, coreRadius * 0.18, 0, TAU);
+        ctx.fill();
+
+        ctx.strokeStyle = `rgba(255, 234, 136, ${0.18 + phaseHeat * 0.12})`;
+        ctx.lineWidth = 2.2;
         for (let orbit = 0; orbit < 3; orbit++) {
           ctx.save();
-          ctx.rotate(r.spin * 0.12 + orbit * (TAU / 3));
+          ctx.rotate(r.spin * 0.16 + orbit * (TAU / 3));
           ctx.beginPath();
-          ctx.ellipse(0, 0, coreRadius * (0.42 + orbit * 0.08), coreRadius * (0.22 + orbit * 0.03), 0, 0, TAU);
+          ctx.ellipse(0, 0, coreRadius * (0.56 + orbit * 0.09), coreRadius * (0.22 + orbit * 0.035), orbit * 0.18, 0, TAU);
           ctx.stroke();
+          const electronX = Math.cos(state.elapsed * (0.7 + orbit * 0.12) + orbit * 1.9) * coreRadius * (0.56 + orbit * 0.09);
+          const electronY = Math.sin(state.elapsed * (0.7 + orbit * 0.12) + orbit * 1.9) * coreRadius * (0.22 + orbit * 0.035);
+          ctx.fillStyle = orbit % 2 === 0 ? "rgba(232,255,140,0.96)" : "rgba(255,246,176,0.92)";
+          ctx.beginPath();
+          ctx.arc(electronX, electronY, coreRadius * 0.06, 0, TAU);
+          ctx.fill();
           ctx.restore();
         }
         ctx.restore();
@@ -18894,23 +19140,76 @@
           ctx.save();
           ctx.translate(projectile.x, projectile.y);
           ctx.rotate(Math.atan2(projectile.vy, projectile.vx));
-          if (projectile.type === "u235" || projectile.type === "burst_needle" || projectile.type === "shuck" || projectile.type === "gamma") {
+          if (projectile.type === "u235" || projectile.type === "u235_fan") {
+            ctx.fillStyle = "rgba(210,255,180,0.16)";
+            ctx.fillRect(-projectile.size * 1.5, -projectile.size * 0.4, projectile.size * 2.4, projectile.size * 0.8);
+            ctx.fillStyle = projectile.color;
+            ctx.beginPath();
+            ctx.moveTo(projectile.size * 1.08, 0);
+            ctx.lineTo(-projectile.size * 0.96, -projectile.size * 0.34);
+            ctx.lineTo(-projectile.size * 0.56, 0);
+            ctx.lineTo(-projectile.size * 0.96, projectile.size * 0.34);
+            ctx.closePath();
+            ctx.fill();
+          } else if (projectile.type === "burst_needle" || projectile.type === "shuck" || projectile.type === "gamma") {
             ctx.fillStyle = projectile.color;
             ctx.fillRect(-projectile.size * 0.9, -projectile.size * 0.22, projectile.size * 1.8, projectile.size * 0.44);
+            ctx.fillStyle = "rgba(255,255,220,0.24)";
+            ctx.fillRect(-projectile.size * 0.3, -projectile.size * 0.08, projectile.size * 1.1, projectile.size * 0.16);
           } else if (projectile.type === "u238") {
+            ctx.fillStyle = "rgba(255,246,196,0.15)";
+            ctx.fillRect(-projectile.size * 0.95, -projectile.size * 0.95, projectile.size * 1.9, projectile.size * 1.9);
             ctx.fillStyle = projectile.color;
-            ctx.fillRect(-projectile.size * 0.7, -projectile.size * 0.7, projectile.size * 1.4, projectile.size * 1.4);
+            ctx.beginPath();
+            ctx.moveTo(projectile.size * 0.88, 0);
+            ctx.lineTo(projectile.size * 0.22, -projectile.size * 0.74);
+            ctx.lineTo(-projectile.size * 0.78, -projectile.size * 0.48);
+            ctx.lineTo(-projectile.size * 0.92, 0);
+            ctx.lineTo(-projectile.size * 0.78, projectile.size * 0.48);
+            ctx.lineTo(projectile.size * 0.22, projectile.size * 0.74);
+            ctx.closePath();
+            ctx.fill();
+          } else if (projectile.type === "u238_burst") {
+            ctx.fillStyle = "rgba(255,246,196,0.14)";
+            ctx.beginPath();
+            ctx.arc(0, 0, projectile.size * 1.18, 0, TAU);
+            ctx.fill();
+            ctx.fillStyle = projectile.color;
+            ctx.beginPath();
+            ctx.moveTo(projectile.size * 0.82, 0);
+            for (let i = 1; i < 8; i++) {
+              const angle = (i / 8) * TAU;
+              const radius = i % 2 === 0 ? projectile.size * 0.82 : projectile.size * 0.46;
+              ctx.lineTo(Math.cos(angle) * radius, Math.sin(angle) * radius);
+            }
+            ctx.closePath();
+            ctx.fill();
           } else if (projectile.type === "u234") {
+            ctx.fillStyle = "rgba(228,255,154,0.16)";
+            ctx.beginPath();
+            ctx.arc(0, 0, projectile.size * 1.4, 0, TAU);
+            ctx.fill();
             ctx.fillStyle = projectile.color;
             ctx.beginPath();
             ctx.arc(0, 0, projectile.size, 0, TAU);
             ctx.fill();
+            ctx.strokeStyle = "rgba(255,244,186,0.42)";
+            ctx.lineWidth = 1.2;
+            ctx.beginPath();
+            ctx.ellipse(0, 0, projectile.size * 1.2, projectile.size * 0.52, state.elapsed * 1.8, 0, TAU);
+            ctx.stroke();
           }
           ctx.restore();
         }
         for (const laser of r.lasers) {
           ctx.strokeStyle = laser.color || "rgba(255,255,255,0.88)";
-          ctx.lineWidth = laser.width;
+          ctx.lineWidth = laser.width * 2.2;
+          ctx.beginPath();
+          ctx.moveTo(laser.x, laser.y);
+          ctx.lineTo(laser.x - laser.vx * 0.08, laser.y - laser.vy * 0.08);
+          ctx.stroke();
+          ctx.strokeStyle = "rgba(255,255,255,0.92)";
+          ctx.lineWidth = Math.max(1.5, laser.width * 0.65);
           ctx.beginPath();
           ctx.moveTo(laser.x, laser.y);
           ctx.lineTo(laser.x - laser.vx * 0.08, laser.y - laser.vy * 0.08);
@@ -18923,10 +19222,12 @@
           ctx.fill();
         }
         for (const ring of r.shockRings) {
+          const originX = ring.originX ?? r.x;
+          const originY = ring.originY ?? r.y;
           ctx.strokeStyle = "rgba(255,244,176,0.34)";
           ctx.lineWidth = ring.width;
           ctx.beginPath();
-          ctx.arc(r.x, r.y, ring.radius, 0, TAU);
+          ctx.arc(originX, originY, ring.radius, 0, TAU);
           ctx.stroke();
         }
         ctx.restore();
@@ -18935,47 +19236,60 @@
       function drawRadiatorPreview(ctxPreview, time) {
         ctxPreview.save();
         ctxPreview.translate(64, 64);
-        ctxPreview.rotate(time * 0.2);
-        for (let i = 0; i < 4; i++) {
+        ctxPreview.rotate(time * 0.18);
+        for (let i = 0; i < 3; i++) {
           ctxPreview.save();
-          ctxPreview.rotate((i / 4) * TAU + Math.sin(time * 10 + i) * 0.04);
-          ctxPreview.fillStyle = "rgba(20,20,24,0.98)";
-          ctxPreview.fillRect(28, -10, 42, 20);
-          ctxPreview.fillStyle = "rgba(255,186,82,0.24)";
+          ctxPreview.rotate((i / 3) * TAU + time * 0.15 + Math.sin(time * 6 + i) * 0.04);
+          ctxPreview.fillStyle = "rgba(22,22,24,0.98)";
+          ctxPreview.beginPath();
+          ctxPreview.moveTo(26, -8);
+          ctxPreview.lineTo(60, -14);
+          ctxPreview.lineTo(64, 14);
+          ctxPreview.lineTo(26, 8);
+          ctxPreview.closePath();
+          ctxPreview.fill();
+          ctxPreview.fillStyle = "rgba(255,196,94,0.24)";
           for (let fin = 0; fin < 4; fin++) {
-            ctxPreview.fillRect(34 + fin * 8, -10, 3, 20);
+            ctxPreview.fillRect(34 + fin * 6, -12, 2, 24);
           }
           ctxPreview.restore();
         }
-        ctxPreview.fillStyle = "rgba(70,72,78,0.98)";
+        ctxPreview.fillStyle = "rgba(78,80,84,0.98)";
         ctxPreview.beginPath();
-        ctxPreview.moveTo(0, -48);
-        ctxPreview.lineTo(24, -40);
-        ctxPreview.lineTo(42, -6);
-        ctxPreview.lineTo(36, 34);
-        ctxPreview.lineTo(0, 24);
-        ctxPreview.lineTo(-36, 34);
-        ctxPreview.lineTo(-42, -6);
-        ctxPreview.lineTo(-24, -40);
+        for (let i = 0; i < 8; i++) {
+          const angle = -Math.PI * 0.5 + (i / 8) * TAU;
+          const radius = i % 2 === 0 ? 36 : 30;
+          const x = Math.cos(angle) * radius;
+          const y = Math.sin(angle) * radius;
+          if (i === 0) ctxPreview.moveTo(x, y);
+          else ctxPreview.lineTo(x, y);
+        }
         ctxPreview.closePath();
         ctxPreview.fill();
-        ctxPreview.strokeStyle = "rgba(16,16,16,0.86)";
+        ctxPreview.strokeStyle = "rgba(16,16,18,0.9)";
         ctxPreview.lineWidth = 3;
         ctxPreview.stroke();
-        const core = ctxPreview.createRadialGradient(0, 0, 0, 0, 0, 34);
-        core.addColorStop(0, "rgba(255,255,228,0.96)");
+
+        const core = ctxPreview.createRadialGradient(0, 0, 0, 0, 0, 26);
+        core.addColorStop(0, "rgba(255,255,236,0.96)");
         core.addColorStop(0.34, "rgba(255,248,146,0.95)");
-        core.addColorStop(0.6, "rgba(238,255,120,0.92)");
+        core.addColorStop(0.6, "rgba(220,255,116,0.92)");
         core.addColorStop(1, "rgba(188,214,42,0)");
         ctxPreview.fillStyle = core;
         ctxPreview.beginPath();
-        ctxPreview.arc(0, 0, 34, 0, TAU);
+        ctxPreview.arc(0, 0, 26, 0, TAU);
         ctxPreview.fill();
-        ctxPreview.strokeStyle = "rgba(255,232,132,0.22)";
+
+        ctxPreview.strokeStyle = "rgba(255,232,132,0.24)";
         ctxPreview.lineWidth = 2;
-        ctxPreview.beginPath();
-        ctxPreview.ellipse(0, 0, 22, 10, time * 0.25, 0, TAU);
-        ctxPreview.stroke();
+        for (let orbit = 0; orbit < 3; orbit++) {
+          ctxPreview.save();
+          ctxPreview.rotate(time * 0.2 + orbit * (TAU / 3));
+          ctxPreview.beginPath();
+          ctxPreview.ellipse(0, 0, 20 + orbit * 4, 8 + orbit * 2, orbit * 0.2, 0, TAU);
+          ctxPreview.stroke();
+          ctxPreview.restore();
+        }
         ctxPreview.restore();
       }
 
