@@ -2238,6 +2238,67 @@
   </style>
 </head>
 <body>
+
+<div id="intro-video-wrapper">
+  <style>
+    #intro-video-overlay {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: black;
+      z-index: 99999;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      transition: opacity 1s ease;
+    }
+    #intro-video-btn {
+      position: absolute;
+      width: 100%; height: 100%;
+      background: transparent;
+      border: none;
+      color: white;
+      font-size: 24px;
+      cursor: pointer;
+      z-index: 100001;
+      -webkit-tap-highlight-color: transparent;
+    }
+    #intro-video-player {
+      width: 100%; height: 100%;
+      object-fit: contain;
+      display: none;
+    }
+  </style>
+
+  <div id="intro-video-overlay">
+    <button id="intro-video-btn">Click to Play</button>
+    <video id="intro-video-player" playsinline>
+      <source src="https://github.com/LWKlearning/LWKlearning.github.io/raw/refs/heads/main/lwklearning%20intro.mp4" type="video/mp4">
+    </video>
+  </div>
+
+  <script>
+    (function() {
+      const player = document.getElementById('intro-video-player');
+      const overlay = document.getElementById('intro-video-overlay');
+      const btn = document.getElementById('intro-video-btn');
+
+      btn.onclick = () => {
+        btn.remove();
+        player.style.display = 'block';
+        player.play();
+      };
+
+      player.onended = () => {
+        player.remove();
+        overlay.style.opacity = '0';
+        setTimeout(() => overlay.remove(), 1000);
+      };
+    })();
+  </script>
+</div>
+
+  
   <canvas id="game"></canvas>
   <div class="scanlines" aria-hidden="true"></div>
 
