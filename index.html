@@ -2770,7 +2770,7 @@
         },
         sanitizationer: {
           name: "Sanitizationer",
-          effect: "Recover 0.5 health every 40 seconds during battle.",
+          effect: "Recover 0.5 health every 35 seconds during battle, even above your normal max health.",
           desc: "\"The quote-on-quote 'outrageous' price is just because of inflation, please calm down.\" - Jeremiah Strubhar",
           priceCents: 20000
         }
@@ -3165,7 +3165,7 @@
         shopPurchaseFxTimer: 0,
         shopPurchaseFxLabel: "",
         supportBursts: [],
-        supportHealTimer: 40,
+        supportHealTimer: 35,
         sluggerHitCount: 0,
         operationsTimerSecond: null,
         pausePhasePanelOpen: false,
@@ -6641,7 +6641,7 @@
         state.usedUltimateThisRun = false;
         state.usedXlThisRun = false;
         state.supportBursts.length = 0;
-        state.supportHealTimer = 40;
+        state.supportHealTimer = 35;
         state.sluggerHitCount = 0;
         resetSovereignState();
         resetNullState();
@@ -12933,12 +12933,14 @@
       function updateSupportManagement(dt) {
         if (state.mode === "playing" && state.profile.shop?.selectedSupportManagement === "sanitizationer") {
           state.supportHealTimer -= dt;
-          if (state.supportHealTimer <= 0) {
-            state.supportHealTimer = 40;
-            player.health = Math.min(player.maxHealth, player.health + 0.5);
+          while (state.supportHealTimer <= 0) {
+            state.supportHealTimer += 35;
+            player.health += 0.5;
             addFlash(player.x, player.y, "rgba(188,255,214,0.32)", 58);
             addSpark(player.x, player.y, "rgba(214,255,232,0.92)", 10, 110);
           }
+        } else if (state.profile.shop?.selectedSupportManagement !== "sanitizationer") {
+          state.supportHealTimer = 35;
         }
         for (let i = state.supportBursts.length - 1; i >= 0; i--) {
           const burst = state.supportBursts[i];
