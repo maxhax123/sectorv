@@ -2728,12 +2728,6 @@
           priceCents: 8299,
           type: "orbital_strike"
         },
-        tick_phaser: {
-          name: "Tick Phaser",
-          desc: "Triangular phasing shots that hit slightly softer on contact, then keep ticking damage every 0.1 seconds while overlapping the boss.",
-          priceCents: 6899,
-          type: "tick_phaser"
-        },
         focus_beam: {
           name: "Focus-Beam",
           desc: "A sustained forward laser with real range. It hits hard in a tight lane, but it cannot reach across the entire arena.",
@@ -3009,7 +3003,6 @@
             signal_standard: true,
             spark_targets: Boolean(source.shop?.ownedPrimaryBullets?.spark_targets),
             orbital_strike: Boolean(source.shop?.ownedPrimaryBullets?.orbital_strike),
-            tick_phaser: Boolean(source.shop?.ownedPrimaryBullets?.tick_phaser),
             focus_beam: Boolean(source.shop?.ownedPrimaryBullets?.focus_beam),
             traveler: Boolean(source.shop?.ownedPrimaryBullets?.traveler),
             sniper: Boolean(source.shop?.ownedPrimaryBullets?.sniper)
@@ -3023,7 +3016,7 @@
           selectedXlBullet: (source.shop?.ownedXlBullets?.[source.shop?.selectedXlBullet] || ["twin_hunter", "split_comet"].includes(source.shop?.selectedXlBullet))
             ? source.shop.selectedXlBullet
             : "twin_hunter",
-          selectedPrimaryBullet: (source.shop?.ownedPrimaryBullets?.[source.shop?.selectedPrimaryBullet] || source.shop?.selectedPrimaryBullet === "signal_standard")
+          selectedPrimaryBullet: (source.shop?.selectedPrimaryBullet !== "tick_phaser" && (source.shop?.ownedPrimaryBullets?.[source.shop?.selectedPrimaryBullet] || source.shop?.selectedPrimaryBullet === "signal_standard"))
             ? source.shop.selectedPrimaryBullet
             : "signal_standard",
           selectedSupportManagement: source.shop?.ownedSupportManagement?.[source.shop?.selectedSupportManagement]
