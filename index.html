@@ -20287,15 +20287,21 @@
           "rgba(126,214,255,0.94)",
           "rgba(255,82,82,0.94)"
         ];
-        const laneBase = 44 + state.decayer.streamLane * 34;
-        for (let i = 0; i < 3; i++) {
-          const laneY = 68 + ((laneBase + i * 176) % Math.max(160, height - 136));
+        const lanePattern = [
+          [54, 148, height - 148, height - 54],
+          [72, 196, height - 196, height - 72],
+          [94, 236, height - 236, height - 94],
+          [62, 168, height - 168, height - 62]
+        ];
+        const lanes = lanePattern[state.decayer.streamLane % lanePattern.length];
+        for (let i = 0; i < lanes.length; i++) {
+          const laneY = clamp(lanes[i], 40, height - 40);
           spawnDecayerProjectile({
             type: "phase7_stream",
             x: width + 40 + i * 30,
             y: laneY,
-            vx: -(274 + i * 26),
-            vy: Math.sin((state.decayer.streamLane + i) * 0.8) * 34,
+            vx: -(248 + i * 15),
+            vy: Math.sin((state.decayer.streamLane + i) * 0.72) * 10,
             size: 13 + Math.random() * 6,
             life: 7,
             wobble: state.decayer.streamLane * 0.7 + i * 0.55,
@@ -20307,9 +20313,9 @@
       }
 
       function spawnGuardianPhase7EdgeBand(top = true) {
-        const bandY = top ? 54 : height - 54;
-        const gapWidth = 190;
-        const gapCenter = clamp(width * 0.62 + Math.sin(state.decayer.streamLane * 0.9) * 90, width * 0.42, width * 0.82);
+        const bandY = top ? 76 : height - 76;
+        const gapWidth = 230;
+        const gapCenter = clamp(width * 0.68 + Math.sin(state.decayer.streamLane * 0.9 + (top ? 0 : 1.8)) * 86, width * 0.48, width * 0.84);
         const gapStart = gapCenter - gapWidth * 0.5;
         const gapEnd = gapCenter + gapWidth * 0.5;
         const color = top ? "rgba(164,255,96,0.98)" : "rgba(255,178,88,0.98)";
@@ -20320,17 +20326,39 @@
           y: bandY,
           gapStart,
           gapEnd,
-          width: 16,
-          life: 1.95,
-          chargeLife: 0.5,
-          extendLife: 0.14,
-          holdLife: 0.72,
-          retractLife: 0.59,
+          width: 24,
+          life: 2.15,
+          chargeLife: 0.44,
+          extendLife: 0.12,
+          holdLife: 0.96,
+          retractLife: 0.63,
           progress: 0,
           active: false,
           damage: 1,
           color
         });
+      }
+
+      function spawnGuardianPhase7CoreFan() {
+        const d = state.decayer;
+        const originX = d.x + getDecayerCoreRadius() * 0.44;
+        const originY = d.y;
+        const baseAngle = Math.sin(d.motionTimer * 1.35) * 0.42;
+        for (let i = 0; i < 15; i++) {
+          const angle = baseAngle + ((i / 14) - 0.5) * 1.52;
+          spawnDecayerProjectile({
+            type: "guardian_shard",
+            x: originX,
+            y: originY,
+            vx: Math.cos(angle) * 370,
+            vy: Math.sin(angle) * 370,
+            size: 11.5,
+            life: 4.8,
+            damage: 0.5,
+            spin: 1.6 + i * 0.12,
+            color: i % 2 === 0 ? "rgba(184,255,118,0.96)" : "rgba(255,186,104,0.96)"
+          });
+        }
       }
 
       function spawnGuardianPhase7EdgeSweep(top = true) {
@@ -20655,12 +20683,16 @@
           }
         } else if (d.phase === 7) {
           if (d.colorWaveTimer <= 0) {
-            d.colorWaveTimer = 0.14;
+            d.colorWaveTimer = 0.18;
             spawnGuardianPhase7Stream();
           }
+          if (d.sphereTimer <= 0) {
+            d.sphereTimer = 0.62;
+            spawnGuardianPhase7CoreFan();
+          }
           if (d.squiggleTimer <= 0) {
-            d.squiggleTimer = 1.02;
-            spawnGuardianPhase7EdgeBand((d.patternStep++ % 2) === 0);
+            d.squiggleTimer = 0.48;
+            spawnGuardianSquiggle(Math.random() < 0.5 ? "left" : "right");
           }
         }
 
