@@ -3200,6 +3200,8 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         supportBursts: [],
         supportHealTimer: 35,
         sluggerHitCount: 0,
+        resumeFreezeTimer: 0,
+        resumeFreezeDuration: 2.5,
         operationsTimerSecond: null,
         pausePhasePanelOpen: false,
         achievementsTab: "main",
@@ -6729,6 +6731,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         state.damageCooldown = 0;
         state.tookDamageThisRun = false;
         state.bossDamageFlash = 0;
+        state.resumeFreezeTimer = 0;
         state.ultimateCharge = 0;
         state.xlChargeProgress = 0;
         state.xlAmmo = 0;
@@ -7134,6 +7137,8 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
           state.pausePhasePanelOpen = false;
           state.mode = "playing";
           overlay.classList.remove("show");
+          state.resumeFreezeDuration = 2.5;
+          state.resumeFreezeTimer = state.resumeFreezeDuration;
           updateHudVisibility();
         }
       }
@@ -13469,6 +13474,11 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         }
 
         if (state.mode === "paused") {
+          return;
+        }
+
+        if (state.mode === "playing" && state.resumeFreezeTimer > 0) {
+          state.resumeFreezeTimer = Math.max(0, state.resumeFreezeTimer - dt);
           return;
         }
 
@@ -23029,6 +23039,43 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         ctx.restore();
       }
 
+      function drawResumeFreezeOverlay() {
+        if (!(state.mode === "playing" && state.resumeFreezeTimer > 0)) return;
+        const progress = clamp(state.resumeFreezeTimer / Math.max(0.001, state.resumeFreezeDuration), 0, 1);
+        const countdown = Math.max(0, state.resumeFreezeTimer).toFixed(1);
+        ctx.save();
+        ctx.fillStyle = `rgba(7, 6, 16, ${0.4 + progress * 0.18})`;
+        ctx.fillRect(0, 0, width, height);
+
+        const panelWidth = Math.min(430, width * 0.64);
+        const panelHeight = 148;
+        const panelX = width * 0.5 - panelWidth * 0.5;
+        const panelY = height * 0.5 - panelHeight * 0.5;
+        const panelGlow = ctx.createLinearGradient(panelX, panelY, panelX + panelWidth, panelY + panelHeight);
+        panelGlow.addColorStop(0, "rgba(255, 215, 106, 0.14)");
+        panelGlow.addColorStop(0.5, "rgba(255, 244, 210, 0.08)");
+        panelGlow.addColorStop(1, "rgba(165, 244, 255, 0.12)");
+        ctx.fillStyle = "rgba(10, 8, 20, 0.88)";
+        ctx.fillRect(panelX, panelY, panelWidth, panelHeight);
+        ctx.fillStyle = panelGlow;
+        ctx.fillRect(panelX, panelY, panelWidth, panelHeight);
+        ctx.strokeStyle = "rgba(255, 215, 106, 0.32)";
+        ctx.lineWidth = 1.5;
+        ctx.strokeRect(panelX, panelY, panelWidth, panelHeight);
+
+        ctx.textAlign = "center";
+        ctx.fillStyle = "rgba(255, 236, 176, 0.95)";
+        ctx.font = "600 15px 'IBM Plex Mono', monospace";
+        ctx.fillText("COMBAT RE-SYNC", width * 0.5, panelY + 33);
+        ctx.fillStyle = "rgba(255, 245, 214, 0.99)";
+        ctx.font = "700 58px 'IBM Plex Mono', monospace";
+        ctx.fillText(countdown, width * 0.5, panelY + 90);
+        ctx.fillStyle = "rgba(220, 222, 240, 0.86)";
+        ctx.font = "500 15px 'IBM Plex Mono', monospace";
+        ctx.fillText("Battlefield frozen while you get ready again.", width * 0.5, panelY + 121);
+        ctx.restore();
+      }
+
       function render() {
         renderBossSelectPreviews();
         ctx.setTransform(deviceScale, 0, 0, deviceScale, 0, 0);
@@ -23507,6 +23554,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
           ctx.fillRect(0, 0, width, height);
         }
         drawHud();
+        drawResumeFreezeOverlay();
       }
 
       let lastTime = performance.now();
