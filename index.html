@@ -2593,6 +2593,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       const storedShake = localStorage.getItem("aether_vortex_screen_shake");
       const storedMenuMusicMuted = localStorage.getItem("aether_vortex_menu_music_muted");
       const storedBossMusicMuted = localStorage.getItem("aether_vortex_boss_music_muted");
+      const storedGraphicsQuality = localStorage.getItem("aether_vortex_graphics_quality");
       const storedSaveSlots = (() => {
         try {
           return JSON.parse(localStorage.getItem("aether_vortex_save_slots") || "{}");
@@ -2624,6 +2625,58 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         { name: "Mint", color: "#7effc6" },
         { name: "Ember", color: "#ff9b5e" }
       ];
+      const graphicsQualityDefs = {
+        absolute_potato: {
+          name: "Absolute Potato",
+          glowScale: 0,
+          particleScale: 0.24,
+          decorativeScale: 0.35,
+          shadowScale: 0.18,
+          backgroundDetail: 0.3,
+          fancy: false,
+          imageRendering: "pixelated"
+        },
+        low: {
+          name: "Low",
+          glowScale: 0.58,
+          particleScale: 0.55,
+          decorativeScale: 0.62,
+          shadowScale: 0.48,
+          backgroundDetail: 0.6,
+          fancy: false,
+          imageRendering: "auto"
+        },
+        normal: {
+          name: "Normal",
+          glowScale: 1,
+          particleScale: 1,
+          decorativeScale: 1,
+          shadowScale: 1,
+          backgroundDetail: 1,
+          fancy: true,
+          imageRendering: "auto"
+        },
+        high: {
+          name: "High",
+          glowScale: 1.18,
+          particleScale: 1.2,
+          decorativeScale: 1.18,
+          shadowScale: 1.15,
+          backgroundDetail: 1.2,
+          fancy: true,
+          imageRendering: "auto"
+        },
+        nasa_computer: {
+          name: "NASA Computer",
+          glowScale: 1.34,
+          particleScale: 1.45,
+          decorativeScale: 1.34,
+          shadowScale: 1.28,
+          backgroundDetail: 1.35,
+          fancy: true,
+          imageRendering: "auto"
+        }
+      };
       const attackLoadoutDefs = {
         graphic_reset: {
           name: "Graphic Reset",
@@ -3216,6 +3269,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         menuAmbientSignature: "",
         menuAmbientLastTime: 0,
         achievementToasts: [],
+        errorLog: [],
         impactFrames: {
           damage: 0,
           special: 0,
@@ -3621,7 +3675,8 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
           volume: Number.isFinite(storedVolume) ? clamp(storedVolume, 0, 1) : 0.65,
           screenShake: storedShake === null ? true : storedShake === "true",
           menuMusicMuted: storedMenuMusicMuted === "true",
-          bossMusicMuted: storedBossMusicMuted === "true"
+          bossMusicMuted: storedBossMusicMuted === "true",
+          graphicsQuality: graphicsQualityDefs[storedGraphicsQuality] ? storedGraphicsQuality : "normal"
         },
         profile: {
           ...createDefaultProfile(storedProfile)
@@ -3707,12 +3762,29 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         }
       }
 
-      window.addEventListener("error", () => {
+      function logRuntimeError(scope, error) {
+        const message = error?.stack || error?.message || String(error || "Unknown error");
+        state.errorLog.unshift({
+          scope,
+          message,
+          time: new Date().toISOString()
+        });
+        if (state.errorLog.length > 24) {
+          state.errorLog.length = 24;
+        }
+        try {
+          console.error(`[AetherVortex:${scope}]`, error);
+        } catch {}
+      }
+
+      window.addEventListener("error", (event) => {
+        logRuntimeError("window.error", event?.error || event?.message || "Unknown window error");
         if (!shouldRecoverStartupShell()) return;
         recoverStartupShell("Startup Recovery");
       });
 
-      window.addEventListener("unhandledrejection", () => {
+      window.addEventListener("unhandledrejection", (event) => {
+        logRuntimeError("window.unhandledrejection", event?.reason || "Unhandled rejection");
         if (!shouldRecoverStartupShell()) return;
         recoverStartupShell("Startup Recovery");
       });
@@ -4292,6 +4364,38 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         for (const shockwaveSound of shockwaveSounds) {
           shockwaveSound.volume = state.settings.volume;
         }
+      }
+
+      function getGraphicsQualityMeta() {
+        return graphicsQualityDefs[state.settings.graphicsQuality] || graphicsQualityDefs.normal;
+      }
+
+      function getGraphicsQualityLabel() {
+        return getGraphicsQualityMeta().name;
+      }
+
+      function getGraphicsParticleLimit(base) {
+        return Math.max(8, Math.round(base * getGraphicsQualityMeta().particleScale));
+      }
+
+      function graphicsFancyEnabled() {
+        return getGraphicsQualityMeta().fancy;
+      }
+
+      function graphicsGlowEnabled() {
+        return getGraphicsQualityMeta().glowScale > 0.01;
+      }
+
+      function applyGraphicsQuality() {
+        canvas.style.imageRendering = getGraphicsQualityMeta().imageRendering;
+      }
+
+      function setGraphicsQuality(id) {
+        if (!graphicsQualityDefs[id]) return;
+        state.settings.graphicsQuality = id;
+        localStorage.setItem("aether_vortex_graphics_quality", id);
+        applyGraphicsQuality();
+        if (state.mode === "config") renderConfig();
       }
 
       function setShowBossTimer(enabled) {
@@ -5907,6 +6011,13 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                 <div class="config-actions">
                   <button class="config-toggle menu-hoverable" data-toggle-shake>${state.settings.screenShake ? "On" : "Off"}</button>
                 </div>
+                <div class="title" style="margin-top:20px;">Graphic Changing</div>
+                <div class="config-actions" style="flex-wrap:wrap;">
+                  ${Object.entries(graphicsQualityDefs).map(([id, meta]) => `
+                    <button class="config-toggle menu-hoverable ${state.settings.graphicsQuality === id ? "active" : ""}" data-graphics-quality="${id}">${meta.name}</button>
+                  `).join("")}
+                </div>
+                <div class="menu-footer" style="text-align:left;">Current quality: ${getGraphicsQualityLabel()}. Normal matches the game’s current intended look.</div>
                 <div class="title" style="margin-top:20px;">Music Routing</div>
                 <div class="config-actions">
                   <button class="config-toggle menu-hoverable ${state.settings.menuMusicMuted ? "" : "active"}" data-toggle-menu-music>${state.settings.menuMusicMuted ? "Menu Music Off" : "Menu Music On"}</button>
@@ -7741,6 +7852,119 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
             ? getDecayerCoreRadius()
             : getCaesarCoreRadius()
         };
+      }
+
+      function getBossGraphicsAccent() {
+        if (state.currentBoss === "architect") return { primary: "255,215,106", secondary: "165,76,255" };
+        if (state.currentBoss === "sovereign") return { primary: "170,244,255", secondary: "255,255,255" };
+        if (state.currentBoss === "monarch") return { primary: "255,140,82", secondary: "102,64,42" };
+        if (state.currentBoss === "cesium") return { primary: "255,112,76", secondary: "255,214,120" };
+        if (state.currentBoss === "tantalum") return { primary: "92,248,255", secondary: "138,174,255" };
+        if (state.currentBoss === "luminosity") return { primary: "255,98,98", secondary: "255,255,255" };
+        if (state.currentBoss === "sili") return { primary: "92,232,255", secondary: "255,90,241" };
+        if (state.currentBoss === "caesar") return { primary: "142,255,164", secondary: "188,255,244" };
+        if (state.currentBoss === "beauty") return { primary: "255,164,214", secondary: "198,232,255" };
+        if (state.currentBoss === "bleach") return { primary: "156,255,168", secondary: "255,255,255" };
+        if (state.currentBoss === "alarmist") return { primary: "255,160,72", secondary: "255,240,214" };
+        if (state.currentBoss === "slabhraidh") return { primary: "255,156,72", secondary: "255,226,176" };
+        if (state.currentBoss === "radiator") return { primary: "206,255,88", secondary: "255,246,150" };
+        if (state.currentBoss === "decayer") return { primary: "255,142,68", secondary: "244,255,255" };
+        return { primary: "255,255,255", secondary: "255,255,255" };
+      }
+
+      function getCurrentBossProjectileCount() {
+        if (state.currentBoss === "architect") return state.bullets.length;
+        if (state.currentBoss === "sovereign") return state.sovereign.beams.length + state.sovereign.stars.length + state.sovereign.cursors.length + state.sovereign.fragments.length + state.sovereign.smoke.length;
+        if (state.currentBoss === "monarch") return state.nullBoss.branches.length + state.nullBoss.beams.length + state.nullBoss.monoliths.length + state.nullBoss.reflections.length + state.nullBoss.shatter.length;
+        if (state.currentBoss === "cesium") return state.cesium.cursors.length + state.cesium.spinners.length + state.cesium.fragments.length;
+        if (state.currentBoss === "tantalum") return state.tantalum.packets.length + state.tantalum.beams.length + state.tantalum.lightningBolts.length + state.tantalum.cursorRings.length + state.tantalum.scraps.length;
+        if (state.currentBoss === "luminosity") return state.luminosity.barriers.length + state.luminosity.dots.length + state.luminosity.detachedElectrons.length + state.luminosity.freeElectrons.length + state.luminosity.shards.length;
+        if (state.currentBoss === "sili") return state.sili.cursors.length + state.sili.binaries.length + state.sili.beams.length + state.sili.sparks.length + state.sili.busLines.length + state.sili.cubes.length + state.sili.staticTrail.length;
+        if (state.currentBoss === "caesar") return state.caesar.laserPointers.length + state.caesar.pointerShots.length + state.caesar.detachedRails.length + state.caesar.curvingBullets.length;
+        if (state.currentBoss === "beauty") return state.beauty.projectiles.length + state.beauty.debris.length + state.beauty.shockwaves.length + state.beauty.fragments.length;
+        if (state.currentBoss === "bleach") return state.bleach.projectiles.length + state.bleach.toxicTrail.length + state.bleach.shockwaves.length + state.bleach.fragments.length;
+        if (state.currentBoss === "alarmist") return state.alarmist.projectiles.length + state.alarmist.blades.length + state.alarmist.floorBlades.length + state.alarmist.fragments.length;
+        if (state.currentBoss === "slabhraidh") return state.slabhraidh.projectiles.length + state.slabhraidh.slicks.length + state.slabhraidh.fragments.length + state.slabhraidh.phase4DetachedBars.length + (state.slabhraidh.detachedBar ? 1 : 0);
+        if (state.currentBoss === "radiator") return state.radiator.projectiles.length + state.radiator.lasers.length + state.radiator.trail.length + state.radiator.shockRings.length + state.radiator.fragments.length;
+        if (state.currentBoss === "decayer") return state.decayer.projectiles.length + state.decayer.lasers.length + state.decayer.trail.length + state.decayer.afterimages.length + state.decayer.satellites.length + state.decayer.fragments.length;
+        return 0;
+      }
+
+      function drawBossQualityPass() {
+        const quality = state.settings.graphicsQuality;
+        if (quality === "absolute_potato" || quality === "low") return;
+        const target = getBossTargetState();
+        const accent = getBossGraphicsAccent();
+        const intensity = quality === "nasa_computer" ? 1 : quality === "high" ? 0.82 : 0.6;
+        const pulse = 0.5 + 0.5 * Math.sin(state.elapsed * (1.8 + intensity));
+        const auraRadius = target.radius * (2.1 + intensity * 0.65);
+
+        ctx.save();
+        ctx.globalCompositeOperation = "lighter";
+        const aura = ctx.createRadialGradient(target.pos.x, target.pos.y, 0, target.pos.x, target.pos.y, auraRadius);
+        aura.addColorStop(0, `rgba(${accent.secondary}, ${0.04 + intensity * 0.06})`);
+        aura.addColorStop(0.34, `rgba(${accent.primary}, ${0.06 + intensity * 0.08 + pulse * 0.03})`);
+        aura.addColorStop(1, `rgba(${accent.primary}, 0)`);
+        ctx.fillStyle = aura;
+        ctx.beginPath();
+        ctx.arc(target.pos.x, target.pos.y, auraRadius, 0, TAU);
+        ctx.fill();
+
+        ctx.translate(target.pos.x, target.pos.y);
+        ctx.rotate(state.elapsed * (0.18 + intensity * 0.08));
+        const ringCount = quality === "nasa_computer" ? 3 : 2;
+        for (let ring = 0; ring < ringCount; ring++) {
+          const r = target.radius * (1.22 + ring * 0.32 + pulse * 0.03);
+          ctx.strokeStyle = `rgba(${ring % 2 === 0 ? accent.primary : accent.secondary}, ${0.1 + intensity * 0.08 - ring * 0.018})`;
+          ctx.lineWidth = 1.2 + ring * 0.55;
+          ctx.beginPath();
+          for (let a = 0; a <= TAU + 0.04; a += 0.16) {
+            const wobble = Math.sin(a * (4 + ring) + state.elapsed * (1.2 + ring * 0.35)) * target.radius * 0.05;
+            const px = Math.cos(a) * (r + wobble);
+            const py = Math.sin(a) * (r + wobble);
+            if (a === 0) ctx.moveTo(px, py);
+            else ctx.lineTo(px, py);
+          }
+          ctx.closePath();
+          ctx.stroke();
+        }
+        ctx.restore();
+      }
+
+      function drawBossAttackQualityPass() {
+        const quality = state.settings.graphicsQuality;
+        if (quality === "absolute_potato" || quality === "low") return;
+        const target = getBossTargetState();
+        const accent = getBossGraphicsAccent();
+        const count = getCurrentBossProjectileCount();
+        const intensity = clamp(count / (quality === "nasa_computer" ? 80 : 120), 0.18, quality === "nasa_computer" ? 1.2 : 0.92);
+        const bandAlpha = quality === "nasa_computer" ? 0.12 : quality === "high" ? 0.09 : 0.065;
+
+        ctx.save();
+        ctx.globalCompositeOperation = "lighter";
+        for (let band = 0; band < (quality === "nasa_computer" ? 4 : 3); band++) {
+          const radius = target.radius * (2.3 + band * 0.75) + Math.sin(state.elapsed * (1.5 + band * 0.45)) * 12;
+          ctx.strokeStyle = `rgba(${band % 2 === 0 ? accent.primary : accent.secondary}, ${bandAlpha * intensity * (1 - band * 0.14)})`;
+          ctx.lineWidth = 6 - band;
+          ctx.beginPath();
+          ctx.arc(target.pos.x, target.pos.y, radius, 0, TAU);
+          ctx.stroke();
+        }
+        const rays = quality === "nasa_computer" ? 14 : 10;
+        ctx.translate(target.pos.x, target.pos.y);
+        ctx.rotate(state.elapsed * 0.22);
+        for (let i = 0; i < rays; i++) {
+          const angle = (i / rays) * TAU + state.elapsed * (0.3 + intensity * 0.18);
+          const inner = target.radius * 1.15;
+          const outer = target.radius * (2.9 + intensity * 1.4);
+          ctx.strokeStyle = `rgba(${accent.primary}, ${0.035 + intensity * 0.055})`;
+          ctx.lineWidth = 1 + (i % 3 === 0 ? 0.9 : 0);
+          ctx.beginPath();
+          ctx.moveTo(Math.cos(angle) * inner, Math.sin(angle) * inner);
+          ctx.lineTo(Math.cos(angle) * outer, Math.sin(angle) * outer);
+          ctx.stroke();
+        }
+        ctx.restore();
       }
 
       function useXlBullet() {
@@ -11584,7 +11808,9 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       }
 
       function addSpark(x, y, color, count, speed) {
-        for (let i = 0; i < count; i++) {
+        const scaledCount = Math.max(1, Math.round(count * getGraphicsQualityMeta().particleScale));
+        const sparkLimit = getGraphicsParticleLimit(420);
+        for (let i = 0; i < scaledCount; i++) {
           const angle = Math.random() * TAU;
           const velocity = speed * (0.35 + Math.random() * 0.65);
           state.sparks.push({
@@ -11596,18 +11822,21 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
             size: 1 + Math.random() * 2.5,
             color
           });
+          if (state.sparks.length > sparkLimit) state.sparks.shift();
         }
       }
 
       function addFlash(x, y, color, size) {
+        const flashLimit = getGraphicsParticleLimit(90);
         state.flashes.push({
           x,
           y,
           life: 0.25,
           maxLife: 0.25,
-          size,
+          size: size * Math.max(0.5, getGraphicsQualityMeta().decorativeScale),
           color
         });
+        if (state.flashes.length > flashLimit) state.flashes.shift();
       }
 
       function spawnSupportBurst(x, y, damage) {
@@ -13562,6 +13791,10 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       }
 
       function updateSparks(dt) {
+        const sparkLimit = getGraphicsParticleLimit(420);
+        if (state.sparks.length > sparkLimit) {
+          state.sparks.splice(0, state.sparks.length - sparkLimit);
+        }
         for (let i = state.sparks.length - 1; i >= 0; i--) {
           const spark = state.sparks[i];
           spark.x += spark.vx * dt;
@@ -13576,6 +13809,10 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       }
 
       function updateFlashes(dt) {
+        const flashLimit = getGraphicsParticleLimit(90);
+        if (state.flashes.length > flashLimit) {
+          state.flashes.splice(0, state.flashes.length - flashLimit);
+        }
         for (let i = state.flashes.length - 1; i >= 0; i--) {
           const flash = state.flashes[i];
           flash.life -= dt;
@@ -13793,6 +14030,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       }
 
       function drawBackground() {
+        const bgDetail = getGraphicsQualityMeta().backgroundDetail;
         ctx.fillStyle = "#05030a";
         ctx.fillRect(0, 0, width, height);
 
@@ -13803,24 +14041,24 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         ctx.fillStyle = haze;
         ctx.fillRect(0, 0, width, height);
 
-        const gridAlpha = 0.04;
+        const gridAlpha = 0.04 * Math.max(0.4, bgDetail);
         ctx.strokeStyle = `rgba(255, 255, 255, ${gridAlpha})`;
         ctx.lineWidth = 1;
-        for (let x = 0; x < width; x += 64) {
+        for (let x = 0; x < width; x += Math.max(48, 64 / Math.max(0.55, bgDetail))) {
           ctx.beginPath();
           ctx.moveTo(x + 0.5, 0);
           ctx.lineTo(x + 0.5, height);
           ctx.stroke();
         }
-        for (let y = 0; y < height; y += 64) {
+        for (let y = 0; y < height; y += Math.max(48, 64 / Math.max(0.55, bgDetail))) {
           ctx.beginPath();
           ctx.moveTo(0, y + 0.5);
           ctx.lineTo(width, y + 0.5);
           ctx.stroke();
         }
 
-        ctx.strokeStyle = "rgba(165, 76, 255, 0.045)";
-        for (let y = 24; y < height; y += 128) {
+        ctx.strokeStyle = `rgba(165, 76, 255, ${0.045 * Math.max(0.45, bgDetail)})`;
+        for (let y = 24; y < height; y += Math.max(92, 128 / Math.max(0.55, bgDetail))) {
           ctx.beginPath();
           ctx.moveTo(0, y + Math.sin(state.rawElapsed * 0.9 + y * 0.01) * 8);
           ctx.bezierCurveTo(width * 0.28, y - 18, width * 0.72, y + 18, width, y + Math.cos(state.rawElapsed * 0.8 + y * 0.01) * 8);
@@ -13829,20 +14067,22 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       }
 
       function drawVortex() {
+        const decorScale = getGraphicsQualityMeta().decorativeScale;
         const visualTime = getVisualTime();
         const vortex = getVortexPosition();
         const x = vortex.x;
         const y = vortex.y;
         const pulse = 44 + Math.sin(visualTime * 4.8) * 10;
 
-        const gradient = ctx.createRadialGradient(x, y, 0, x, y, pulse * 2.6);
+        const outerPulse = pulse * (2.05 + decorScale * 0.55);
+        const gradient = ctx.createRadialGradient(x, y, 0, x, y, outerPulse);
         gradient.addColorStop(0, "rgba(255, 255, 255, 0.1)");
         gradient.addColorStop(0.2, "rgba(165, 76, 255, 0.34)");
         gradient.addColorStop(0.55, "rgba(72, 20, 130, 0.18)");
         gradient.addColorStop(1, "rgba(0, 0, 0, 0)");
         ctx.fillStyle = gradient;
         ctx.beginPath();
-        ctx.arc(x, y, pulse * 2.6, 0, TAU);
+        ctx.arc(x, y, outerPulse, 0, TAU);
         ctx.fill();
 
         const coreRadius = 32 + pulse * 0.18;
@@ -13859,8 +14099,9 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         ctx.save();
         ctx.translate(x, y);
         ctx.globalCompositeOperation = "lighter";
-        for (let spoke = 0; spoke < 10; spoke++) {
-          const angle = visualTime * 0.9 + (spoke / 10) * TAU;
+        const spokeCount = Math.max(4, Math.round(10 * decorScale));
+        for (let spoke = 0; spoke < spokeCount; spoke++) {
+          const angle = visualTime * 0.9 + (spoke / spokeCount) * TAU;
           const inner = 22 + Math.sin(visualTime * 3.2 + spoke) * 6;
           const outer = pulse * 2.1 + Math.cos(visualTime * 1.7 + spoke) * 18;
           ctx.strokeStyle = `rgba(255, 215, 106, ${0.07 + (spoke % 2) * 0.03})`;
@@ -13870,7 +14111,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
           ctx.lineTo(Math.cos(angle) * outer, Math.sin(angle) * outer);
           ctx.stroke();
         }
-        for (let i = 0; i < 5; i++) {
+        for (let i = 0; i < Math.max(2, Math.round(5 * decorScale)); i++) {
           ctx.rotate(0.23 + Math.sin(visualTime * 1.1 + i) * 0.03);
           ctx.strokeStyle = `rgba(165, 76, 255, ${0.14 + i * 0.06})`;
           ctx.lineWidth = 2 + i * 0.5;
@@ -13885,8 +14126,9 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
           ctx.closePath();
           ctx.stroke();
         }
-        for (let shard = 0; shard < 12; shard++) {
-          const angle = visualTime * 1.8 + (shard / 12) * TAU;
+        const shardCount = Math.max(5, Math.round(12 * decorScale));
+        for (let shard = 0; shard < shardCount; shard++) {
+          const angle = visualTime * 1.8 + (shard / shardCount) * TAU;
           const radius = pulse * (1.15 + (shard % 3) * 0.18);
           ctx.fillStyle = `rgba(255, 215, 106, ${0.12 + (shard % 4) * 0.03})`;
           ctx.beginPath();
@@ -16651,17 +16893,23 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         const bulletColor = getBulletColor();
         const bulletGlowColor = mixHexColors(bulletColor, "#ffffff", 0.3);
         const bulletCoreColor = mixHexColors(bulletColor, "#ffffff", 0.12);
+        const glowScale = getGraphicsQualityMeta().glowScale;
+        const decorScale = getGraphicsQualityMeta().decorativeScale;
+        const fancy = graphicsFancyEnabled();
+        const glowEnabled = graphicsGlowEnabled();
         for (const shot of state.playerShots) {
           const alpha = clamp(shot.life, 0, 1);
           if (shot.type === "spark_targets") {
-            const gradient = ctx.createRadialGradient(shot.x, shot.y, 0, shot.x, shot.y, shot.size * 8);
-            gradient.addColorStop(0, `rgba(255, 255, 255, ${alpha})`);
-            gradient.addColorStop(0.4, hexToRgba(mixHexColors(bulletColor, "#fff4c0", 0.45), alpha * 0.82));
-            gradient.addColorStop(1, hexToRgba(bulletColor, 0));
-            ctx.fillStyle = gradient;
-            ctx.beginPath();
-            ctx.arc(shot.x, shot.y, shot.size * 8, 0, TAU);
-            ctx.fill();
+            if (fancy && glowEnabled) {
+              const gradient = ctx.createRadialGradient(shot.x, shot.y, 0, shot.x, shot.y, shot.size * 8 * glowScale);
+              gradient.addColorStop(0, `rgba(255, 255, 255, ${alpha})`);
+              gradient.addColorStop(0.4, hexToRgba(mixHexColors(bulletColor, "#fff4c0", 0.45), alpha * 0.82));
+              gradient.addColorStop(1, hexToRgba(bulletColor, 0));
+              ctx.fillStyle = gradient;
+              ctx.beginPath();
+              ctx.arc(shot.x, shot.y, shot.size * 8 * glowScale, 0, TAU);
+              ctx.fill();
+            }
             ctx.save();
             ctx.translate(shot.x, shot.y);
             ctx.rotate(shot.rotation);
@@ -16669,7 +16917,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
             ctx.beginPath();
             for (let p = 0; p < 10; p++) {
               const angle = (Math.PI / 5) * p;
-              const radius = p % 2 === 0 ? shot.size * 2.4 : shot.size * 1.05;
+              const radius = p % 2 === 0 ? shot.size * (2.1 + decorScale * 0.3) : shot.size * (0.92 + decorScale * 0.13);
               const px = Math.cos(angle) * radius;
               const py = Math.sin(angle) * radius;
               if (p === 0) ctx.moveTo(px, py);
@@ -16757,16 +17005,18 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
             ctx.fillRect(-length * 0.55, -Math.max(1.2, shot.size * 0.12), length * 1.2, Math.max(2.1, shot.size * 0.24));
             ctx.restore();
           } else if (shot.type === "magma_plasma") {
-            const magmaOuterGlow = ctx.createRadialGradient(shot.x, shot.y, 0, shot.x, shot.y, shot.size * 5.8);
-            magmaOuterGlow.addColorStop(0, hexToRgba("#ffffff", alpha * 0.92));
-            magmaOuterGlow.addColorStop(0.2, hexToRgba(mixHexColors(bulletColor, "#fff4ba", 0.36), alpha * 0.86));
-            magmaOuterGlow.addColorStop(0.48, hexToRgba(mixHexColors(bulletColor, "#ffffff", 0.14), alpha * 0.8));
-            magmaOuterGlow.addColorStop(0.78, hexToRgba(bulletColor, alpha * 0.52));
-            magmaOuterGlow.addColorStop(1, hexToRgba(bulletColor, 0));
-            ctx.fillStyle = magmaOuterGlow;
-            ctx.beginPath();
-            ctx.arc(shot.x, shot.y, shot.size * 5.8, 0, TAU);
-            ctx.fill();
+            if (fancy && glowEnabled) {
+              const magmaOuterGlow = ctx.createRadialGradient(shot.x, shot.y, 0, shot.x, shot.y, shot.size * 5.8 * glowScale);
+              magmaOuterGlow.addColorStop(0, hexToRgba("#ffffff", alpha * 0.92));
+              magmaOuterGlow.addColorStop(0.2, hexToRgba(mixHexColors(bulletColor, "#fff4ba", 0.36), alpha * 0.86));
+              magmaOuterGlow.addColorStop(0.48, hexToRgba(mixHexColors(bulletColor, "#ffffff", 0.14), alpha * 0.8));
+              magmaOuterGlow.addColorStop(0.78, hexToRgba(bulletColor, alpha * 0.52));
+              magmaOuterGlow.addColorStop(1, hexToRgba(bulletColor, 0));
+              ctx.fillStyle = magmaOuterGlow;
+              ctx.beginPath();
+              ctx.arc(shot.x, shot.y, shot.size * 5.8 * glowScale, 0, TAU);
+              ctx.fill();
+            }
 
             const wobbleX = Math.cos(state.elapsed * 8 + (shot.plasmaDrift || 0)) * shot.size * 0.12;
             const wobbleY = Math.sin(state.elapsed * 10 + (shot.plasmaDrift || 0)) * shot.size * 0.12;
@@ -16850,14 +17100,16 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
             ctx.fill();
             ctx.restore();
           } else {
-            const gradient = ctx.createRadialGradient(shot.x, shot.y, 0, shot.x, shot.y, shot.size * 7);
-            gradient.addColorStop(0, `rgba(255, 255, 255, ${alpha})`);
-            gradient.addColorStop(0.35, hexToRgba(bulletGlowColor, alpha * 0.85));
-            gradient.addColorStop(1, hexToRgba(bulletColor, 0));
-            ctx.fillStyle = gradient;
-            ctx.beginPath();
-            ctx.arc(shot.x, shot.y, shot.size * 7, 0, TAU);
-            ctx.fill();
+            if (fancy && glowEnabled) {
+              const gradient = ctx.createRadialGradient(shot.x, shot.y, 0, shot.x, shot.y, shot.size * 7 * glowScale);
+              gradient.addColorStop(0, `rgba(255, 255, 255, ${alpha})`);
+              gradient.addColorStop(0.35, hexToRgba(bulletGlowColor, alpha * 0.85));
+              gradient.addColorStop(1, hexToRgba(bulletColor, 0));
+              ctx.fillStyle = gradient;
+              ctx.beginPath();
+              ctx.arc(shot.x, shot.y, shot.size * 7 * glowScale, 0, TAU);
+              ctx.fill();
+            }
 
             ctx.fillStyle = bulletCoreColor;
             ctx.fillRect(shot.x - shot.size * 0.5, shot.y - 14, shot.size, 22);
@@ -17087,21 +17339,23 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         for (const spark of state.sparks) {
           ctx.fillStyle = spark.color;
           ctx.beginPath();
-          ctx.arc(spark.x, spark.y, spark.size, 0, TAU);
+          ctx.arc(spark.x, spark.y, spark.size * Math.max(0.65, getGraphicsQualityMeta().decorativeScale), 0, TAU);
           ctx.fill();
         }
         ctx.restore();
       }
 
       function drawFlashes() {
+        if (!graphicsGlowEnabled()) return;
+        const glowScale = getGraphicsQualityMeta().glowScale;
         for (const flash of state.flashes) {
           const life = flash.life / flash.maxLife;
-          const gradient = ctx.createRadialGradient(flash.x, flash.y, 0, flash.x, flash.y, flash.size);
+          const gradient = ctx.createRadialGradient(flash.x, flash.y, 0, flash.x, flash.y, flash.size * glowScale);
           gradient.addColorStop(0, flash.color.replace(/[\d.]+\)$/, `${0.45 * life})`));
           gradient.addColorStop(1, flash.color.replace(/[\d.]+\)$/, "0)"));
           ctx.fillStyle = gradient;
           ctx.beginPath();
-          ctx.arc(flash.x, flash.y, flash.size, 0, TAU);
+          ctx.arc(flash.x, flash.y, flash.size * glowScale, 0, TAU);
           ctx.fill();
         }
       }
@@ -23465,6 +23719,13 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         } else {
           drawVortex();
         }
+        if (["playing", "paused", "gameover"].includes(state.mode) && state.currentBoss !== "architect") {
+          try {
+            drawBossQualityPass();
+          } catch (error) {
+            logRuntimeError("drawBossQualityPass", error);
+          }
+        }
         if (["playing", "paused", "gameover"].includes(state.mode)) {
           drawBossDamageIndicator();
         }
@@ -23821,6 +24082,11 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
           } else if (state.currentBoss === "decayer") {
             drawDecayerProjectiles();
           }
+          try {
+            drawBossAttackQualityPass();
+          } catch (error) {
+            logRuntimeError("drawBossAttackQualityPass", error);
+          }
           drawXlMissiles();
           drawPlayerShots();
           drawSupportBursts();
@@ -23912,8 +24178,19 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       function frame(now) {
         const rawDt = (now - lastTime) / 1000;
         lastTime = now;
-        updateGame(rawDt);
-        render();
+        try {
+          updateGame(rawDt);
+          render();
+        } catch (error) {
+          logRuntimeError("frame", error);
+          if (state.mode === "playing" || state.mode === "paused" || state.mode === "gameover") {
+            state.settings.graphicsQuality = "low";
+            localStorage.setItem("aether_vortex_graphics_quality", "low");
+            applyGraphicsQuality();
+          } else if (shouldRecoverStartupShell()) {
+            recoverStartupShell("Startup Recovery");
+          }
+        }
         requestAnimationFrame(frame);
       }
 
@@ -24099,6 +24376,12 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         if (event.target.closest("[data-toggle-shake]")) {
           setScreenShake(!state.settings.screenShake);
           renderConfig();
+          return;
+        }
+
+        const graphicsQualityButton = event.target.closest("[data-graphics-quality]");
+        if (graphicsQualityButton) {
+          setGraphicsQuality(graphicsQualityButton.dataset.graphicsQuality);
           return;
         }
 
@@ -24510,6 +24793,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         resize();
         initializeSaveSlots();
         loadCustomSkinImage();
+        applyGraphicsQuality();
         setVolume(state.settings.volume);
         preloadStartupAssets();
         updateHudVisibility();
