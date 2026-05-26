@@ -3725,6 +3725,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       let boss1Music = null;
       let boss2Music = null;
       let boss3Music = null;
+      let boss5Music = null;
       let boss7Music = null;
       let boss12Music = null;
       let achievementSound = null;
@@ -3794,6 +3795,11 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
           boss3Music.loop = true;
           boss3Music.preload = "auto";
         }
+        if (!boss5Music) {
+          boss5Music = new Audio("boss5.m4a");
+          boss5Music.loop = true;
+          boss5Music.preload = "auto";
+        }
         if (!boss7Music) {
           boss7Music = new Audio("boss7.m4a");
           boss7Music.loop = true;
@@ -3849,6 +3855,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         boss1Music.volume = getBossMusicVolume();
         boss2Music.volume = getBossMusicVolume();
         boss3Music.volume = getBossMusicVolume();
+        boss5Music.volume = getBossMusicVolume();
         boss7Music.volume = getBossMusicVolume();
         boss12Music.volume = getBossMusicVolume();
         achievementSound.volume = state.settings.volume;
@@ -3944,6 +3951,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         trackAudioLoad("Architect Track", boss1Music);
         trackAudioLoad("Sovereign Track", boss2Music);
         trackAudioLoad("Monarch Track", boss3Music);
+        trackAudioLoad("Tantalum Track", boss5Music);
         trackAudioLoad("Sili Track", boss7Music);
         trackAudioLoad("Stalwart Track", boss12Music);
         trackAudioLoad("Achievement Cue", achievementSound);
@@ -3988,7 +3996,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         if (state.currentBoss === "sovereign") return boss2Music;
         if (state.currentBoss === "monarch") return boss3Music;
         if (state.currentBoss === "cesium") return boss3Music;
-        if (state.currentBoss === "tantalum") return boss3Music;
+        if (state.currentBoss === "tantalum") return boss5Music;
         if (state.currentBoss === "luminosity") return boss3Music;
         if (state.currentBoss === "sili") return boss7Music;
         if (state.currentBoss === "slabhraidh") return boss12Music;
@@ -4018,16 +4026,19 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
           boss1Music.pause();
           boss2Music.pause();
           boss3Music.pause();
+          boss5Music.pause();
           boss7Music.pause();
           boss12Music.pause();
           boss1Music.currentTime = 0;
           boss2Music.currentTime = 0;
           boss3Music.currentTime = 0;
+          boss5Music.currentTime = 0;
           boss7Music.currentTime = 0;
           boss12Music.currentTime = 0;
           boss1Music.playbackRate = 1;
           boss2Music.playbackRate = 1;
           boss3Music.playbackRate = 1;
+          boss5Music.playbackRate = 1;
           boss7Music.playbackRate = 1;
           boss12Music.playbackRate = 1;
           menuMusic.volume = getMenuMusicVolume();
@@ -4037,7 +4048,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
         if (target === "boss") {
           const activeBossMusic = getActiveBossMusic();
-          const inactiveBossTracks = [boss1Music, boss2Music, boss3Music, boss7Music, boss12Music].filter((audio) => audio !== activeBossMusic);
+          const inactiveBossTracks = [boss1Music, boss2Music, boss3Music, boss5Music, boss7Music, boss12Music].filter((audio) => audio !== activeBossMusic);
           menuMusic.pause();
           menuMusic.currentTime = 0;
           menuMusic.playbackRate = 1;
@@ -4058,6 +4069,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         boss1Music.pause();
         boss2Music.pause();
         boss3Music.pause();
+        boss5Music.pause();
         boss7Music.pause();
         boss12Music.pause();
       }
@@ -4065,7 +4077,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       function updateMusicForState(dt) {
         ensureMusicPlayers();
         const activeBossMusic = getActiveBossMusic();
-        const inactiveBossTracks = [boss1Music, boss2Music, boss3Music, boss7Music, boss12Music].filter((audio) => audio !== activeBossMusic);
+        const inactiveBossTracks = [boss1Music, boss2Music, boss3Music, boss5Music, boss7Music, boss12Music].filter((audio) => audio !== activeBossMusic);
         if (state.mode === "gameover") {
           if (!activeBossMusic.paused) {
             activeBossMusic.playbackRate = Math.max(0.58, activeBossMusic.playbackRate - dt * 0.28);
@@ -4107,6 +4119,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         if (boss1Music && state.mode !== "gameover") boss1Music.volume = getBossMusicVolume();
         if (boss2Music && state.mode !== "gameover") boss2Music.volume = getBossMusicVolume();
         if (boss3Music && state.mode !== "gameover") boss3Music.volume = getBossMusicVolume();
+        if (boss5Music && state.mode !== "gameover") boss5Music.volume = getBossMusicVolume();
         if (achievementSound) achievementSound.volume = state.settings.volume;
         if (hBombSound) hBombSound.volume = state.settings.volume;
         if (purchaseSound) purchaseSound.volume = state.settings.volume;
@@ -4268,6 +4281,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         if (boss1Music) boss1Music.volume = bossVolume;
         if (boss2Music) boss2Music.volume = bossVolume;
         if (boss3Music) boss3Music.volume = bossVolume;
+        if (boss5Music) boss5Music.volume = bossVolume;
         if (boss7Music) boss7Music.volume = bossVolume;
         if (boss12Music) boss12Music.volume = bossVolume;
         if (alarmistPingSound) alarmistPingSound.volume = state.settings.volume;
@@ -6811,12 +6825,14 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         boss1Music.pause();
         boss2Music.pause();
         boss3Music.pause();
+        boss5Music.pause();
         boss7Music.pause();
         boss12Music.pause();
         menuMusic.currentTime = 0;
         boss1Music.currentTime = 0;
         boss2Music.currentTime = 0;
         boss3Music.currentTime = 0;
+        boss5Music.currentTime = 0;
         boss7Music.currentTime = 0;
         boss12Music.currentTime = 0;
         const bossHealthPercent = Math.round(clamp(state.bossHealth / Math.max(1, state.bossMaxHealth), 0, 1) * 100);
