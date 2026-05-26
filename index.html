@@ -3201,7 +3201,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         supportHealTimer: 35,
         sluggerHitCount: 0,
         resumeFreezeTimer: 0,
-        resumeFreezeDuration: 2.5,
+        resumeFreezeDuration: 1,
         operationsTimerSecond: null,
         pausePhasePanelOpen: false,
         achievementsTab: "main",
@@ -6293,12 +6293,16 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
           freeElectrons: [],
           barriers: [],
           dots: [],
+          neonTimer: 1.8,
+          neonBursts: [],
           beamTimer: 2,
           beamSweep: 0,
           beamActive: 0,
           beamAngle: 0,
           beamOriginX: centerX,
           beamOriginY: height * 0.27,
+          sweepLaserTimer: 4.6,
+          sweepLasers: [],
           flicker: 0,
           shards: []
         };
@@ -6656,7 +6660,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         }
         resetGame("cutscene");
         state.currentBoss = bossKey;
-        state.bossMaxHealth = state.currentBoss === "monarch" ? 2100 : state.currentBoss === "cesium" ? 3200 : state.currentBoss === "tantalum" ? 3600 : state.currentBoss === "luminosity" ? 3900 : state.currentBoss === "sili" ? 4300 : state.currentBoss === "caesar" ? 4700 : state.currentBoss === "beauty" ? 5400 : state.currentBoss === "bleach" ? 6200 : state.currentBoss === "alarmist" ? 6900 : state.currentBoss === "slabhraidh" ? 7600 : state.currentBoss === "radiator" ? 8600 : state.currentBoss === "decayer" ? 13900 : 2400;
+        state.bossMaxHealth = state.currentBoss === "monarch" ? 2100 : state.currentBoss === "cesium" ? 3200 : state.currentBoss === "tantalum" ? 3600 : state.currentBoss === "luminosity" ? 3900 : state.currentBoss === "sili" ? 4300 : state.currentBoss === "caesar" ? 4700 : state.currentBoss === "beauty" ? 5400 : state.currentBoss === "bleach" ? 6200 : state.currentBoss === "alarmist" ? 6900 : state.currentBoss === "slabhraidh" ? 7600 : state.currentBoss === "radiator" ? 8600 : state.currentBoss === "decayer" ? 13900 : 1900;
         if (challengeUsesMultiplierHealth()) {
           state.bossMaxHealth *= 3.5;
         }
@@ -7137,7 +7141,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
           state.pausePhasePanelOpen = false;
           state.mode = "playing";
           overlay.classList.remove("show");
-          state.resumeFreezeDuration = 2.5;
+          state.resumeFreezeDuration = 1;
           state.resumeFreezeTimer = state.resumeFreezeDuration;
           updateHudVisibility();
         }
@@ -9442,7 +9446,10 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
           vx: Math.cos(angle) * speed,
           vy: Math.sin(angle) * speed,
           life: 5.8,
-          size: 5.2
+          size: 5.2,
+          ricochetCount: 0,
+          splitOnBarrier: false,
+          ricochetCooldown: 0
         });
       }
 
@@ -9503,6 +9510,95 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
           addFlash(l.x, l.y, "rgba(255, 118, 118, 0.42)", l.phase === 3 ? 150 : 118);
           addSpark(l.x, l.y, "rgba(255, 228, 228, 0.92)", l.phase === 3 ? 18 : 12, l.phase === 3 ? 180 : 140);
         }
+      }
+
+      function spawnLuminosityNeonBurst() {
+        const l = state.luminosity;
+        const baseAngle = Math.atan2(player.y - l.y, player.x - l.x);
+        const count = 12;
+        const spread = 0.96;
+        const sprayOrigins = [
+          baseAngle,
+          baseAngle + TAU / 3,
+          baseAngle - TAU / 3
+        ];
+        for (let sprayIndex = 0; sprayIndex < sprayOrigins.length; sprayIndex++) {
+          const sprayBaseAngle = sprayOrigins[sprayIndex];
+          const originX = l.x + Math.cos(sprayBaseAngle) * 26;
+          const originY = l.y + Math.sin(sprayBaseAngle) * 26;
+          for (let i = 0; i < count; i++) {
+            const t = count === 1 ? 0.5 : i / (count - 1);
+            const angle = sprayBaseAngle - spread * 0.5 + spread * t;
+            const speed = 170 + Math.abs(i - (count - 1) * 0.5) * 12;
+            const curveDir = (i + sprayIndex) % 2 === 0 ? 1 : -1;
+            l.neonBursts.push({
+              x: originX + Math.cos(angle) * 8,
+              y: originY + Math.sin(angle) * 8,
+              vx: Math.cos(angle) * speed,
+              vy: Math.sin(angle) * speed,
+              angle,
+              spin: (0.7 + i * 0.08) * curveDir,
+              size: 10 + (i % 3) * 1.6,
+              life: 4.1,
+              maxLife: 4.1,
+              curve: (85 + i * 10) * curveDir,
+              wobble: Math.random() * TAU,
+              pulse: Math.random() * TAU
+            });
+          }
+        }
+        addFlash(l.x, l.y, "rgba(255, 124, 124, 0.34)", 104);
+        addSpark(l.x, l.y, "rgba(255, 230, 230, 0.96)", 20, 154);
+      }
+
+      function spawnLuminositySweepLasers() {
+        const l = state.luminosity;
+        const count = 2 + Math.floor(Math.random() * 3);
+        const enterDuration = 0.5;
+        const holdDuration = 4 + Math.random() * 4;
+        const minGap = Math.max(122, height * 0.14);
+        const sweepSpan = Math.max(52, height * 0.09);
+        const safePlayerGap = Math.max(96, height * 0.11);
+        const centerLaneY = height * 0.5;
+        const lanes = [];
+        let attempts = 0;
+        while (lanes.length < count && attempts < 60) {
+          attempts++;
+          const candidate = 72 + Math.random() * Math.max(40, height - 144);
+          if (Math.abs(candidate - player.y) < safePlayerGap) continue;
+          if (lanes.some((lane) => Math.abs(lane - candidate) < minGap)) continue;
+          lanes.push(candidate);
+        }
+        lanes.sort((a, b) => a - b);
+        while (lanes.length < count) {
+          const fallback = lanes.length === 0
+            ? clamp(player.y < centerLaneY ? height * 0.72 : height * 0.28, 72, height - 72)
+            : clamp(72 + (lanes.length / Math.max(1, count - 1)) * (height - 144), 72, height - 72);
+          lanes.push(fallback);
+          lanes.sort((a, b) => a - b);
+        }
+        l.sweepLasers = lanes.slice(0, count).map((laneY, index) => {
+          const rotates = Math.random() < 0.4;
+          return {
+            baseY: laneY,
+            y: laneY,
+            amplitude: sweepSpan,
+            phase: Math.random() * TAU,
+            speed: 0.72 + Math.random() * 0.18,
+            direction: index % 2 === 0 ? 1 : -1,
+            width: 18,
+            life: enterDuration + holdDuration,
+            maxLife: enterDuration + holdDuration,
+            holdDuration,
+            enterDuration,
+            entered: 0,
+            angle: 0,
+            angleSpeed: rotates ? (Math.random() < 0.5 ? -1 : 1) * (0.09 + Math.random() * 0.05) : 0,
+            maxAngle: rotates ? 0.16 + Math.random() * 0.06 : 0
+          };
+        });
+        addFlash(l.x, l.y, "rgba(255, 92, 92, 0.42)", 170);
+        addSpark(l.x, l.y, "rgba(255, 218, 218, 0.96)", 18, 180);
       }
 
       function ensureLuminosityFreeElectrons() {
@@ -9672,6 +9768,8 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         if (l.phase === 3) {
           ensureLuminosityFreeElectrons();
           l.flicker = 0.35 + Math.sin(state.elapsed * 22) * 0.22;
+          l.neonTimer -= dt;
+          l.sweepLaserTimer -= dt;
           l.beamTimer -= dt;
           if (l.beamActive > 0) {
             l.beamActive -= dt;
@@ -9683,10 +9781,22 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
             l.beamAngle = pickLuminositySafeBeamAngle();
             l.beamTimer = 2;
           }
+          if (l.sweepLaserTimer <= 0 && !l.sweepLasers.length) {
+            spawnLuminositySweepLasers();
+            l.sweepLaserTimer = 6 + Math.random() * 4;
+          }
+          if (l.neonTimer <= 0) {
+            spawnLuminosityNeonBurst();
+            l.neonTimer = 2.2 + Math.random() * 1.6;
+          }
         } else {
           l.freeElectrons.length = 0;
           l.beamActive = 0;
           l.beamTimer = 2;
+          l.neonTimer = 1.8;
+          l.neonBursts.length = 0;
+          l.sweepLaserTimer = 4.6;
+          l.sweepLasers.length = 0;
           l.flicker = 0;
           l.wanderTimer = 0.9;
           l.wanderTargetX = homeX;
@@ -9768,6 +9878,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
           dot.x += dot.vx * dt;
           dot.y += dot.vy * dt;
           dot.life -= dt;
+          dot.ricochetCooldown = Math.max(0, (dot.ricochetCooldown || 0) - dt);
           const dist = Math.hypot(player.x - dot.x, player.y - dot.y);
           nearest = Math.min(nearest, dist);
           if (dist < 90) closeCount++;
@@ -9776,6 +9887,61 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
             damagePlayer(0.5, "impact");
             continue;
           }
+          let ricocheted = false;
+          if (dot.ricochetCooldown <= 0) {
+            for (const barrier of l.barriers) {
+              const halfW = barrier.width * 0.5;
+              const halfH = barrier.height * 0.5;
+              const dx = dot.x - barrier.x;
+              const dy = dot.y - barrier.y;
+              if (Math.abs(dx) < halfW + dot.size && Math.abs(dy) < halfH + dot.size) {
+                const overlapX = halfW + dot.size - Math.abs(dx);
+                const overlapY = halfH + dot.size - Math.abs(dy);
+                const impactAngle = Math.atan2(dot.vy, dot.vx);
+                if (l.phase === 2 && !dot.splitOnBarrier) {
+                  const baseAngle = overlapX < overlapY
+                    ? Math.atan2(dot.vy, -dot.vx || (dx >= 0 ? 1 : -1))
+                    : Math.atan2(-dot.vy || (dy >= 0 ? -1 : 1), dot.vx);
+                  const shardAngles = [baseAngle, baseAngle + TAU / 3, baseAngle - TAU / 3];
+                  for (const shardAngle of shardAngles) {
+                    l.dots.push({
+                      x: dot.x + Math.cos(shardAngle) * 8,
+                      y: dot.y + Math.sin(shardAngle) * 8,
+                      vx: Math.cos(shardAngle) * 250,
+                      vy: Math.sin(shardAngle) * 250,
+                      life: 3.2,
+                      size: 3.2,
+                      ricochetCount: 1,
+                      splitOnBarrier: true,
+                      ricochetCooldown: 0.08
+                    });
+                  }
+                  addFlash(dot.x, dot.y, "rgba(255, 120, 96, 0.34)", 54);
+                  addSpark(dot.x, dot.y, "rgba(255, 208, 170, 0.92)", 10, 126);
+                  l.dots.splice(i, 1);
+                  ricocheted = true;
+                  break;
+                }
+                if (overlapX < overlapY) {
+                  dot.vx *= -1;
+                  dot.x = barrier.x + Math.sign(dx || Math.cos(impactAngle) || 1) * (halfW + dot.size + 2);
+                } else {
+                  dot.vy *= -1;
+                  dot.y = barrier.y + Math.sign(dy || Math.sin(impactAngle) || 1) * (halfH + dot.size + 2);
+                }
+                const speed = Math.hypot(dot.vx, dot.vy) || 1;
+                const ricochetSpeed = Math.max(220, speed * 1.02);
+                dot.vx = (dot.vx / speed) * ricochetSpeed;
+                dot.vy = (dot.vy / speed) * ricochetSpeed;
+                dot.ricochetCount = (dot.ricochetCount || 0) + 1;
+                dot.ricochetCooldown = 0.08;
+                addSpark(dot.x, dot.y, "rgba(255, 196, 140, 0.9)", 7, 98);
+                ricocheted = true;
+                break;
+              }
+            }
+          }
+          if (ricocheted) continue;
           if (dot.life <= 0 || dot.x < -80 || dot.x > width + 80 || dot.y < -80 || dot.y > height + 80) l.dots.splice(i, 1);
         }
 
@@ -9799,6 +9965,61 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
             damagePlayer(barrier.damage ?? 1, "impact");
           }
           if (barrier.life <= 0 || barrier.x < -barrier.width - 120 || barrier.x > width + barrier.width + 120) l.barriers.splice(i, 1);
+        }
+
+        for (let i = l.sweepLasers.length - 1; i >= 0; i--) {
+          const sweep = l.sweepLasers[i];
+          sweep.life -= dt;
+          sweep.entered = Math.min(sweep.enterDuration, (sweep.entered || 0) + dt);
+          sweep.phase += dt * sweep.speed;
+          sweep.y = sweep.baseY + Math.sin(sweep.phase) * sweep.amplitude * sweep.direction;
+          sweep.y = clamp(sweep.y, 56, height - 56);
+          if (sweep.maxAngle > 0) {
+            sweep.angle = Math.sin(sweep.phase * 0.42) * sweep.maxAngle;
+          } else {
+            sweep.angle = 0;
+          }
+          const enterRatio = clamp((sweep.entered || 0) / Math.max(0.001, sweep.enterDuration), 0, 1);
+          const activeHalfLength = width * (0.18 + enterRatio * 0.5);
+          const activeDx = Math.cos(sweep.angle || 0) * activeHalfLength;
+          const activeDy = Math.sin(sweep.angle || 0) * activeHalfLength;
+          const dist = distanceToSegment(player.x, player.y, centerX - activeDx, sweep.y - activeDy, centerX + activeDx, sweep.y + activeDy);
+          nearest = Math.min(nearest, dist);
+          if (dist < 105) closeCount++;
+          if (dist < player.hitRadius + sweep.width * 0.5) {
+            damagePlayer(0.5, "impact");
+          }
+          if (sweep.life <= 0) {
+            l.sweepLasers.splice(i, 1);
+          }
+        }
+
+        for (let i = l.neonBursts.length - 1; i >= 0; i--) {
+          const burst = l.neonBursts[i];
+          burst.life -= dt;
+          burst.angle += burst.spin * dt;
+          const speed = Math.hypot(burst.vx, burst.vy) || 1;
+          const steerX = Math.cos(burst.angle + Math.sin(state.elapsed * 4 + burst.wobble) * 0.18);
+          const steerY = Math.sin(burst.angle + Math.cos(state.elapsed * 4.8 + burst.wobble) * 0.18);
+          burst.vx += steerX * burst.curve * dt;
+          burst.vy += steerY * burst.curve * dt;
+          const nextSpeed = Math.hypot(burst.vx, burst.vy) || 1;
+          const capped = Math.max(170, Math.min(255, nextSpeed));
+          burst.vx = (burst.vx / nextSpeed) * capped;
+          burst.vy = (burst.vy / nextSpeed) * capped;
+          burst.x += burst.vx * dt;
+          burst.y += burst.vy * dt;
+          const dist = Math.hypot(player.x - burst.x, player.y - burst.y);
+          nearest = Math.min(nearest, dist);
+          if (dist < 96) closeCount++;
+          if (dist < player.hitRadius + burst.size * 0.6) {
+            l.neonBursts.splice(i, 1);
+            damagePlayer(0.5, "impact");
+            continue;
+          }
+          if (burst.life <= 0 || burst.x < -90 || burst.x > width + 90 || burst.y < -90 || burst.y > height + 90) {
+            l.neonBursts.splice(i, 1);
+          }
         }
 
         if (l.phase === 3 && l.beamActive > 0) {
@@ -12817,6 +13038,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
           };
           if (shot.type === "magma_plasma") {
             if (shot.stuck && shot.stickTimer > 0) {
+              const plasmaSparkColor = hexToRgba(mixHexColors(getBulletColor(), "#ffffff", 0.28), 0.92);
               shot.stickTimer -= dt;
               shot.tickTimer -= dt;
               shot.x = bossPos.x + shot.stickOffsetX;
@@ -12827,7 +13049,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
               if (shot.tickTimer <= 0) {
                 damageBoss(shot.tickDamage, { source: "bullet" });
                 shot.tickTimer += shot.tickInterval;
-                addSpark(shot.x, shot.y, "rgba(255, 178, 122, 0.92)", 4, 78);
+                addSpark(shot.x, shot.y, plasmaSparkColor, 4, 78);
               }
               if (shot.stickTimer <= 0) {
                 state.playerShots.splice(i, 1);
@@ -16205,6 +16427,115 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
           ctx.restore();
         }
 
+        for (const sweep of l.sweepLasers) {
+          const lifeAlpha = clamp(sweep.life / Math.max(0.001, sweep.maxLife), 0, 1);
+          const enterRatio = clamp((sweep.entered || 0) / Math.max(0.001, sweep.enterDuration || 0.5), 0, 1);
+          const pulse = 0.82 + Math.sin(state.elapsed * 12 + sweep.phase * 2.2) * 0.12;
+          const halfLength = width * (0.18 + enterRatio * 0.5);
+          const dx = Math.cos(sweep.angle || 0) * halfLength;
+          const dy = Math.sin(sweep.angle || 0) * halfLength;
+          const x1 = centerX - dx;
+          const y1 = sweep.y - dy;
+          const x2 = centerX + dx;
+          const y2 = sweep.y + dy;
+          const beamGlow = ctx.createLinearGradient(x1, y1, x2, y2);
+          beamGlow.addColorStop(0, "rgba(255, 72, 72, 0)");
+          beamGlow.addColorStop(0.18, `rgba(255, 86, 86, ${(0.26 + lifeAlpha * 0.16) * pulse})`);
+          beamGlow.addColorStop(0.5, `rgba(255, 176, 176, ${(0.48 + lifeAlpha * 0.18) * pulse})`);
+          beamGlow.addColorStop(0.82, `rgba(255, 86, 86, ${(0.26 + lifeAlpha * 0.16) * pulse})`);
+          beamGlow.addColorStop(1, "rgba(255, 72, 72, 0)");
+          ctx.strokeStyle = beamGlow;
+          ctx.lineWidth = 34;
+          ctx.beginPath();
+          ctx.moveTo(x1, y1);
+          ctx.lineTo(x2, y2);
+          ctx.stroke();
+
+          ctx.strokeStyle = `rgba(255, 82, 82, ${(0.72 + lifeAlpha * 0.16) * pulse})`;
+          ctx.lineWidth = 14;
+          ctx.beginPath();
+          ctx.moveTo(x1, y1);
+          ctx.lineTo(x2, y2);
+          ctx.stroke();
+
+          ctx.strokeStyle = `rgba(255, 244, 234, ${(0.78 + lifeAlpha * 0.14) * pulse})`;
+          ctx.lineWidth = 4.5;
+          ctx.beginPath();
+          ctx.moveTo(x1, y1);
+          ctx.lineTo(x2, y2);
+          ctx.stroke();
+
+          ctx.strokeStyle = `rgba(255, 208, 208, ${(0.32 + lifeAlpha * 0.12) * pulse})`;
+          ctx.lineWidth = 1.8;
+          for (let arc = 0; arc < 8; arc++) {
+            const sx = x1 + (x2 - x1) * (arc / 8);
+            const sy = y1 + (y2 - y1) * (arc / 8);
+            const ex = x1 + (x2 - x1) * Math.min(1, (arc + 0.82) / 8);
+            const ey = y1 + (y2 - y1) * Math.min(1, (arc + 0.82) / 8);
+            const midRatio = (arc + 0.41) / 8;
+            const baseMx = x1 + (x2 - x1) * midRatio;
+            const baseMy = y1 + (y2 - y1) * midRatio;
+            const normalAngle = (sweep.angle || 0) + Math.PI * 0.5;
+            const mx = baseMx + Math.cos(normalAngle) * Math.sin(state.elapsed * 8 + arc + sweep.phase) * 10;
+            const my = baseMy + Math.sin(normalAngle) * Math.sin(state.elapsed * 8 + arc + sweep.phase) * 10;
+            ctx.beginPath();
+            ctx.moveTo(sx, sy);
+            ctx.quadraticCurveTo(mx, my, ex, ey);
+            ctx.stroke();
+          }
+        }
+
+        for (const burst of l.neonBursts) {
+          const lifeAlpha = clamp(burst.life / Math.max(0.001, burst.maxLife), 0, 1);
+          const pulse = 0.76 + Math.sin(state.elapsed * 10 + burst.pulse) * 0.18;
+          const angle = Math.atan2(burst.vy, burst.vx);
+          const length = burst.size * 3.9;
+          const halfWidth = burst.size * 0.44;
+          ctx.save();
+          ctx.translate(burst.x, burst.y);
+          ctx.rotate(angle);
+
+          const glow = ctx.createLinearGradient(-length, 0, length, 0);
+          glow.addColorStop(0, "rgba(255, 82, 82, 0)");
+          glow.addColorStop(0.2, `rgba(255, 96, 96, ${(0.28 + lifeAlpha * 0.16) * pulse})`);
+          glow.addColorStop(0.5, `rgba(255, 232, 232, ${(0.5 + lifeAlpha * 0.18) * pulse})`);
+          glow.addColorStop(0.8, `rgba(255, 96, 96, ${(0.28 + lifeAlpha * 0.16) * pulse})`);
+          glow.addColorStop(1, "rgba(255, 82, 82, 0)");
+          ctx.strokeStyle = glow;
+          ctx.lineWidth = burst.size * 2.1;
+          ctx.lineCap = "round";
+          ctx.beginPath();
+          ctx.moveTo(-length * 0.8, 0);
+          ctx.lineTo(length * 0.8, 0);
+          ctx.stroke();
+
+          ctx.strokeStyle = `rgba(255, 88, 88, ${(0.86 + lifeAlpha * 0.1) * pulse})`;
+          ctx.lineWidth = burst.size * 0.92;
+          ctx.beginPath();
+          ctx.moveTo(-length * 0.7, 0);
+          ctx.lineTo(length * 0.7, 0);
+          ctx.stroke();
+
+          ctx.strokeStyle = `rgba(255, 248, 244, ${(0.8 + lifeAlpha * 0.12) * pulse})`;
+          ctx.lineWidth = Math.max(1.4, burst.size * 0.22);
+          ctx.beginPath();
+          ctx.moveTo(-length * 0.52, 0);
+          ctx.lineTo(length * 0.52, 0);
+          ctx.stroke();
+
+          ctx.strokeStyle = `rgba(255, 212, 212, ${(0.28 + lifeAlpha * 0.12) * pulse})`;
+          ctx.lineWidth = 1.6;
+          ctx.beginPath();
+          ctx.moveTo(-length * 0.55, 0);
+          ctx.quadraticCurveTo(0, halfWidth * 2.2, length * 0.55, 0);
+          ctx.stroke();
+          ctx.beginPath();
+          ctx.moveTo(-length * 0.55, 0);
+          ctx.quadraticCurveTo(0, -halfWidth * 2.2, length * 0.55, 0);
+          ctx.stroke();
+          ctx.restore();
+        }
+
         if (l.phase === 3 && l.beamActive > 0) {
           const beamSegments = getLuminosityBeamSegments();
           const beamPulse = 0.76 + Math.sin(state.elapsed * 18 + l.beamSweep * 4) * 0.14;
@@ -16410,28 +16741,28 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
             ctx.fillRect(-length * 0.55, -Math.max(1.2, shot.size * 0.12), length * 1.2, Math.max(2.1, shot.size * 0.24));
             ctx.restore();
           } else if (shot.type === "magma_plasma") {
-            const magmaOuter = ctx.createRadialGradient(shot.x, shot.y, 0, shot.x, shot.y, shot.size * 5.8);
-            magmaOuter.addColorStop(0, `rgba(255, 255, 255, ${alpha * 0.92})`);
-            magmaOuter.addColorStop(0.2, `rgba(255, 244, 186, ${alpha * 0.86})`);
-            magmaOuter.addColorStop(0.48, `rgba(255, 154, 86, ${alpha * 0.8})`);
-            magmaOuter.addColorStop(0.78, `rgba(255, 96, 54, ${alpha * 0.52})`);
-            magmaOuter.addColorStop(1, "rgba(255, 84, 42, 0)");
-            ctx.fillStyle = magmaOuter;
+            const magmaOuterGlow = ctx.createRadialGradient(shot.x, shot.y, 0, shot.x, shot.y, shot.size * 5.8);
+            magmaOuterGlow.addColorStop(0, hexToRgba("#ffffff", alpha * 0.92));
+            magmaOuterGlow.addColorStop(0.2, hexToRgba(mixHexColors(bulletColor, "#fff4ba", 0.36), alpha * 0.86));
+            magmaOuterGlow.addColorStop(0.48, hexToRgba(mixHexColors(bulletColor, "#ffffff", 0.14), alpha * 0.8));
+            magmaOuterGlow.addColorStop(0.78, hexToRgba(bulletColor, alpha * 0.52));
+            magmaOuterGlow.addColorStop(1, hexToRgba(bulletColor, 0));
+            ctx.fillStyle = magmaOuterGlow;
             ctx.beginPath();
             ctx.arc(shot.x, shot.y, shot.size * 5.8, 0, TAU);
             ctx.fill();
 
             const wobbleX = Math.cos(state.elapsed * 8 + (shot.plasmaDrift || 0)) * shot.size * 0.12;
             const wobbleY = Math.sin(state.elapsed * 10 + (shot.plasmaDrift || 0)) * shot.size * 0.12;
-            ctx.fillStyle = `rgba(255, 122, 64, ${0.86 * alpha})`;
+            ctx.fillStyle = hexToRgba(mixHexColors(bulletColor, "#ffffff", 0.1), 0.86 * alpha);
             ctx.beginPath();
             ctx.arc(shot.x + wobbleX, shot.y + wobbleY, shot.size * 1.08, 0, TAU);
             ctx.fill();
-            ctx.fillStyle = `rgba(255, 224, 148, ${0.74 * alpha})`;
+            ctx.fillStyle = hexToRgba(mixHexColors(bulletColor, "#fff1c6", 0.26), 0.74 * alpha);
             ctx.beginPath();
             ctx.arc(shot.x - wobbleX * 0.8, shot.y - wobbleY * 0.8, shot.size * 0.58, 0, TAU);
             ctx.fill();
-            ctx.fillStyle = `rgba(255, 248, 220, ${0.48 * alpha})`;
+            ctx.fillStyle = hexToRgba("#ffffff", 0.48 * alpha);
             ctx.beginPath();
             ctx.arc(shot.x + wobbleX * 0.4, shot.y - wobbleY * 0.4, shot.size * 0.22, 0, TAU);
             ctx.fill();
@@ -23493,10 +23824,14 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         }
         if (state.currentBoss === "luminosity" && state.luminosity.flashBlindTimer > 0 && ["playing", "paused", "gameover"].includes(state.mode)) {
           const blindAlpha = clamp(state.luminosity.flashBlindTimer / 0.5, 0, 1);
-          const wash = ctx.createRadialGradient(centerX, centerY, 0, centerX, centerY, Math.max(width, height) * 0.9);
-          wash.addColorStop(0, `rgba(255, 245, 245, ${0.2 + blindAlpha * 0.3})`);
-          wash.addColorStop(0.35, `rgba(255, 80, 80, ${0.18 + blindAlpha * 0.4})`);
-          wash.addColorStop(1, `rgba(120, 0, 0, ${blindAlpha * 0.16})`);
+          const smoothBlind = blindAlpha * blindAlpha * (3 - 2 * blindAlpha);
+          ctx.fillStyle = `rgba(255, 64, 64, ${0.32 + smoothBlind * 0.34})`;
+          ctx.fillRect(0, 0, width, height);
+          const wash = ctx.createRadialGradient(centerX, centerY, 0, centerX, centerY, Math.max(width, height) * 1.15);
+          wash.addColorStop(0, `rgba(255, 252, 252, ${0.62 + smoothBlind * 0.26})`);
+          wash.addColorStop(0.22, `rgba(255, 176, 176, ${0.5 + smoothBlind * 0.22})`);
+          wash.addColorStop(0.58, `rgba(255, 76, 76, ${0.44 + smoothBlind * 0.28})`);
+          wash.addColorStop(1, `rgba(110, 0, 0, ${0.24 + smoothBlind * 0.24})`);
           ctx.fillStyle = wash;
           ctx.fillRect(0, 0, width, height);
         }
