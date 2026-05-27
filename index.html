@@ -3793,6 +3793,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       let masterGain = null;
       let lastHoverTarget = null;
       let customSkinImage = null;
+      let suppressTantalumHitAura = false;
       let menuMusic = null;
       let boss1Music = null;
       let boss2Music = null;
@@ -4384,6 +4385,10 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
       function graphicsGlowEnabled() {
         return getGraphicsQualityMeta().glowScale > 0.01;
+      }
+
+      function graphicsBossHitmarksEnabled() {
+        return state.settings.graphicsQuality !== "absolute_potato";
       }
 
       function applyGraphicsQuality() {
@@ -12843,7 +12848,9 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         state.bossDamageDealt = clamp(state.bossDamageDealt + amount, 0, state.bossMaxHealth);
         updateEvolutionProgressFromBossDamage();
         player.nearMissCharge = clamp(player.nearMissCharge + amount * 1.1, 0, 100);
-        state.bossDamageFlash = Math.max(state.bossDamageFlash, 0.16);
+        if (graphicsBossHitmarksEnabled()) {
+          state.bossDamageFlash = Math.max(state.bossDamageFlash, 0.16);
+        }
         if (state.currentBoss === "radiator" && state.radiator.phase === 5 && source === "bullet" && state.radiator.shuckCooldown <= 0) {
           state.radiator.shuckCooldown = 0.045;
           spawnRadiatorShuck();
@@ -14139,6 +14146,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       }
 
       function drawBossDamageIndicator() {
+        if (!graphicsBossHitmarksEnabled()) return;
         if (state.currentBoss === "alarmist") return;
         const alpha = clamp(state.bossDamageFlash / 0.16, 0, 1);
         if (alpha <= 0) return;
@@ -14147,6 +14155,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         ctx.globalAlpha = 0.24 + alpha * 0.62;
         ctx.globalCompositeOperation = "screen";
         ctx.filter = `brightness(${1.25 + alpha * 0.95}) saturate(${1.05 + alpha * 0.4})`;
+        suppressTantalumHitAura = state.currentBoss === "tantalum";
         if (state.currentBoss === "architect") drawVortex();
         else if (state.currentBoss === "sovereign") drawSovereignBoss();
         else if (state.currentBoss === "monarch") drawNullBoss();
@@ -14161,6 +14170,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         else if (state.currentBoss === "slabhraidh") drawSlabhraidhBoss();
         else if (state.currentBoss === "radiator") drawRadiatorBoss();
         else if (state.currentBoss === "decayer") drawDecayerBoss();
+        suppressTantalumHitAura = false;
         ctx.restore();
       }
 
@@ -16138,7 +16148,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         const auraRadius = t.phase === 3 ? Math.max(width, height) * 0.75 : t.auraRadius;
         const victoryOverload = state.mode === "victory" && state.victoryBoss === "tantalum";
 
-        if (t.auraDuration > 0) {
+        if (t.auraDuration > 0 && !suppressTantalumHitAura) {
           const auraAlpha = t.phase === 3 ? 0.1 : clamp(t.auraDuration / 2.6, 0, 1) * 0.16;
           ctx.save();
           ctx.globalCompositeOperation = "lighter";
@@ -16158,45 +16168,47 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
           ctx.restore();
         }
 
-        ctx.save();
-        ctx.globalCompositeOperation = "lighter";
-        for (let spark = 0; spark < 22; spark++) {
-          const angle = state.elapsed * 0.52 + (spark / 22) * TAU;
-          const radius = 104 * scale + (spark % 5) * 12;
-          ctx.fillStyle = spark % 2 === 0 ? "rgba(118, 242, 255, 0.24)" : "rgba(210, 252, 255, 0.14)";
-          ctx.fillRect(t.x + Math.cos(angle) * radius, t.y + Math.sin(angle * 1.25) * radius * 0.6, 3 + (spark % 2), 2 + (spark % 3));
-        }
-        ctx.restore();
-
-        ctx.save();
-        ctx.globalCompositeOperation = "lighter";
-        for (let halo = 0; halo < 4; halo++) {
-          ctx.strokeStyle = `rgba(102, 244, 255, ${0.1 + halo * 0.08})`;
-          ctx.lineWidth = 1.6 + halo * 0.65;
-          ctx.beginPath();
-          for (let a = 0; a <= TAU + 0.08; a += 0.12) {
-            const r = 104 * scale + halo * 18 + Math.sin(a * (6 + halo) + state.elapsed * (2.2 + halo * 0.62)) * (8 + halo * 2.6);
-            const px = t.x + Math.cos(a) * r;
-            const py = t.y + Math.sin(a) * r * 0.78;
-            if (a === 0) ctx.moveTo(px, py);
-            else ctx.lineTo(px, py);
+        if (!suppressTantalumHitAura) {
+          ctx.save();
+          ctx.globalCompositeOperation = "lighter";
+          for (let spark = 0; spark < 22; spark++) {
+            const angle = state.elapsed * 0.52 + (spark / 22) * TAU;
+            const radius = 104 * scale + (spark % 5) * 12;
+            ctx.fillStyle = spark % 2 === 0 ? "rgba(118, 242, 255, 0.24)" : "rgba(210, 252, 255, 0.14)";
+            ctx.fillRect(t.x + Math.cos(angle) * radius, t.y + Math.sin(angle * 1.25) * radius * 0.6, 3 + (spark % 2), 2 + (spark % 3));
           }
-          ctx.closePath();
-          ctx.stroke();
-        }
-        ctx.restore();
+          ctx.restore();
 
-        ctx.save();
-        ctx.translate(t.x, t.y);
-        ctx.rotate(t.rotation * 0.6);
-        ctx.globalCompositeOperation = "lighter";
-        for (let cage = 0; cage < 3; cage++) {
-          const cageSize = (82 + cage * 20) * scale;
-          ctx.strokeStyle = cage === 0 ? "rgba(220,252,255,0.2)" : "rgba(110,242,255,0.18)";
-          ctx.lineWidth = 1.4 + cage * 0.4;
-          ctx.strokeRect(-cageSize * 0.5, -cageSize * 0.5, cageSize, cageSize);
+          ctx.save();
+          ctx.globalCompositeOperation = "lighter";
+          for (let halo = 0; halo < 4; halo++) {
+            ctx.strokeStyle = `rgba(102, 244, 255, ${0.1 + halo * 0.08})`;
+            ctx.lineWidth = 1.6 + halo * 0.65;
+            ctx.beginPath();
+            for (let a = 0; a <= TAU + 0.08; a += 0.12) {
+              const r = 104 * scale + halo * 18 + Math.sin(a * (6 + halo) + state.elapsed * (2.2 + halo * 0.62)) * (8 + halo * 2.6);
+              const px = t.x + Math.cos(a) * r;
+              const py = t.y + Math.sin(a) * r * 0.78;
+              if (a === 0) ctx.moveTo(px, py);
+              else ctx.lineTo(px, py);
+            }
+            ctx.closePath();
+            ctx.stroke();
+          }
+          ctx.restore();
+
+          ctx.save();
+          ctx.translate(t.x, t.y);
+          ctx.rotate(t.rotation * 0.6);
+          ctx.globalCompositeOperation = "lighter";
+          for (let cage = 0; cage < 3; cage++) {
+            const cageSize = (82 + cage * 20) * scale;
+            ctx.strokeStyle = cage === 0 ? "rgba(220,252,255,0.2)" : "rgba(110,242,255,0.18)";
+            ctx.lineWidth = 1.4 + cage * 0.4;
+            ctx.strokeRect(-cageSize * 0.5, -cageSize * 0.5, cageSize, cageSize);
+          }
+          ctx.restore();
         }
-        ctx.restore();
 
         ctx.save();
         ctx.translate(t.x, t.y);
