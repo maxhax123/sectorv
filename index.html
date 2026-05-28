@@ -3793,7 +3793,6 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       let masterGain = null;
       let lastHoverTarget = null;
       let customSkinImage = null;
-      let suppressTantalumHitAura = false;
       let menuMusic = null;
       let boss1Music = null;
       let boss2Music = null;
@@ -4393,6 +4392,10 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
       function applyGraphicsQuality() {
         canvas.style.imageRendering = getGraphicsQualityMeta().imageRendering;
+      }
+
+      function shouldSuppressTantalumAura() {
+        return state.currentBoss === "tantalum" && state.bossDamageFlash > 0;
       }
 
       function setGraphicsQuality(id) {
@@ -6358,8 +6361,10 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
           activePullIndices: [],
           activeBossPull: false,
           conePulse: 0,
+          phase3NeedleTimer: 1.6,
           cursors: [],
           spinners: [],
+          needles: [],
           fragments: []
         };
       }
@@ -6649,6 +6654,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
           extendChainTimer: 0,
           extendAmount: 0,
           hookTimer: 1.2,
+          phase3PulseTimer: 1.1,
           patternTimer: 0.24,
           phase4DetachTimer: 1.9,
           sparkTimer: 0.08,
@@ -7291,6 +7297,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         state.nullBoss.reflections.length = 0;
         state.cesium.cursors.length = 0;
         state.cesium.spinners.length = 0;
+        state.cesium.needles.length = 0;
         state.tantalum.packets.length = 0;
         state.tantalum.beams.length = 0;
         state.tantalum.lightningBolts.length = 0;
@@ -8774,8 +8781,9 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         });
       }
 
-      function spawnCesiumSpinner(targetX, targetY, indexOffset = 0) {
-        const angle = Math.atan2(targetY - state.cesium.y, targetX - state.cesium.x) + (indexOffset === 0 ? -0.16 : 0.16);
+      function spawnCesiumSpinner(targetX, targetY, indexOffset = 0, total = 2) {
+        const spread = total > 1 ? (indexOffset - (total - 1) * 0.5) * 0.16 : 0;
+        const angle = Math.atan2(targetY - state.cesium.y, targetX - state.cesium.x) + spread;
         const speed = 230 + Math.random() * 70;
         const widthValue = 11 + Math.random() * 3;
         const heightValue = 22 + Math.random() * 5;
@@ -8791,6 +8799,26 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
           width: widthValue,
           height: heightValue
         });
+      }
+
+      function spawnCesiumNeedleBurst() {
+        const c = state.cesium;
+        const total = 55;
+        for (let i = 0; i < total; i++) {
+          const angle = (i / total) * TAU + state.elapsed * 0.18;
+          const speed = 255 + Math.random() * 75;
+          c.needles.push({
+            x: c.x,
+            y: c.y,
+            vx: Math.cos(angle) * speed,
+            vy: Math.sin(angle) * speed,
+            angle,
+            spin: (Math.random() > 0.5 ? 1 : -1) * (5 + Math.random() * 2.5),
+            life: 4.8,
+            size: 6 + Math.random() * 2,
+            drift: Math.random() * 0.04
+          });
+        }
       }
 
       function getCesiumMagnetPullAt(x, y, targetRadius = 8) {
@@ -8866,6 +8894,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         if (nextPhase !== c.phase) {
           c.phase = nextPhase;
           state.bossPhase = nextPhase;
+          if (nextPhase === 3) c.phase3NeedleTimer = 1.3 + Math.random() * 1.3;
           addFlash(c.x, c.y, "rgba(255, 228, 118, 0.74)", 170 + nextPhase * 26);
           addSpark(c.x, c.y, "rgba(255, 235, 160, 0.96)", 32 + nextPhase * 10, 220 + nextPhase * 30);
         }
@@ -9027,9 +9056,17 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
           if (c.spinnerTimer <= 0) {
             const lastX = player.x;
             const lastY = player.y;
-            spawnCesiumSpinner(lastX, lastY, 0);
-            spawnCesiumSpinner(lastX, lastY, 1);
-            c.spinnerTimer = 2;
+            spawnCesiumSpinner(lastX, lastY, 0, c.phase === 3 ? 3 : 2);
+            spawnCesiumSpinner(lastX, lastY, 1, c.phase === 3 ? 3 : 2);
+            if (c.phase === 3) spawnCesiumSpinner(lastX, lastY, 2, 3);
+            c.spinnerTimer = c.phase === 3 ? 0.8 + Math.random() * 0.6 : 2;
+          }
+        }
+        if (c.phase === 3) {
+          c.phase3NeedleTimer -= dt;
+          if (c.phase3NeedleTimer <= 0) {
+            c.phase3NeedleTimer = 3 + Math.random() * 4;
+            spawnCesiumNeedleBurst();
           }
         }
 
@@ -9090,6 +9127,22 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
           }
           if (spinner.life <= 0 || spinner.x < -90 || spinner.x > width + 90 || spinner.y < -90 || spinner.y > height + 90) {
             c.spinners.splice(i, 1);
+          }
+        }
+
+        for (let i = c.needles.length - 1; i >= 0; i--) {
+          const needle = c.needles[i];
+          needle.angle += needle.spin * dt;
+          needle.x += needle.vx * dt;
+          needle.y += needle.vy * dt;
+          needle.vy += needle.drift * 180 * dt;
+          needle.life -= dt;
+          const dist = Math.hypot(player.x - needle.x, player.y - needle.y);
+          nearest = Math.min(nearest, dist);
+          if (dist < 96) closeCount++;
+          if (dist < player.hitRadius + needle.size * 0.72) damagePlayer(0.5, "impact");
+          if (needle.life <= 0 || needle.x < -110 || needle.x > width + 110 || needle.y < -110 || needle.y > height + 110) {
+            c.needles.splice(i, 1);
           }
         }
 
@@ -12483,6 +12536,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
           state.nullBoss.reflections.length = 0;
           state.cesium.cursors.length = 0;
           state.cesium.spinners.length = 0;
+          state.cesium.needles.length = 0;
           state.tantalum.packets.length = 0;
           state.tantalum.beams.length = 0;
           state.tantalum.lightningBolts.length = 0;
@@ -12703,6 +12757,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         state.nullBoss.shatter.length = 0;
         state.cesium.cursors.length = 0;
         state.cesium.spinners.length = 0;
+        state.cesium.needles.length = 0;
         state.cesium.fragments.length = 0;
         state.tantalum.packets.length = 0;
         state.tantalum.beams.length = 0;
@@ -13353,6 +13408,10 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
           const applyMagmaPlasmaContact = (sparkColor, anchorX = bossPos.x, anchorY = bossPos.y) => {
             if (shot.type !== "magma_plasma") return false;
             damageBoss(shot.initialDamage, { source: "bullet" });
+            if (!shot.phase5RecoilApplied) {
+              applySlabhraidhPhase5Recoil(anchorX, anchorY, shot.initialDamage);
+              shot.phase5RecoilApplied = true;
+            }
             triggerSupportBulletImpact(shot, shot.x, shot.y);
             addSpark(shot.x, shot.y, sparkColor, 6, 110);
             shot.stuck = true;
@@ -13536,8 +13595,16 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
             if (!hitSlabhraidh && (shot.type === "focus_beam" ? getShotDistanceToPoint(state.slabhraidh.x, state.slabhraidh.y) : Math.hypot(shot.x - state.slabhraidh.x, shot.y - state.slabhraidh.y)) < getSlabhraidhCoreRadius() + shot.size + 2) {
               if (shot.type === "tick_phaser" || shot.type === "focus_beam") {
                 applyTickPhaserContact("rgba(255, 210, 150, 0.96)");
+                if (!shot.phase5RecoilApplied) {
+                  applySlabhraidhPhase5Recoil(shot.x, shot.y, shot.damage || shot.initialDamage || 1);
+                  shot.phase5RecoilApplied = true;
+                }
               } else {
                 damageBoss(shot.damage, { source: "bullet" });
+                if (!shot.phase5RecoilApplied) {
+                  applySlabhraidhPhase5Recoil(shot.x, shot.y, shot.damage || 1);
+                  shot.phase5RecoilApplied = true;
+                }
                 triggerSupportBulletImpact(shot, shot.x, shot.y);
                 addSpark(shot.x, shot.y, "rgba(255, 210, 150, 0.96)", 6, 120);
                 state.playerShots.splice(i, 1);
@@ -14155,7 +14222,6 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         ctx.globalAlpha = 0.24 + alpha * 0.62;
         ctx.globalCompositeOperation = "screen";
         ctx.filter = `brightness(${1.25 + alpha * 0.95}) saturate(${1.05 + alpha * 0.4})`;
-        suppressTantalumHitAura = state.currentBoss === "tantalum";
         if (state.currentBoss === "architect") drawVortex();
         else if (state.currentBoss === "sovereign") drawSovereignBoss();
         else if (state.currentBoss === "monarch") drawNullBoss();
@@ -14170,7 +14236,6 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         else if (state.currentBoss === "slabhraidh") drawSlabhraidhBoss();
         else if (state.currentBoss === "radiator") drawRadiatorBoss();
         else if (state.currentBoss === "decayer") drawDecayerBoss();
-        suppressTantalumHitAura = false;
         ctx.restore();
       }
 
@@ -16137,6 +16202,24 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
           ctx.strokeRect(-(spinner.width || spinner.size) * 0.5, -(spinner.height || spinner.size) * 0.5, spinner.width || spinner.size, spinner.height || spinner.size);
           ctx.restore();
         }
+        for (const needle of c.needles) {
+          ctx.save();
+          ctx.translate(needle.x, needle.y);
+          ctx.rotate(needle.angle);
+          ctx.scale(needle.size / 6, needle.size / 6);
+          ctx.fillStyle = "rgba(255, 233, 112, 0.96)";
+          ctx.beginPath();
+          ctx.moveTo(18, 0);
+          ctx.lineTo(-4, 4.8);
+          ctx.lineTo(-1.5, 0);
+          ctx.lineTo(-4, -4.8);
+          ctx.closePath();
+          ctx.fill();
+          ctx.strokeStyle = "rgba(255, 251, 212, 0.74)";
+          ctx.lineWidth = 1.1;
+          ctx.stroke();
+          ctx.restore();
+        }
         ctx.restore();
       }
 
@@ -16148,7 +16231,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         const auraRadius = t.phase === 3 ? Math.max(width, height) * 0.75 : t.auraRadius;
         const victoryOverload = state.mode === "victory" && state.victoryBoss === "tantalum";
 
-        if (t.auraDuration > 0 && !suppressTantalumHitAura) {
+        if (t.auraDuration > 0 && !shouldSuppressTantalumAura()) {
           const auraAlpha = t.phase === 3 ? 0.1 : clamp(t.auraDuration / 2.6, 0, 1) * 0.16;
           ctx.save();
           ctx.globalCompositeOperation = "lighter";
@@ -16168,7 +16251,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
           ctx.restore();
         }
 
-        if (!suppressTantalumHitAura) {
+        if (!shouldSuppressTantalumAura()) {
           ctx.save();
           ctx.globalCompositeOperation = "lighter";
           for (let spark = 0; spark < 22; spark++) {
@@ -16221,6 +16304,19 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         outerGlow.addColorStop(1, "rgba(96,228,255,0)");
         ctx.fillStyle = outerGlow;
         ctx.fillRect(-bodyW * 0.62, -bodyH * 0.62, bodyW * 1.24, bodyH * 1.24);
+
+        if (state.bossDamageFlash > 0) {
+          ctx.save();
+          ctx.globalCompositeOperation = "lighter";
+          const hitPulse = clamp(state.bossDamageFlash / 0.16, 0, 1);
+          const pulseGlow = ctx.createRadialGradient(0, 0, 0, 0, 0, Math.max(bodyW, bodyH) * (0.72 + hitPulse * 0.34));
+          pulseGlow.addColorStop(0, `rgba(255, 255, 255, ${0.22 + hitPulse * 0.24})`);
+          pulseGlow.addColorStop(0.42, `rgba(188, 248, 255, ${0.16 + hitPulse * 0.2})`);
+          pulseGlow.addColorStop(1, "rgba(188, 248, 255, 0)");
+          ctx.fillStyle = pulseGlow;
+          ctx.fillRect(-bodyW * 0.82, -bodyH * 0.82, bodyW * 1.64, bodyH * 1.64);
+          ctx.restore();
+        }
 
         for (let layer = 0; layer < 3; layer++) {
           const insetX = layer * 13 * scale;
@@ -17398,6 +17494,20 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       function drawSiliBoss() {
         const s = state.sili;
         const units = getSiliUnitStates();
+        const roundedRectPath = (x, y, w, h, r) => {
+          const radius = Math.min(r, Math.abs(w) * 0.5, Math.abs(h) * 0.5);
+          ctx.beginPath();
+          ctx.moveTo(x + radius, y);
+          ctx.lineTo(x + w - radius, y);
+          ctx.quadraticCurveTo(x + w, y, x + w, y + radius);
+          ctx.lineTo(x + w, y + h - radius);
+          ctx.quadraticCurveTo(x + w, y + h, x + w - radius, y + h);
+          ctx.lineTo(x + radius, y + h);
+          ctx.quadraticCurveTo(x, y + h, x, y + h - radius);
+          ctx.lineTo(x, y + radius);
+          ctx.quadraticCurveTo(x, y, x + radius, y);
+          ctx.closePath();
+        };
         ctx.save();
         if (units.tetherActive) {
           const tetherGlow = ctx.createLinearGradient(units.unitA.x, units.unitA.y, units.unitB.x, units.unitB.y);
@@ -17420,38 +17530,161 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
         if (units.merged) {
           const flicker = 0.8 + Math.sin(state.elapsed * 24) * 0.2;
-          const w = units.mergedWidth;
-          const h = units.mergedHeight;
-          const glow = ctx.createRadialGradient(s.x, s.y, 0, s.x, s.y, 180);
-          glow.addColorStop(0, `rgba(255,255,255,${0.1 + flicker * 0.1})`);
-          glow.addColorStop(0.35, "rgba(92,232,255,0.16)");
-          glow.addColorStop(0.65, "rgba(255,90,241,0.16)");
-          glow.addColorStop(1, "rgba(0,0,0,0)");
-          ctx.fillStyle = glow;
-          ctx.fillRect(s.x - 180, s.y - 180, 360, 360);
-          ctx.fillStyle = "rgba(26, 28, 38, 0.96)";
-          ctx.fillRect(s.x - w * 0.5, s.y - h * 0.5, w, h);
-          ctx.fillStyle = "rgba(92,232,255,0.82)";
-          ctx.fillRect(s.x - w * 0.5, s.y - h * 0.5, w * 0.5, h);
-          ctx.fillStyle = "rgba(255,90,241,0.82)";
-          ctx.fillRect(s.x, s.y - h * 0.5, w * 0.5, h);
-          for (let i = 0; i < 12; i++) {
-            const px = s.x - w * 0.5 + (i / 11) * w;
-            const py = s.y - h * 0.5 + Math.sin(state.elapsed * 10 + i * 0.8) * 3;
-            ctx.fillStyle = i % 2 === 0 ? "rgba(92,232,255,0.52)" : "rgba(255,90,241,0.52)";
-            ctx.fillRect(px - 4, py + 10, 8, h - 20);
+          const w = units.mergedWidth * 0.98;
+          const h = units.mergedHeight * 0.96;
+          const bodyRadius = Math.min(w, h) * 0.22;
+          const outerGlow = ctx.createRadialGradient(s.x, s.y, 0, s.x, s.y, 238);
+          outerGlow.addColorStop(0, `rgba(255,255,255,${0.12 + flicker * 0.14})`);
+          outerGlow.addColorStop(0.18, "rgba(92,232,255,0.22)");
+          outerGlow.addColorStop(0.48, "rgba(255,90,241,0.2)");
+          outerGlow.addColorStop(0.8, "rgba(72, 84, 120, 0.08)");
+          outerGlow.addColorStop(1, "rgba(0,0,0,0)");
+          ctx.fillStyle = outerGlow;
+          ctx.fillRect(s.x - 238, s.y - 238, 476, 476);
+
+          ctx.save();
+          ctx.globalCompositeOperation = "lighter";
+          for (const lobe of [
+            { dx: -w * 0.19, dy: -h * 0.04, rx: w * 0.43, ry: h * 0.52, color: "rgba(92,232,255,0.24)" },
+            { dx: w * 0.19, dy: 0.02, rx: w * 0.43, ry: h * 0.52, color: "rgba(255,90,241,0.24)" }
+          ]) {
+            const lobeGlow = ctx.createRadialGradient(s.x + lobe.dx, s.y + lobe.dy, 0, s.x + lobe.dx, s.y + lobe.dy, Math.max(lobe.rx, lobe.ry) * 1.2);
+            lobeGlow.addColorStop(0, lobe.color.replace("0.24", "0.32"));
+            lobeGlow.addColorStop(0.42, lobe.color.replace("0.24", "0.16"));
+            lobeGlow.addColorStop(0.78, "rgba(0,0,0,0.02)");
+            lobeGlow.addColorStop(1, "rgba(0,0,0,0)");
+            ctx.fillStyle = lobeGlow;
+            ctx.beginPath();
+            ctx.ellipse(s.x + lobe.dx, s.y + lobe.dy, lobe.rx, lobe.ry, 0, 0, TAU);
+            ctx.fill();
           }
-          ctx.strokeStyle = "rgba(255,255,255,0.42)";
-          ctx.lineWidth = 3;
-          ctx.strokeRect(s.x - w * 0.5, s.y - h * 0.5, w, h);
+          ctx.restore();
+
+          ctx.save();
+          ctx.translate(s.x, s.y);
+          ctx.rotate(Math.sin(state.elapsed * 0.8) * 0.04);
+          const bodyGradient = ctx.createLinearGradient(-w * 0.5, -h * 0.5, w * 0.5, h * 0.5);
+          bodyGradient.addColorStop(0, "rgba(72, 242, 255, 0.96)");
+          bodyGradient.addColorStop(0.22, "rgba(42, 88, 120, 0.98)");
+          bodyGradient.addColorStop(0.5, "rgba(50, 48, 70, 0.99)");
+          bodyGradient.addColorStop(0.78, "rgba(112, 56, 116, 0.98)");
+          bodyGradient.addColorStop(1, "rgba(255, 90, 241, 0.96)");
+          ctx.fillStyle = bodyGradient;
+          ctx.beginPath();
+          const halfW = w * 0.5;
+          const halfH = h * 0.5;
+          const cutX = w * 0.18;
+          const cutY = h * 0.18;
+          ctx.moveTo(-halfW + cutX, -halfH);
+          ctx.lineTo(halfW - cutX, -halfH);
+          ctx.lineTo(halfW, -halfH + cutY);
+          ctx.lineTo(halfW, halfH - cutY);
+          ctx.lineTo(halfW - cutX, halfH);
+          ctx.lineTo(-halfW + cutX, halfH);
+          ctx.lineTo(-halfW, halfH - cutY);
+          ctx.lineTo(-halfW, -halfH + cutY);
+          ctx.closePath();
+          ctx.fill();
+
+          ctx.save();
+          ctx.globalCompositeOperation = "lighter";
+          ctx.strokeStyle = "rgba(92,232,255,0.48)";
+          ctx.lineWidth = 2.2;
+          ctx.beginPath();
+          ctx.moveTo(-halfW + cutX, -halfH + 4);
+          ctx.lineTo(0, -halfH - 12);
+          ctx.lineTo(halfW - cutX, -halfH + 4);
+          ctx.lineTo(halfW + 12, 0);
+          ctx.lineTo(halfW - cutX, halfH - 4);
+          ctx.lineTo(0, halfH + 12);
+          ctx.lineTo(-halfW + cutX, halfH - 4);
+          ctx.lineTo(-halfW - 12, 0);
+          ctx.closePath();
+          ctx.stroke();
+          ctx.restore();
+
+          ctx.fillStyle = "rgba(18, 22, 34, 0.52)";
+          ctx.beginPath();
+          ctx.moveTo(-halfW + cutX * 0.92, -halfH * 0.9);
+          ctx.lineTo(halfW - cutX * 0.92, -halfH * 0.9);
+          ctx.lineTo(halfW * 0.84, 0);
+          ctx.lineTo(halfW - cutX * 0.92, halfH * 0.9);
+          ctx.lineTo(-halfW + cutX * 0.92, halfH * 0.9);
+          ctx.lineTo(-halfW * 0.84, 0);
+          ctx.closePath();
+          ctx.fill();
+
+          ctx.fillStyle = "rgba(92,232,255,0.2)";
+          ctx.fillRect(-halfW, -halfH, w * 0.54, h);
+          ctx.fillStyle = "rgba(255,90,241,0.2)";
+          ctx.fillRect(-halfW + w * 0.46, -halfH, w * 0.54, h);
+
+          ctx.save();
+          ctx.globalCompositeOperation = "lighter";
+          for (let streak = 0; streak < 12; streak++) {
+            const t = streak / 11;
+            const px = -halfW + t * w;
+            const wave = Math.sin(state.elapsed * 10 + streak * 0.75) * 5;
+            ctx.fillStyle = streak % 2 === 0 ? "rgba(92,232,255,0.3)" : "rgba(255,90,241,0.3)";
+            ctx.fillRect(px - 4.5, wave - h * 0.16, 9, h * 0.32);
+          }
+          for (let shard = 0; shard < 6; shard++) {
+            const edgeT = shard / 5;
+            const edgeX = lerp(-halfW + cutX, halfW - cutX, edgeT);
+            ctx.fillStyle = shard % 2 === 0 ? "rgba(92,232,255,0.42)" : "rgba(255,90,241,0.42)";
+            ctx.fillRect(edgeX - 3, -halfH - 14 - (shard % 2) * 4, 6, 14 + (shard % 2) * 6);
+            ctx.fillRect(edgeX - 3, halfH, 6, 14 + (shard % 2) * 6);
+          }
+          ctx.restore();
+
+          ctx.strokeStyle = "rgba(255,255,255,0.5)";
+          ctx.lineWidth = 3.6;
+          ctx.beginPath();
+          ctx.moveTo(-halfW + cutX, -halfH);
+          ctx.lineTo(halfW - cutX, -halfH);
+          ctx.lineTo(halfW, -halfH + cutY);
+          ctx.lineTo(halfW, halfH - cutY);
+          ctx.lineTo(halfW - cutX, halfH);
+          ctx.lineTo(-halfW + cutX, halfH);
+          ctx.lineTo(-halfW, halfH - cutY);
+          ctx.lineTo(-halfW, -halfH + cutY);
+          ctx.closePath();
+          ctx.stroke();
+          ctx.restore();
         } else {
           for (const unit of [units.unitA, units.unitB]) {
-            const glow = ctx.createRadialGradient(unit.x, unit.y, 0, unit.x, unit.y, 86);
-            glow.addColorStop(0, "rgba(255,255,255,0.12)");
-            glow.addColorStop(0.35, unit.color === "#5ce8ff" ? "rgba(92,232,255,0.22)" : "rgba(255,90,241,0.22)");
-            glow.addColorStop(1, "rgba(0,0,0,0)");
-            ctx.fillStyle = glow;
-            ctx.fillRect(unit.x - 86, unit.y - 86, 172, 172);
+            ctx.save();
+            ctx.globalCompositeOperation = "lighter";
+            const aura = ctx.createRadialGradient(unit.x, unit.y, 0, unit.x, unit.y, 124);
+            aura.addColorStop(0, "rgba(255,255,255,0.08)");
+            aura.addColorStop(0.18, unit.color === "#5ce8ff" ? "rgba(92,232,255,0.34)" : "rgba(255,90,241,0.34)");
+            aura.addColorStop(0.42, unit.color === "#5ce8ff" ? "rgba(92,232,255,0.18)" : "rgba(255,90,241,0.18)");
+            aura.addColorStop(0.72, "rgba(0,0,0,0.02)");
+            aura.addColorStop(1, "rgba(0,0,0,0)");
+            ctx.fillStyle = aura;
+            ctx.beginPath();
+            ctx.arc(unit.x, unit.y, 124, 0, TAU);
+            ctx.fill();
+            ctx.strokeStyle = unit.color === "#5ce8ff" ? "rgba(164,245,255,0.42)" : "rgba(255,176,246,0.42)";
+            ctx.lineWidth = 1.8;
+            ctx.beginPath();
+            ctx.arc(unit.x, unit.y, unit.size * 2.15, 0, TAU);
+            ctx.stroke();
+            ctx.fillStyle = unit.color === "#5ce8ff" ? "rgba(92,232,255,0.14)" : "rgba(255,90,241,0.14)";
+            ctx.beginPath();
+            ctx.arc(unit.x, unit.y, unit.size * 2.65, 0, TAU);
+            ctx.strokeStyle = unit.color === "#5ce8ff" ? "rgba(92,232,255,0.18)" : "rgba(255,90,241,0.18)";
+            ctx.lineWidth = 8;
+            ctx.stroke();
+            ctx.restore();
+            ctx.save();
+            ctx.globalCompositeOperation = "lighter";
+            ctx.strokeStyle = unit.color === "#5ce8ff" ? "rgba(164,245,255,0.38)" : "rgba(255,176,246,0.38)";
+            ctx.lineWidth = 9;
+            ctx.beginPath();
+            ctx.arc(unit.x, unit.y, unit.size * 1.72, 0, TAU);
+            ctx.stroke();
+            ctx.restore();
             ctx.save();
             ctx.translate(unit.x, unit.y);
             ctx.rotate(state.elapsed * (unit.color === "#5ce8ff" ? 1.2 : -1.15));
@@ -19200,22 +19433,35 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         }
       }
 
-      function spawnSlabhraidhHookBullets() {
+      function spawnSlabhraidhHookBullets(count = 10, speed = 250, spread = 0.18, phaseOffset = 0) {
         const s = state.slabhraidh;
-        for (let i = 0; i < 10; i++) {
-          const angle = s.rotation + (i - 4.5) * 0.18;
+        const total = Math.max(1, Math.floor(count));
+        const center = (total - 1) * 0.5;
+        for (let i = 0; i < total; i++) {
+          const angle = s.rotation + phaseOffset + (i - center) * spread;
           s.projectiles.push({
             type: "hook",
             x: s.x,
             y: s.y,
-            vx: Math.cos(angle) * 250,
-            vy: Math.sin(angle) * 250,
+            vx: Math.cos(angle) * speed,
+            vy: Math.sin(angle) * speed,
             size: 10,
-            delay: 0.26 + i * 0.035,
+            delay: 0.24 + i * 0.024,
             turned: false,
             life: 6.3
           });
         }
+      }
+
+      function applySlabhraidhPhase5Recoil(impactX, impactY, power = 1) {
+        const s = state.slabhraidh;
+        if (s.phase !== 5) return;
+        const dx = s.x - impactX;
+        const dy = s.y - impactY;
+        const dist = Math.hypot(dx, dy) || 1;
+        const push = Math.min(58, 28 + power * 5.8);
+        s.vx += (dx / dist) * push;
+        s.vy += (dy / dist) * push * 0.58;
       }
 
       function spawnSlabhraidhPhase4Pattern() {
@@ -19335,7 +19581,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
               vx: Math.cos(snapAngle) * 380,
               vy: Math.sin(snapAngle) * 320,
               rotation: snapAngle,
-              rotationSpeed: 4.8,
+              rotationSpeed: 5.7,
               length: barLength,
               thickness: 28,
               targetX: s.x + Math.cos(snapAngle) * offset,
@@ -19403,6 +19649,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         s.extendTimer -= dt;
         s.extendChainTimer -= dt;
         s.hookTimer -= dt;
+        s.phase3PulseTimer -= dt;
         s.patternTimer -= dt;
         s.phase4DetachTimer -= dt;
         s.sparkTimer -= dt;
@@ -19443,8 +19690,17 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
           }
         } else if (s.phase === 3) {
           if (s.hookTimer <= 0) {
-            s.hookTimer = 1.25;
-            spawnSlabhraidhHookBullets();
+            s.hookTimer = 0.42;
+            spawnSlabhraidhHookBullets(14, 292, 0.82);
+            if (Math.random() < 0.52) spawnSlabhraidhHookBullets(6, 268, 0.56, Math.PI * 0.25);
+          }
+          if (s.phase3PulseTimer <= 0) {
+            s.phase3PulseTimer = 1.7 + Math.random() * 0.8;
+            for (const bar of getSlabhraidhBarStates()) {
+              spawnSlabhraidhPelletBurst(bar);
+            }
+            spawnSlabhraidhSparkCloud();
+            if (Math.random() < 0.68) spawnSlabhraidhSparkCloud();
           }
         }
 
