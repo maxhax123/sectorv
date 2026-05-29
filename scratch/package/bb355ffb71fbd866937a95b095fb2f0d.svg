@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="480" height="360" viewBox="0 0 480 360">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#081118"/>
+      <stop offset="55%" stop-color="#10293b"/>
+      <stop offset="100%" stop-color="#28180e"/>
+    </linearGradient>
+    <radialGradient id="vortex" cx="50%" cy="48%" r="46%">
+      <stop offset="0%" stop-color="#b8ffff" stop-opacity="0.95"/>
+      <stop offset="26%" stop-color="#6fe8eb" stop-opacity="0.48"/>
+      <stop offset="100%" stop-color="#6fe8eb" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="480" height="360" fill="url(#bg)"/>
+  <circle cx="240" cy="170" r="140" fill="url(#vortex)"/>
+  <g fill="#d6f7ff" opacity="0.8">
+    <circle cx="58" cy="44" r="1.8"/>
+    <circle cx="84" cy="124" r="1.2"/>
+    <circle cx="132" cy="82" r="2.1"/>
+    <circle cx="388" cy="58" r="1.6"/>
+    <circle cx="424" cy="88" r="2"/>
+    <circle cx="358" cy="122" r="1.2"/>
+    <circle cx="446" cy="216" r="1.5"/>
+    <circle cx="98" cy="314" r="1.7"/>
+    <circle cx="32" cy="278" r="1.4"/>
+  </g>
+  <text x="240" y="44" text-anchor="middle" fill="#ecffff" font-size="24" font-family="Trebuchet MS, Verdana, sans-serif" letter-spacing="3">Sector V: Chrono-Drift</text>
+  <text x="240" y="70" text-anchor="middle" fill="#91deea" font-size="11" font-family="Trebuchet MS, Verdana, sans-serif" letter-spacing="2">Scratch Logic Port Scaffold</text>
+  <rect x="52" y="286" width="376" height="48" rx="18" fill="#050c15" fill-opacity="0.62" stroke="#62dce0" stroke-width="1.4"/>
+  <text x="240" y="306" text-anchor="middle" fill="#dffbff" font-size="12" font-family="Trebuchet MS, Verdana, sans-serif">Left and Right choose boss. Up and Down choose challenge. Enter starts battle.</text>
+  <text x="240" y="322" text-anchor="middle" fill="#89dfe8" font-size="11" font-family="Trebuchet MS, Verdana, sans-serif">This build carries every boss, challenge, loadout, support upgrade, save slot, and achievement title from the HTML source into Scratch data.</text>
+</svg>

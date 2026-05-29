@@ -1,0 +1,415 @@
+{
+  "bosses": [
+    {
+      "name": "Hertz's Harmony",
+      "active": true,
+      "status": "ACTIVE",
+      "teaser": "The first successful MAVEN, if you don’t know what a ‘MAVEN’ is, it is an abbreviation for Macroscopic Atomic Valence Experimental Nuclei, didn't you do your research I see? Old Hertz over here or Unit 00Hz-I is a living frequency, specifically 440Hz."
+    },
+    {
+      "name": "The Protium Sovereign",
+      "active": true,
+      "status": "ACTIVE",
+      "teaser": "Second MAVEN, based on the element of hydrogen this MAVEN really ticks people off.. Like when Proton-Farmers come in and y’know try to collect hydrogen from the thing it just kinda likes to mess around with them. Using the official name now uh.. 1H-II is a hard one to deal with."
+    },
+    {
+      "name": "Monarch Null",
+      "active": true,
+      "status": "ACTIVE",
+      "teaser": "An easy job for Proton-Farmers, hard job for someone like you. Why? 6C-III has a whole bunch of weird little debris that likes to ricochet your bullets off. Proton-Farmers just come in and get elements, no weapons by the way."
+    },
+    {
+      "name": "Cesium Jim-Dandy Superficial",
+      "active": true,
+      "status": "ACTIVE",
+      "teaser": "Did you know the name was a play on the open-source javascript, CesiumJS, neat huh? Anyway this one, *really* territorial, hates anyone who comes in and loves eating everything. 55Cs-IV does only ‘like’ one person though."
+    },
+    {
+      "name": "Tantalum the Capacitor Sovereign",
+      "active": true,
+      "status": "ACTIVE",
+      "teaser": "Sovereign, used in two names already, it’s disappointing. 73Ta-V is a smart MAVEN though, they take it slow and actually has hard attacks. Don’t worry you’ll beat it."
+    },
+    {
+      "name": "Lord Luminosity the Noble Neon",
+      "active": true,
+      "status": "ACTIVE",
+      "teaser": "10Ne-VI is the main mascot of the project, TRNP. Do you know what TRNP means? No? Someone didn’t do their research, it means The Resourceful Nuclei Project. Also Lord Luminosity is very stubborn. Be careful, don’t look at it straight ahead, it'll hurt your eyes."
+    },
+    {
+      "name": "The Sili Overclock",
+      "active": true,
+      "status": "ACTIVE",
+      "teaser": "So umm, this one is complicated. 14Si-VII is a binary system between two entities, imagine it like a left brain and a right brain. Also you may feel like little zaps in your ADS flight-deck, do you even know what ADS means? Adaptive Discarding Ship. Anyway yeah if you feel little zaps don’t worry."
+    },
+    {
+      "name": "Caesar Dy",
+      "active": true,
+      "status": "ACTIVE",
+      "teaser": "66Dy-VIII is very big. Caesar Dy is a good name, no? It is living dysprosium, we thought it sounded like dystopium and we thought of the Roman Empire, Caesar, see where we’re getting at here? Also be careful, this one is also very stubborn."
+    },
+    {
+      "name": "Beauty Bismuth",
+      "active": true,
+      "status": "ACTIVE",
+      "teaser": "83Bi-IX is one of the most smart MAVENs recorded, but don’t get it wrong, it's like as smart as a pigeon. Also we think it may want to let you kill it? I mean wouldn’t you be in constant pain if you were living bismuth? If you don’t know what bismuth is, google it."
+    },
+    {
+      "name": "The Bleach Baron",
+      "active": true,
+      "status": "ACTIVE",
+      "teaser": "17Cl-X is pretty big and pretty bland. I don’t have much to say about it, personally I don’t like it, it’s kinda scary."
+    },
+    {
+      "name": "Ambitious Alarmist-Am",
+      "active": true,
+      "status": "ACTIVE",
+      "teaser": "Alarmist-Am, oh boy do I have to say stuff about this one. It is very annoying when you get in it’s containment unit, it keeps making smoke-alarm type noises when you pass by too close. You can hear it beeping whenever you like having your lunch-break right outside of it’s cell, I mean why would you ever want to do that? I don’t know, but 95Am-XI is kinda just farmed to be used in smoke alarms."
+    },
+    {
+      "name": "Stalwart Slabhraidh",
+      "active": true,
+      "status": "ACTIVE",
+      "teaser": "Cool name, the ‘slabhraid’ part is actually like Scottish for chain or something. Because this MAVEN is like living manganese, used in chainsaws, it’s I forgot what I was gonna say. Very cool though, 25Mn-XII is like a less annoying bigger brother of 95Am-XI."
+    },
+    {
+      "name": "Radiator the Ultimate Decayer",
+      "active": true,
+      "status": "ACTIVE",
+      "teaser": "Another cool name in my opinion. 92U-XIII has a cool name but in turn it does not look good, but how is CDI supposed to control the looks of MAVENs? I mean they didn’t mean for them to look like this."
+    },
+    {
+      "name": "The Guardian of Eden",
+      "active": true,
+      "status": "ACTIVE",
+      "teaser": "The final containment failure. A colossal despair-drenched core wrapped in glitching white filaments, orange geometry, and a smaller Ytterbium-born predator waiting inside it."
+    }
+  ],
+  "saveSlots": [
+    {
+      "id": "main",
+      "defaultName": "Main Save"
+    },
+    {
+      "id": "slot_a",
+      "defaultName": "Challenge Slot A"
+    },
+    {
+      "id": "slot_b",
+      "defaultName": "Challenge Slot B"
+    },
+    {
+      "id": "slot_c",
+      "defaultName": "Challenge Slot C"
+    }
+  ],
+  "ultimates": {
+    "graphic_reset": {
+      "name": "Graphic Reset",
+      "flavor": "“The first fallback and best one, according to O’Lennon of course, I can’t really say for myself.”",
+      "desc": "Clears all current projectiles on the screen, decreases a boss's health by 20%.",
+      "priceCents": 0
+    },
+    "bruteforce": {
+      "name": "Bruteforce",
+      "flavor": "“Second free fallback, this one is really good if you’re an aggressive fighter.”",
+      "desc": "Overload your weapon systems for 6.5 seconds with harder shots and bullet-immunity against environmental hazards that may block them. Does 0% of bosses health on usage.",
+      "priceCents": 0
+    },
+    "fps_unlock": {
+      "name": "FPS Unlock",
+      "flavor": "“FPS Unlock? No no, this is not some video game. You’re not spending five nights in Sector V don’t get me wrong but..”",
+      "desc": "Boss and its projectiles lag for 5 seconds, but does 20% of the boss's health on usage. Every projectile has a 60% chance of getting removed every second.",
+      "priceCents": 6099
+    }
+  },
+  "xlBullets": {
+    "twin_hunter": {
+      "name": "Twin Hunter",
+      "desc": "Launch two tracking missiles. Each one deals 2.0% of boss max health on impact and self-detonates after 4 seconds.",
+      "priceCents": 0,
+      "missileCount": 2,
+      "damagePercent": 0.02,
+      "speed": 430,
+      "turnRate": 5.8,
+      "life": 4,
+      "spread": 20,
+      "color": "rgba(255, 220, 138, 0.95)",
+      "accent": "rgba(255, 245, 215, 0.98)"
+    },
+    "split_comet": {
+      "name": "Split Comet",
+      "desc": "Fire three quick interceptor darts with lighter payloads for a wider catch radius around mobile bosses.",
+      "priceCents": 0,
+      "missileCount": 3,
+      "damagePercent": 0.011,
+      "speed": 470,
+      "turnRate": 6.4,
+      "life": 4.1,
+      "spread": 28,
+      "color": "rgba(126, 255, 198, 0.94)",
+      "accent": "rgba(226, 255, 240, 0.98)"
+    },
+    "vault_lance": {
+      "name": "Vault Lance",
+      "desc": "Two reinforced seeker lances with stronger warheads and tighter pursuit curves.",
+      "priceCents": 2499,
+      "missileCount": 2,
+      "damagePercent": 0.018,
+      "speed": 450,
+      "turnRate": 6.2,
+      "life": 4.2,
+      "spread": 18,
+      "color": "rgba(110, 243, 255, 0.95)",
+      "accent": "rgba(223, 251, 255, 0.98)"
+    },
+    "ember_swarm": {
+      "name": "Ember Swarm",
+      "desc": "Release four compact pursuit rockets. Each hit is lighter, but the pattern is good for catching erratic bosses.",
+      "priceCents": 3899,
+      "missileCount": 4,
+      "damagePercent": 0.0095,
+      "speed": 440,
+      "turnRate": 6.8,
+      "life": 4.15,
+      "spread": 34,
+      "color": "rgba(255, 155, 94, 0.95)",
+      "accent": "rgba(255, 230, 204, 0.98)"
+    },
+    "h_bomb": {
+      "name": "H-Bomb",
+      "desc": "A literal hydrogen bomb in your arsenal. I mean you can kill one of those things with this but you really don't want to :/",
+      "priceCents": 0,
+      "shopFooter": "Secret XL move. Homes in, drops the boss to 2% health, and almost flips a coin on whether you survive the blast.",
+      "missileCount": 1,
+      "damagePercent": 0,
+      "speed": 300,
+      "turnRate": 3.1,
+      "life": 5.2,
+      "spread": 0,
+      "sizeMultiplier": 2.1,
+      "color": "rgba(102, 102, 102, 0.96)",
+      "accent": "rgba(205, 205, 205, 0.98)"
+    },
+    "superspear": {
+      "name": "Superspear",
+      "desc": "Launch one enormous guided-by-aim spear missile. It does not home onto the boss, but it subtly curves based on the angle you fire it at.",
+      "priceCents": 6999,
+      "missileCount": 1,
+      "damagePercent": 0.065,
+      "speed": 540,
+      "turnRate": 0,
+      "curveStrength": 118,
+      "life": 4.8,
+      "spread": 0,
+      "sizeMultiplier": 1.65,
+      "color": "rgba(255, 186, 102, 0.96)",
+      "accent": "rgba(255, 241, 212, 0.99)"
+    }
+  },
+  "primaryBullets": {
+    "signal_standard": {
+      "name": "Signal Standard",
+      "desc": "Your baseline bullet stream. Reliable direct-fire rounds with no special gimmicks.",
+      "priceCents": 0,
+      "type": "signal_standard"
+    },
+    "spark_targets": {
+      "name": "Spark-Targets",
+      "desc": "Tiny rotating stars that home onto the boss, but each hit only deals 10% of normal bullet damage.",
+      "priceCents": 5499,
+      "type": "spark_targets"
+    },
+    "orbital_strike": {
+      "name": "Orbital Strike",
+      "desc": "Your plane charges for 1.7 seconds, then launches heavy missile rounds that hit for 8x normal bullet damage.",
+      "priceCents": 8299,
+      "type": "orbital_strike"
+    },
+    "focus_beam": {
+      "name": "Focus-Beam",
+      "desc": "A sustained forward laser with real range. It hits hard in a tight lane, but it cannot reach across the entire arena.",
+      "priceCents": 7499,
+      "type": "focus_beam"
+    },
+    "traveler": {
+      "name": "Traveler",
+      "desc": "Longer standard rounds that fly a little slower, hit for 5% less damage, and can travel across the whole arena before fading.",
+      "priceCents": 4499,
+      "type": "traveler"
+    },
+    "magma_plasma": {
+      "name": "Magma-plasma",
+      "desc": "Randomized molten circles that drift outward in gliding arcs. They hit for 0.75x upfront, then stick briefly and tick extra damage into the boss.",
+      "priceCents": 9699,
+      "type": "magma_plasma"
+    },
+    "sniper": {
+      "name": "Sniper",
+      "desc": "One ultra-fast long-range spike every 0.6 seconds. It hits for 3.6x normal bullet damage and crosses the full arena.",
+      "priceCents": 13999,
+      "type": "sniper"
+    }
+  },
+  "supportUpgrades": {
+    "core_pin_stabilizer": {
+      "name": "Core-Pin Stabilizer",
+      "effect": "Shrinks player hitbox by 15% and turns the hitbox marker red.",
+      "desc": "A specialized O'Lennon-era component. It makes the ship harder to get damaged, but also makes the pilot's chair.. let's say 40% less comfortable.",
+      "priceCents": 9899
+    },
+    "score_jackpot": {
+      "name": "Score Jackpot",
+      "effect": "All score gains are multiplied by 1.5x.",
+      "desc": "You think this is some sort of game?",
+      "priceCents": 7999
+    },
+    "sluggers_a_slugger": {
+      "name": "Sluggers-a-Slugger",
+      "effect": "Every 14th bullet hit spawns a 2-second lingering blast that damages the boss every 0.3 seconds for at least 1.2x a normal bullet hit.",
+      "desc": "Repurposed debris from unit 25Mn-XII, reusing the MAVENs parts to throw back at their own kind.",
+      "priceCents": 8299
+    },
+    "sanitizationer": {
+      "name": "Sanitizationer",
+      "effect": "Recover 0.5 health every 35 seconds during battle, even above your normal max health.",
+      "desc": "\"The quote-on-quote 'outrageous' price is just because of inflation, please calm down.\" - Jeremiah Strubhar",
+      "priceCents": 20000
+    }
+  },
+  "achievements": {
+    "architect_down": {
+      "title": "Harmony Broken",
+      "desc": "Defeat Hertz's Harmony."
+    },
+    "sovereign_down": {
+      "title": "Sovereign Split",
+      "desc": "Defeat the Protium Sovereign."
+    },
+    "monarch_down": {
+      "title": "Null Shattered",
+      "desc": "Defeat Monarch Null."
+    },
+    "cesium_down": {
+      "title": "Cesium Cracked",
+      "desc": "Defeat Cesium Jim-Dandy Superficial."
+    },
+    "tantalum_down": {
+      "title": "Capacitor Collapsed",
+      "desc": "Defeat Tantalum the Capacitor Sovereign."
+    },
+    "luminosity_down": {
+      "title": "Neon Extinguished",
+      "desc": "Defeat Lord Luminosity the Noble Neon."
+    },
+    "sili_down": {
+      "title": "Overclock Crashed",
+      "desc": "Defeat The Sili Overclock."
+    },
+    "caesar_down": {
+      "title": "Polarity Broken",
+      "desc": "Defeat Caesar Dy."
+    },
+    "beauty_down": {
+      "title": "Iridescence Lost",
+      "desc": "Defeat Beauty Bismuth."
+    },
+    "bleach_down": {
+      "title": "Baron Neutralized",
+      "desc": "Defeat The Bleach Baron."
+    },
+    "alarmist_down": {
+      "title": "Alarm Silenced",
+      "desc": "Defeat Ambitious Alarmist-Am."
+    },
+    "slabhraidh_down": {
+      "title": "Bars Broken",
+      "desc": "Defeat Stalwart Slabhraidh."
+    },
+    "decayer_down": {
+      "title": "Dance Ended",
+      "desc": "Defeat The Guardian of Eden."
+    },
+    "arsenal_tuned": {
+      "title": "Arsenal Tuned",
+      "desc": "Purchase your first shop upgrade."
+    },
+    "score_2500": {
+      "title": "Signal Ascendant",
+      "desc": "Reach a score of 2500."
+    },
+    "score_5000": {
+      "title": "Signal Unbroken",
+      "desc": "Reach a score of 5000."
+    },
+    "ultimate_ready": {
+      "title": "Well Primed",
+      "desc": "Fill the kinetic well to 100%."
+    },
+    "fully_buffered": {
+      "title": "Layered Hull",
+      "desc": "Purchase every Hull Buffer upgrade in one run."
+    },
+    "max_matrix": {
+      "title": "Sharpest Edge",
+      "desc": "Purchase every Damage Matrix upgrade in one run."
+    },
+    "no_damage_win": {
+      "title": "Pristine Thread",
+      "desc": "Defeat a boss without taking damage."
+    },
+    "resurrected": {
+      "title": "From The Grave",
+      "desc": "Challenge a boss again after it has been marked deceased."
+    },
+    "survivor": {
+      "title": "Thread the Needle",
+      "desc": "Win with at least 1 health remaining."
+    }
+  },
+  "secretAchievements": {
+    "secret_i": {
+      "title": "I - H-Bomb",
+      "desc": "Defeat the Protium Sovereign using only XL moves and no bullets.",
+      "hiddenTitle": "I-???",
+      "hiddenDesc": "????"
+    }
+  },
+  "challenges": {
+    "realistic": {
+      "name": "Realistic",
+      "desc": "Beat every active boss without dying once.",
+      "noDeath": true
+    },
+    "xl_griefing": {
+      "name": "XL Griefing",
+      "desc": "Beat every active boss using only XL moves. Normal bullets never deal damage."
+    },
+    "do_you_hate_yourself": {
+      "name": "Do you hate yourself?",
+      "desc": "No XL, no ultimates, no other bullet types, 50% less bullet damage, no in-fight purchases, and no deaths.",
+      "noDeath": true
+    },
+    "please_do_not_attempt": {
+      "name": "Please do NOT attempt this",
+      "desc": "No XL, no ultimates, no other bullet types, 70% less bullet damage, no purchases, 1 health, no evolutions, and no deaths.",
+      "noDeath": true
+    },
+    "hunting_season": {
+      "name": "Hunting Season",
+      "desc": "Bullets are locked into shotgun mode for every boss."
+    },
+    "stop_with_the_fallbacks": {
+      "name": "Stop with the fallbacks! They're expensive.",
+      "desc": "Only ultimates can damage bosses. Bullets can still score hits for points, but never deal boss damage."
+    },
+    "where_the_heck_is_the_boss": {
+      "name": "Where the heck is the boss?!",
+      "desc": "Earn $1000.00 purely from Operations work."
+    },
+    "hello_multiplier": {
+      "name": "Hello everybody my name is multiplier",
+      "desc": "Every boss enters with 3.5x its usual health. Beat every active boss under that pressure."
+    }
+  }
+}

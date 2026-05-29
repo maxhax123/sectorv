@@ -1,0 +1,4467 @@
+{
+  "targets": [
+    {
+      "isStage": true,
+      "name": "Stage",
+      "variables": {
+        "var_game_state": [
+          "Game State",
+          "menu"
+        ],
+        "var_current_boss_index": [
+          "Boss Index",
+          1
+        ],
+        "var_current_boss_name": [
+          "Current Boss",
+          "Hertz's Harmony"
+        ],
+        "var_current_boss_teaser": [
+          "Boss Teaser",
+          "The first successful MAVEN, if you don’t know what a ‘MAVEN’ is, it is an abbreviation for Macroscopic Atomic Valence Experimental Nuclei, didn't you do your research I see? Old Hertz over here or Unit 00Hz-I is a living frequency, specifically 440Hz."
+        ],
+        "var_boss_hp": [
+          "Boss HP",
+          180
+        ],
+        "var_boss_max_hp": [
+          "Boss Max HP",
+          180
+        ],
+        "var_boss_vx": [
+          "Boss VX",
+          3
+        ],
+        "var_boss_fire_mode": [
+          "Boss Fire Mode",
+          1
+        ],
+        "var_boss_fire_delay": [
+          "Boss Fire Delay",
+          0.65
+        ],
+        "var_boss_projectile_speed": [
+          "Boss Projectile Speed",
+          7
+        ],
+        "var_score": [
+          "Score",
+          0
+        ],
+        "var_player_hp": [
+          "Player HP",
+          5
+        ],
+        "var_challenge_index": [
+          "Challenge Index",
+          1
+        ],
+        "var_challenge_name": [
+          "Challenge",
+          "Realistic"
+        ],
+        "var_operations_funds": [
+          "Operations Funds",
+          0
+        ],
+        "var_selected_ultimate": [
+          "Ultimate",
+          "Graphic Reset"
+        ],
+        "var_selected_xl": [
+          "XL Loadout",
+          "Twin Hunter"
+        ],
+        "var_selected_primary": [
+          "Primary",
+          "Signal Standard"
+        ],
+        "var_selected_support": [
+          "Support",
+          "Core-Pin Stabilizer"
+        ]
+      },
+      "lists": {
+        "list_boss_names": [
+          "Boss Names",
+          [
+            "Hertz's Harmony",
+            "The Protium Sovereign",
+            "Monarch Null",
+            "Cesium Jim-Dandy Superficial",
+            "Tantalum the Capacitor Sovereign",
+            "Lord Luminosity the Noble Neon",
+            "The Sili Overclock",
+            "Caesar Dy",
+            "Beauty Bismuth",
+            "The Bleach Baron",
+            "Ambitious Alarmist-Am",
+            "Stalwart Slabhraidh",
+            "Radiator the Ultimate Decayer",
+            "The Guardian of Eden"
+          ]
+        ],
+        "list_boss_teasers": [
+          "Boss Teasers",
+          [
+            "The first successful MAVEN, if you don’t know what a ‘MAVEN’ is, it is an abbreviation for Macroscopic Atomic Valence Experimental Nuclei, didn't you do your research I see? Old Hertz over here or Unit 00Hz-I is a living frequency, specifically 440Hz.",
+            "Second MAVEN, based on the element of hydrogen this MAVEN really ticks people off.. Like when Proton-Farmers come in and y’know try to collect hydrogen from the thing it just kinda likes to mess around with them. Using the official name now uh.. 1H-II is a hard one to deal with.",
+            "An easy job for Proton-Farmers, hard job for someone like you. Why? 6C-III has a whole bunch of weird little debris that likes to ricochet your bullets off. Proton-Farmers just come in and get elements, no weapons by the way.",
+            "Did you know the name was a play on the open-source javascript, CesiumJS, neat huh? Anyway this one, *really* territorial, hates anyone who comes in and loves eating everything. 55Cs-IV does only ‘like’ one person though.",
+            "Sovereign, used in two names already, it’s disappointing. 73Ta-V is a smart MAVEN though, they take it slow and actually has hard attacks. Don’t worry you’ll beat it.",
+            "10Ne-VI is the main mascot of the project, TRNP. Do you know what TRNP means? No? Someone didn’t do their research, it means The Resourceful Nuclei Project. Also Lord Luminosity is very stubborn. Be careful, don’t look at it straight ahead, it'll hurt your eyes.",
+            "So umm, this one is complicated. 14Si-VII is a binary system between two entities, imagine it like a left brain and a right brain. Also you may feel like little zaps in your ADS flight-deck, do you even know what ADS means? Adaptive Discarding Ship. Anyway yeah if you feel little zaps don’t worry.",
+            "66Dy-VIII is very big. Caesar Dy is a good name, no? It is living dysprosium, we thought it sounded like dystopium and we thought of the Roman Empire, Caesar, see where we’re getting at here? Also be careful, this one is also very stubborn.",
+            "83Bi-IX is one of the most smart MAVENs recorded, but don’t get it wrong, it's like as smart as a pigeon. Also we think it may want to let you kill it? I mean wouldn’t you be in constant pain if you were living bismuth? If you don’t know what bismuth is, google it.",
+            "17Cl-X is pretty big and pretty bland. I don’t have much to say about it, personally I don’t like it, it’s kinda scary.",
+            "Alarmist-Am, oh boy do I have to say stuff about this one. It is very annoying when you get in it’s containment unit, it keeps making smoke-alarm type noises when you pass by too close. You can hear it beeping whenever you like having your lunch-break right outside of it’s cell, I mean why would you ever want to do that? I don’t know, but 95Am-XI is kinda just farmed to be used in smoke alarms.",
+            "Cool name, the ‘slabhraid’ part is actually like Scottish for chain or something. Because this MAVEN is like living manganese, used in chainsaws, it’s I forgot what I was gonna say. Very cool though, 25Mn-XII is like a less annoying bigger brother of 95Am-XI.",
+            "Another cool name in my opinion. 92U-XIII has a cool name but in turn it does not look good, but how is CDI supposed to control the looks of MAVENs? I mean they didn’t mean for them to look like this.",
+            "The final containment failure. A colossal despair-drenched core wrapped in glitching white filaments, orange geometry, and a smaller Ytterbium-born predator waiting inside it."
+          ]
+        ],
+        "list_boss_hp_values": [
+          "Boss HP Values",
+          [
+            180,
+            215,
+            250,
+            285,
+            320,
+            355,
+            390,
+            425,
+            460,
+            495,
+            530,
+            565,
+            600,
+            635
+          ]
+        ],
+        "list_boss_speed_values": [
+          "Boss Speed Values",
+          [
+            3,
+            4,
+            5,
+            6,
+            3,
+            4,
+            5,
+            6,
+            3,
+            4,
+            5,
+            6,
+            3,
+            4
+          ]
+        ],
+        "list_boss_fire_modes": [
+          "Boss Fire Modes",
+          [
+            1,
+            2,
+            3,
+            4,
+            5,
+            1,
+            2,
+            3,
+            4,
+            5,
+            1,
+            2,
+            3,
+            4
+          ]
+        ],
+        "list_boss_fire_delays": [
+          "Boss Fire Delays",
+          [
+            0.65,
+            0.63,
+            0.61,
+            0.59,
+            0.57,
+            0.55,
+            0.53,
+            0.51,
+            0.49,
+            0.47,
+            0.45,
+            0.45,
+            0.45,
+            0.45
+          ]
+        ],
+        "list_boss_projectile_speeds": [
+          "Boss Projectile Speeds",
+          [
+            7,
+            8,
+            9,
+            10,
+            11,
+            12,
+            7,
+            8,
+            9,
+            10,
+            11,
+            12,
+            7,
+            8
+          ]
+        ],
+        "list_challenge_names": [
+          "Challenge Names",
+          [
+            "Realistic",
+            "XL Griefing",
+            "Do you hate yourself?",
+            "Please do NOT attempt this",
+            "Hunting Season",
+            "Stop with the fallbacks! They're expensive.",
+            "Where the heck is the boss?!",
+            "Hello everybody my name is multiplier"
+          ]
+        ],
+        "list_challenge_descriptions": [
+          "Challenge Descriptions",
+          [
+            "Beat every active boss without dying once.",
+            "Beat every active boss using only XL moves. Normal bullets never deal damage.",
+            "No XL, no ultimates, no other bullet types, 50% less bullet damage, no in-fight purchases, and no deaths.",
+            "No XL, no ultimates, no other bullet types, 70% less bullet damage, no purchases, 1 health, no evolutions, and no deaths.",
+            "Bullets are locked into shotgun mode for every boss.",
+            "Only ultimates can damage bosses. Bullets can still score hits for points, but never deal boss damage.",
+            "Earn $1000.00 purely from Operations work.",
+            "Every boss enters with 3.5x its usual health. Beat every active boss under that pressure."
+          ]
+        ],
+        "list_ultimate_names": [
+          "Ultimate Names",
+          [
+            "Graphic Reset",
+            "Bruteforce",
+            "FPS Unlock"
+          ]
+        ],
+        "list_xl_names": [
+          "XL Names",
+          [
+            "Twin Hunter",
+            "Split Comet",
+            "Vault Lance",
+            "Ember Swarm",
+            "H-Bomb",
+            "Superspear"
+          ]
+        ],
+        "list_primary_names": [
+          "Primary Names",
+          [
+            "Signal Standard",
+            "Spark-Targets",
+            "Orbital Strike",
+            "Focus-Beam",
+            "Traveler",
+            "Magma-plasma",
+            "Sniper"
+          ]
+        ],
+        "list_support_names": [
+          "Support Names",
+          [
+            "Core-Pin Stabilizer",
+            "Score Jackpot",
+            "Sluggers-a-Slugger",
+            "Sanitizationer"
+          ]
+        ],
+        "list_achievement_titles": [
+          "Achievement Titles",
+          [
+            "Harmony Broken",
+            "Sovereign Split",
+            "Null Shattered",
+            "Cesium Cracked",
+            "Capacitor Collapsed",
+            "Neon Extinguished",
+            "Overclock Crashed",
+            "Polarity Broken",
+            "Iridescence Lost",
+            "Baron Neutralized",
+            "Alarm Silenced",
+            "Bars Broken",
+            "Dance Ended",
+            "Arsenal Tuned",
+            "Signal Ascendant",
+            "Signal Unbroken",
+            "Well Primed",
+            "Layered Hull",
+            "Sharpest Edge",
+            "Pristine Thread",
+            "From The Grave",
+            "Thread the Needle"
+          ]
+        ],
+        "list_secret_achievement_titles": [
+          "Secret Achievement Titles",
+          [
+            "I - H-Bomb"
+          ]
+        ],
+        "list_save_slot_names": [
+          "Save Slot Names",
+          [
+            "Main Save",
+            "Challenge Slot A",
+            "Challenge Slot B",
+            "Challenge Slot C"
+          ]
+        ]
+      },
+      "broadcasts": {
+        "broadcast_refresh_selection": "Refresh Selection",
+        "broadcast_start_battle": "Start Battle",
+        "broadcast_player_hit": "Player Hit",
+        "broadcast_return_menu": "Return Menu"
+      },
+      "blocks": {
+        "stageblock_1": {
+          "opcode": "event_whenflagclicked",
+          "next": "stageblock_2",
+          "parent": null,
+          "inputs": {},
+          "fields": {},
+          "shadow": false,
+          "topLevel": true,
+          "x": 48,
+          "y": 56
+        },
+        "stageblock_2": {
+          "opcode": "data_setvariableto",
+          "next": "stageblock_3",
+          "parent": "stageblock_1",
+          "inputs": {
+            "VALUE": [
+              1,
+              [
+                10,
+                "menu"
+              ]
+            ]
+          },
+          "fields": {
+            "VARIABLE": [
+              "Game State",
+              "var_game_state"
+            ]
+          },
+          "shadow": false,
+          "topLevel": false
+        },
+        "stageblock_3": {
+          "opcode": "data_setvariableto",
+          "next": "stageblock_4",
+          "parent": "stageblock_2",
+          "inputs": {
+            "VALUE": [
+              1,
+              [
+                4,
+                "1"
+              ]
+            ]
+          },
+          "fields": {
+            "VARIABLE": [
+              "Boss Index",
+              "var_current_boss_index"
+            ]
+          },
+          "shadow": false,
+          "topLevel": false
+        },
+        "stageblock_4": {
+          "opcode": "data_setvariableto",
+          "next": "stageblock_5",
+          "parent": "stageblock_3",
+          "inputs": {
+            "VALUE": [
+              1,
+              [
+                4,
+                "1"
+              ]
+            ]
+          },
+          "fields": {
+            "VARIABLE": [
+              "Challenge Index",
+              "var_challenge_index"
+            ]
+          },
+          "shadow": false,
+          "topLevel": false
+        },
+        "stageblock_5": {
+          "opcode": "data_setvariableto",
+          "next": "stageblock_6",
+          "parent": "stageblock_4",
+          "inputs": {
+            "VALUE": [
+              1,
+              [
+                4,
+                "0"
+              ]
+            ]
+          },
+          "fields": {
+            "VARIABLE": [
+              "Score",
+              "var_score"
+            ]
+          },
+          "shadow": false,
+          "topLevel": false
+        },
+        "stageblock_6": {
+          "opcode": "data_setvariableto",
+          "next": "stageblock_7",
+          "parent": "stageblock_5",
+          "inputs": {
+            "VALUE": [
+              1,
+              [
+                4,
+                "5"
+              ]
+            ]
+          },
+          "fields": {
+            "VARIABLE": [
+              "Player HP",
+              "var_player_hp"
+            ]
+          },
+          "shadow": false,
+          "topLevel": false
+        },
+        "stageblock_7": {
+          "opcode": "event_broadcast",
+          "next": null,
+          "parent": "stageblock_6",
+          "inputs": {
+            "BROADCAST_INPUT": [
+              1,
+              "stageblock_8"
+            ]
+          },
+          "fields": {},
+          "shadow": false,
+          "topLevel": false
+        },
+        "stageblock_8": {
+          "opcode": "event_broadcast_menu",
+          "next": null,
+          "parent": "stageblock_7",
+          "inputs": {},
+          "fields": {
+            "BROADCAST_OPTION": [
+              "Refresh Selection",
+              "broadcast_refresh_selection"
+            ]
+          },
+          "shadow": true,
+          "topLevel": false
+        },
+        "stageblock_9": {
+          "opcode": "event_whenbroadcastreceived",
+          "next": "stageblock_12",
+          "parent": null,
+          "inputs": {},
+          "fields": {
+            "BROADCAST_OPTION": [
+              "Refresh Selection",
+              "broadcast_refresh_selection"
+            ]
+          },
+          "shadow": false,
+          "topLevel": true,
+          "x": 48,
+          "y": 236
+        },
+        "stageblock_10": {
+          "opcode": "data_variable",
+          "next": null,
+          "parent": "stageblock_9",
+          "inputs": {},
+          "fields": {
+            "VARIABLE": [
+              "Boss Index",
+              "var_current_boss_index"
+            ]
+          },
+          "shadow": false,
+          "topLevel": false
+        },
+        "stageblock_11": {
+          "opcode": "data_itemoflist",
+          "next": null,
+          "parent": "stageblock_9",
+          "inputs": {
+            "INDEX": [
+              2,
+              "stageblock_10"
+            ]
+          },
+          "fields": {
+            "LIST": [
+              "Boss Names",
+              "list_boss_names"
+            ]
+          },
+          "shadow": false,
+          "topLevel": false
+        },
+        "stageblock_12": {
+          "opcode": "data_setvariableto",
+          "next": "stageblock_15",
+          "parent": "stageblock_9",
+          "inputs": {
+            "VALUE": [
+              2,
+              "stageblock_11"
+            ]
+          },
+          "fields": {
+            "VARIABLE": [
+              "Current Boss",
+              "var_current_boss_name"
+            ]
+          },
+          "shadow": false,
+          "topLevel": false
+        },
+        "stageblock_13": {
+          "opcode": "data_variable",
+          "next": null,
+          "parent": "stageblock_12",
+          "inputs": {},
+          "fields": {
+            "VARIABLE": [
+              "Boss Index",
+              "var_current_boss_index"
+            ]
+          },
+          "shadow": false,
+          "topLevel": false
+        },
+        "stageblock_14": {
+          "opcode": "data_itemoflist",
+          "next": null,
+          "parent": "stageblock_12",
+          "inputs": {
+            "INDEX": [
+              2,
+              "stageblock_13"
+            ]
+          },
+          "fields": {
+            "LIST": [
+              "Boss Teasers",
+              "list_boss_teasers"
+            ]
+          },
+          "shadow": false,
+          "topLevel": false
+        },
+        "stageblock_15": {
+          "opcode": "data_setvariableto",
+          "next": "stageblock_18",
+          "parent": "stageblock_12",
+          "inputs": {
+            "VALUE": [
+              2,
+              "stageblock_14"
+            ]
+          },
+          "fields": {
+            "VARIABLE": [
+              "Boss Teaser",
+              "var_current_boss_teaser"
+            ]
+          },
+          "shadow": false,
+          "topLevel": false
+        },
+        "stageblock_16": {
+          "opcode": "data_variable",
+          "next": null,
+          "parent": "stageblock_15",
+          "inputs": {},
+          "fields": {
+            "VARIABLE": [
+              "Boss Index",
+              "var_current_boss_index"
+            ]
+          },
+          "shadow": false,
+          "topLevel": false
+        },
+        "stageblock_17": {
+          "opcode": "data_itemoflist",
+          "next": null,
+          "parent": "stageblock_15",
+          "inputs": {
+            "INDEX": [
+              2,
+              "stageblock_16"
+            ]
+          },
+          "fields": {
+            "LIST": [
+              "Boss HP Values",
+              "list_boss_hp_values"
+            ]
+          },
+          "shadow": false,
+          "topLevel": false
+        },
+        "stageblock_18": {
+          "opcode": "data_setvariableto",
+          "next": "stageblock_20",
+          "parent": "stageblock_15",
+          "inputs": {
+            "VALUE": [
+              2,
+              "stageblock_17"
+            ]
+          },
+          "fields": {
+            "VARIABLE": [
+              "Boss Max HP",
+              "var_boss_max_hp"
+            ]
+          },
+          "shadow": false,
+          "topLevel": false
+        },
+        "stageblock_19": {
+          "opcode": "data_variable",
+          "next": null,
+          "parent": "stageblock_18",
+          "inputs": {},
+          "fields": {
+            "VARIABLE": [
+              "Boss Max HP",
+              "var_boss_max_hp"
+            ]
+          },
+          "shadow": false,
+          "topLevel": false
+        },
+        "stageblock_20": {
+          "opcode": "data_setvariableto",
+          "next": "stageblock_23",
+          "parent": "stageblock_18",
+          "inputs": {
+            "VALUE": [
+              2,
+              "stageblock_19"
+            ]
+          },
+          "fields": {
+            "VARIABLE": [
+              "Boss HP",
+              "var_boss_hp"
+            ]
+          },
+          "shadow": false,
+          "topLevel": false
+        },
+        "stageblock_21": {
+          "opcode": "data_variable",
+          "next": null,
+          "parent": "stageblock_20",
+          "inputs": {},
+          "fields": {
+            "VARIABLE": [
+              "Boss Index",
+              "var_current_boss_index"
+            ]
+          },
+          "shadow": false,
+          "topLevel": false
+        },
+        "stageblock_22": {
+          "opcode": "data_itemoflist",
+          "next": null,
+          "parent": "stageblock_20",
+          "inputs": {
+            "INDEX": [
+              2,
+              "stageblock_21"
+            ]
+          },
+          "fields": {
+            "LIST": [
+              "Boss Speed Values",
+              "list_boss_speed_values"
+            ]
+          },
+          "shadow": false,
+          "topLevel": false
+        },
+        "stageblock_23": {
+          "opcode": "data_setvariableto",
+          "next": "stageblock_26",
+          "parent": "stageblock_20",
+          "inputs": {
+            "VALUE": [
+              2,
+              "stageblock_22"
+            ]
+          },
+          "fields": {
+            "VARIABLE": [
+              "Boss VX",
+              "var_boss_vx"
+            ]
+          },
+          "shadow": false,
+          "topLevel": false
+        },
+        "stageblock_24": {
+          "opcode": "data_variable",
+          "next": null,
+          "parent": "stageblock_23",
+          "inputs": {},
+          "fields": {
+            "VARIABLE": [
+              "Boss Index",
+              "var_current_boss_index"
+            ]
+          },
+          "shadow": false,
+          "topLevel": false
+        },
+        "stageblock_25": {
+          "opcode": "data_itemoflist",
+          "next": null,
+          "parent": "stageblock_23",
+          "inputs": {
+            "INDEX": [
+              2,
+              "stageblock_24"
+            ]
+          },
+          "fields": {
+            "LIST": [
+              "Boss Fire Modes",
+              "list_boss_fire_modes"
+            ]
+          },
+          "shadow": false,
+          "topLevel": false
+        },
+        "stageblock_26": {
+          "opcode": "data_setvariableto",
+          "next": "stageblock_29",
+          "parent": "stageblock_23",
+          "inputs": {
+            "VALUE": [
+              2,
+              "stageblock_25"
+            ]
+          },
+          "fields": {
+            "VARIABLE": [
+              "Boss Fire Mode",
+              "var_boss_fire_mode"
+            ]
+          },
+          "shadow": false,
+          "topLevel": false
+        },
+        "stageblock_27": {
+          "opcode": "data_variable",
+          "next": null,
+          "parent": "stageblock_26",
+          "inputs": {},
+          "fields": {
+            "VARIABLE": [
+              "Boss Index",
+              "var_current_boss_index"
+            ]
+          },
+          "shadow": false,
+          "topLevel": false
+        },
+        "stageblock_28": {
+          "opcode": "data_itemoflist",
+          "next": null,
+          "parent": "stageblock_26",
+          "inputs": {
+            "INDEX": [
+              2,
+              "stageblock_27"
+            ]
+          },
+          "fields": {
+            "LIST": [
+              "Boss Fire Delays",
+              "list_boss_fire_delays"
+            ]
+          },
+          "shadow": false,
+          "topLevel": false
+        },
+        "stageblock_29": {
+          "opcode": "data_setvariableto",
+          "next": "stageblock_32",
+          "parent": "stageblock_26",
+          "inputs": {
+            "VALUE": [
+              2,
+              "stageblock_28"
+            ]
+          },
+          "fields": {
+            "VARIABLE": [
+              "Boss Fire Delay",
+              "var_boss_fire_delay"
+            ]
+          },
+          "shadow": false,
+          "topLevel": false
+        },
+        "stageblock_30": {
+          "opcode": "data_variable",
+          "next": null,
+          "parent": "stageblock_29",
+          "inputs": {},
+          "fields": {
+            "VARIABLE": [
+              "Boss Index",
+              "var_current_boss_index"
+            ]
+          },
+          "shadow": false,
+          "topLevel": false
+        },
+        "stageblock_31": {
+          "opcode": "data_itemoflist",
+          "next": null,
+          "parent": "stageblock_29",
+          "inputs": {
+            "INDEX": [
+              2,
+              "stageblock_30"
+            ]
+          },
+          "fields": {
+            "LIST": [
+              "Boss Projectile Speeds",
+              "list_boss_projectile_speeds"
+            ]
+          },
+          "shadow": false,
+          "topLevel": false
+        },
+        "stageblock_32": {
+          "opcode": "data_setvariableto",
+          "next": "stageblock_35",
+          "parent": "stageblock_29",
+          "inputs": {
+            "VALUE": [
+              2,
+              "stageblock_31"
+            ]
+          },
+          "fields": {
+            "VARIABLE": [
+              "Boss Projectile Speed",
+              "var_boss_projectile_speed"
+            ]
+          },
+          "shadow": false,
+          "topLevel": false
+        },
+        "stageblock_33": {
+          "opcode": "data_variable",
+          "next": null,
+          "parent": "stageblock_32",
+          "inputs": {},
+          "fields": {
+            "VARIABLE": [
+              "Challenge Index",
+              "var_challenge_index"
+            ]
+          },
+          "shadow": false,
+          "topLevel": false
+        },
+        "stageblock_34": {
+          "opcode": "data_itemoflist",
+          "next": null,
+          "parent": "stageblock_32",
+          "inputs": {
+            "INDEX": [
+              2,
+              "stageblock_33"
+            ]
+          },
+          "fields": {
+            "LIST": [
+              "Challenge Names",
+              "list_challenge_names"
+            ]
+          },
+          "shadow": false,
+          "topLevel": false
+        },
+        "stageblock_35": {
+          "opcode": "data_setvariableto",
+          "next": null,
+          "parent": "stageblock_32",
+          "inputs": {
+            "VALUE": [
+              2,
+              "stageblock_34"
+            ]
+          },
+          "fields": {
+            "VARIABLE": [
+              "Challenge",
+              "var_challenge_name"
+            ]
+          },
+          "shadow": false,
+          "topLevel": false
+        },
+        "stageblock_36": {
+          "opcode": "event_whenbroadcastreceived",
+          "next": "stageblock_37",
+          "parent": null,
+          "inputs": {},
+          "fields": {
+            "BROADCAST_OPTION": [
+              "Player Hit",
+              "broadcast_player_hit"
+            ]
+          },
+          "shadow": false,
+          "topLevel": true,
+          "x": 432,
+          "y": 56
+        },
+        "stageblock_37": {
+          "opcode": "data_changevariableby",
+          "next": "stageblock_40",
+          "parent": "stageblock_36",
+          "inputs": {
+            "VALUE": [
+              1,
+              [
+                4,
+                "-1"
+              ]
+            ]
+          },
+          "fields": {
+            "VARIABLE": [
+              "Player HP",
+              "var_player_hp"
+            ]
+          },
+          "shadow": false,
+          "topLevel": false
+        },
+        "stageblock_38": {
+          "opcode": "data_variable",
+          "next": null,
+          "parent": "stageblock_37",
+          "inputs": {},
+          "fields": {
+            "VARIABLE": [
+              "Player HP",
+              "var_player_hp"
+            ]
+          },
+          "shadow": false,
+          "topLevel": false
+        },
+        "stageblock_39": {
+          "opcode": "operator_lt",
+          "next": null,
+          "parent": "stageblock_37",
+          "inputs": {
+            "OPERAND1": [
+              2,
+              "stageblock_38"
+            ],
+            "OPERAND2": [
+              1,
+              [
+                4,
+                "1"
+              ]
+            ]
+          },
+          "fields": {},
+          "shadow": false,
+          "topLevel": false
+        },
+        "stageblock_40": {
+          "opcode": "control_if",
+          "next": null,
+          "parent": "stageblock_37",
+          "inputs": {
+            "CONDITION": [
+              2,
+              "stageblock_39"
+            ],
+            "SUBSTACK": [
+              2,
+              "stageblock_41"
+            ]
+          },
+          "fields": {},
+          "shadow": false,
+          "topLevel": false
+        },
+        "stageblock_41": {
+          "opcode": "data_setvariableto",
+          "next": null,
+          "parent": "stageblock_40",
+          "inputs": {
+            "VALUE": [
+              1,
+              [
+                10,
+                "game_over"
+              ]
+            ]
+          },
+          "fields": {
+            "VARIABLE": [
+              "Game State",
+              "var_game_state"
+            ]
+          },
+          "shadow": false,
+          "topLevel": false
+        },
+        "stageblock_42": {
+          "opcode": "event_whenflagclicked",
+          "next": "stageblock_43",
+          "parent": null,
+          "inputs": {},
+          "fields": {},
+          "shadow": false,
+          "topLevel": true,
+          "x": 432,
+          "y": 214
+        },
+        "stageblock_43": {
+          "opcode": "control_forever",
+          "next": null,
+          "parent": "stageblock_42",
+          "inputs": {
+            "SUBSTACK": [
+              2,
+              "stageblock_49"
+            ]
+          },
+          "fields": {},
+          "shadow": false,
+          "topLevel": false
+        },
+        "stageblock_44": {
+          "opcode": "data_variable",
+          "next": null,
+          "parent": "stageblock_43",
+          "inputs": {},
+          "fields": {
+            "VARIABLE": [
+              "Boss HP",
+              "var_boss_hp"
+            ]
+          },
+          "shadow": false,
+          "topLevel": false
+        },
+        "stageblock_45": {
+          "opcode": "operator_lt",
+          "next": null,
+          "parent": "stageblock_43",
+          "inputs": {
+            "OPERAND1": [
+              2,
+              "stageblock_44"
+            ],
+            "OPERAND2": [
+              1,
+              [
+                4,
+                "1"
+              ]
+            ]
+          },
+          "fields": {},
+          "shadow": false,
+          "topLevel": false
+        },
+        "stageblock_46": {
+          "opcode": "data_variable",
+          "next": null,
+          "parent": "stageblock_43",
+          "inputs": {},
+          "fields": {
+            "VARIABLE": [
+              "Game State",
+              "var_game_state"
+            ]
+          },
+          "shadow": false,
+          "topLevel": false
+        },
+        "stageblock_47": {
+          "opcode": "operator_equals",
+          "next": null,
+          "parent": "stageblock_43",
+          "inputs": {
+            "OPERAND1": [
+              2,
+              "stageblock_46"
+            ],
+            "OPERAND2": [
+              1,
+              [
+                10,
+                "running"
+              ]
+            ]
+          },
+          "fields": {},
+          "shadow": false,
+          "topLevel": false
+        },
+        "stageblock_48": {
+          "opcode": "operator_and",
+          "next": null,
+          "parent": "stageblock_43",
+          "inputs": {
+            "OPERAND1": [
+              2,
+              "stageblock_47"
+            ],
+            "OPERAND2": [
+              2,
+              "stageblock_45"
+            ]
+          },
+          "fields": {},
+          "shadow": false,
+          "topLevel": false
+        },
+        "stageblock_49": {
+          "opcode": "control_if",
+          "next": null,
+          "parent": "stageblock_43",
+          "inputs": {
+            "CONDITION": [
+              2,
+              "stageblock_48"
+            ],
+            "SUBSTACK": [
+              2,
+              "stageblock_50"
+            ]
+          },
+          "fields": {},
+          "shadow": false,
+          "topLevel": false
+        },
+        "stageblock_50": {
+          "opcode": "data_setvariableto",
+          "next": "stageblock_51",
+          "parent": "stageblock_49",
+          "inputs": {
+            "VALUE": [
+              1,
+              [
+                10,
+                "victory"
+              ]
+            ]
+          },
+          "fields": {
+            "VARIABLE": [
+              "Game State",
+              "var_game_state"
+            ]
+          },
+          "shadow": false,
+          "topLevel": false
+        },
+        "stageblock_51": {
+          "opcode": "data_changevariableby",
+          "next": null,
+          "parent": "stageblock_50",
+          "inputs": {
+            "VALUE": [
+              1,
+              [
+                4,
+                "100"
+              ]
+            ]
+          },
+          "fields": {
+            "VARIABLE": [
+              "Operations Funds",
+              "var_operations_funds"
+            ]
+          },
+          "shadow": false,
+          "topLevel": false
+        }
+      },
+      "comments": {},
+      "currentCostume": 0,
+      "costumes": [
+        {
+          "assetId": "bb355ffb71fbd866937a95b095fb2f0d",
+          "md5ext": "bb355ffb71fbd866937a95b095fb2f0d.svg",
+          "dataFormat": "svg",
+          "name": "Sector V Arena",
+          "bitmapResolution": 1,
+          "rotationCenterX": 240,
+          "rotationCenterY": 180
+        }
+      ],
+      "sounds": [],
+      "volume": 100,
+      "layerOrder": 0,
+      "tempo": 60,
+      "videoTransparency": 50,
+      "videoState": "on",
+      "textToSpeechLanguage": null,
+      "id": "target_stage"
+    },
+    {
+      "isStage": false,
+      "name": "PlayerShip",
+      "variables": {},
+      "lists": {},
+      "broadcasts": {},
+      "blocks": {
+        "playerblock_1": {
+          "opcode": "event_whenflagclicked",
+          "next": "playerblock_2",
+          "parent": null,
+          "inputs": {},
+          "fields": {},
+          "shadow": false,
+          "topLevel": true,
+          "x": 42,
+          "y": 52
+        },
+        "playerblock_2": {
+          "opcode": "looks_show",
+          "next": "playerblock_3",
+          "parent": "playerblock_1",
+          "inputs": {},
+          "fields": {},
+          "shadow": false,
+          "topLevel": false
+        },
+        "playerblock_3": {
+          "opcode": "motion_gotoxy",
+          "next": "playerblock_4",
+          "parent": "playerblock_2",
+          "inputs": {
+            "X": [
+              1,
+              [
+                4,
+                "0"
+              ]
+            ],
+            "Y": [
+              1,
+              [
+                4,
+                "-128"
+              ]
+            ]
+          },
+          "fields": {},
+          "shadow": false,
+          "topLevel": false
+        },
+        "playerblock_4": {
+          "opcode": "motion_setrotationstyle",
+          "next": "playerblock_5",
+          "parent": "playerblock_3",
+          "inputs": {},
+          "fields": {
+            "STYLE": [
+              "don't rotate",
+              null
+            ]
+          },
+          "shadow": false,
+          "topLevel": false
+        },
+        "playerblock_5": {
+          "opcode": "control_forever",
+          "next": null,
+          "parent": "playerblock_4",
+          "inputs": {
+            "SUBSTACK": [
+              2,
+              "playerblock_8"
+            ]
+          },
+          "fields": {},
+          "shadow": false,
+          "topLevel": false
+        },
+        "playerblock_6": {
+          "opcode": "data_variable",
+          "next": null,
+          "parent": "playerblock_5",
+          "inputs": {},
+          "fields": {
+            "VARIABLE": [
+              "Game State",
+              "var_game_state"
+            ]
+          },
+          "shadow": false,
+          "topLevel": false
+        },
+        "playerblock_7": {
+          "opcode": "operator_equals",
+          "next": null,
+          "parent": "playerblock_5",
+          "inputs": {
+            "OPERAND1": [
+              2,
+              "playerblock_6"
+            ],
+            "OPERAND2": [
+              1,
+              [
+                10,
+                "running"
+              ]
+            ]
+          },
+          "fields": {},
+          "shadow": false,
+          "topLevel": false
+        },
+        "playerblock_8": {
+          "opcode": "control_if",
+          "next": null,
+          "parent": "playerblock_5",
+          "inputs": {
+            "CONDITION": [
+              2,
+              "playerblock_7"
+            ],
+            "SUBSTACK": [
+              2,
+              "playerblock_9"
+            ]
+          },
+          "fields": {},
+          "shadow": false,
+          "topLevel": false
+        },
+        "playerblock_9": {
+          "opcode": "control_if",
+          "next": "playerblock_12",
+          "parent": "playerblock_8",
+          "inputs": {
+            "CONDITION": [
+              2,
+              "playerblock_10"
+            ],
+            "SUBSTACK": [
+              2,
+              "playerblock_11"
+            ]
+          },
+          "fields": {},
+          "shadow": false,
+          "topLevel": false
+        },
+        "playerblock_10": {
+          "opcode": "sensing_keypressed",
+          "next": null,
+          "parent": "playerblock_9",
+          "inputs": {},
+          "fields": {
+            "KEY_OPTION": [
+              "left arrow",
+              null
+            ]
+          },
+          "shadow": false,
+          "topLevel": false
+        },
+        "playerblock_11": {
+          "opcode": "motion_changexby",
+          "next": null,
+          "parent": "playerblock_9",
+          "inputs": {
+            "DX": [
+              1,
+              [
+                4,
+                "-8"
+              ]
+            ]
+          },
+          "fields": {},
+          "shadow": false,
+          "topLevel": false
+        },
+        "playerblock_12": {
+          "opcode": "control_if",
+          "next": "playerblock_15",
+          "parent": "playerblock_8",
+          "inputs": {
+            "CONDITION": [
+              2,
+              "playerblock_13"
+            ],
+            "SUBSTACK": [
+              2,
+              "playerblock_14"
+            ]
+          },
+          "fields": {},
+          "shadow": false,
+          "topLevel": false
+        },
+        "playerblock_13": {
+          "opcode": "sensing_keypressed",
+          "next": null,
+          "parent": "playerblock_12",
+          "inputs": {},
+          "fields": {
+            "KEY_OPTION": [
+              "right arrow",
+              null
+            ]
+          },
+          "shadow": false,
+          "topLevel": false
+        },
+        "playerblock_14": {
+          "opcode": "motion_changexby",
+          "next": null,
+          "parent": "playerblock_12",
+          "inputs": {
+            "DX": [
+              1,
+              [
+                4,
+                "8"
+              ]
+            ]
+          },
+          "fields": {},
+          "shadow": false,
+          "topLevel": false
+        },
+        "playerblock_15": {
+          "opcode": "control_if",
+          "next": "playerblock_18",
+          "parent": "playerblock_8",
+          "inputs": {
+            "CONDITION": [
+              2,
+              "playerblock_16"
+            ],
+            "SUBSTACK": [
+              2,
+              "playerblock_17"
+            ]
+          },
+          "fields": {},
+          "shadow": false,
+          "topLevel": false
+        },
+        "playerblock_16": {
+          "opcode": "sensing_keypressed",
+          "next": null,
+          "parent": "playerblock_15",
+          "inputs": {},
+          "fields": {
+            "KEY_OPTION": [
+              "up arrow",
+              null
+            ]
+          },
+          "shadow": false,
+          "topLevel": false
+        },
+        "playerblock_17": {
+          "opcode": "motion_changeyby",
+          "next": null,
+          "parent": "playerblock_15",
+          "inputs": {
+            "DY": [
+              1,
+              [
+                4,
+                "7"
+              ]
+            ]
+          },
+          "fields": {},
+          "shadow": false,
+          "topLevel": false
+        },
+        "playerblock_18": {
+          "opcode": "control_if",
+          "next": "playerblock_21",
+          "parent": "playerblock_8",
+          "inputs": {
+            "CONDITION": [
+              2,
+              "playerblock_19"
+            ],
+            "SUBSTACK": [
+              2,
+              "playerblock_20"
+            ]
+          },
+          "fields": {},
+          "shadow": false,
+          "topLevel": false
+        },
+        "playerblock_19": {
+          "opcode": "sensing_keypressed",
+          "next": null,
+          "parent": "playerblock_18",
+          "inputs": {},
+          "fields": {
+            "KEY_OPTION": [
+              "down arrow",
+              null
+            ]
+          },
+          "shadow": false,
+          "topLevel": false
+        },
+        "playerblock_20": {
+          "opcode": "motion_changeyby",
+          "next": null,
+          "parent": "playerblock_18",
+          "inputs": {
+            "DY": [
+              1,
+              [
+                4,
+                "-7"
+              ]
+            ]
+          },
+          "fields": {},
+          "shadow": false,
+          "topLevel": false
+        },
+        "playerblock_21": {
+          "opcode": "control_if",
+          "next": "playerblock_25",
+          "parent": "playerblock_8",
+          "inputs": {
+            "CONDITION": [
+              2,
+              "playerblock_23"
+            ],
+            "SUBSTACK": [
+              2,
+              "playerblock_24"
+            ]
+          },
+          "fields": {},
+          "shadow": false,
+          "topLevel": false
+        },
+        "playerblock_22": {
+          "opcode": "motion_xposition",
+          "next": null,
+          "parent": "playerblock_21",
+          "inputs": {},
+          "fields": {},
+          "shadow": false,
+          "topLevel": false
+        },
+        "playerblock_23": {
+          "opcode": "operator_gt",
+          "next": null,
+          "parent": "playerblock_21",
+          "inputs": {
+            "OPERAND1": [
+              2,
+              "playerblock_22"
+            ],
+            "OPERAND2": [
+              1,
+              [
+                4,
+                "220"
+              ]
+            ]
+          },
+          "fields": {},
+          "shadow": false,
+          "topLevel": false
+        },
+        "playerblock_24": {
+          "opcode": "motion_setx",
+          "next": null,
+          "parent": "playerblock_21",
+          "inputs": {
+            "X": [
+              1,
+              [
+                4,
+                "220"
+              ]
+            ]
+          },
+          "fields": {},
+          "shadow": false,
+          "topLevel": false
+        },
+        "playerblock_25": {
+          "opcode": "control_if",
+          "next": "playerblock_29",
+          "parent": "playerblock_8",
+          "inputs": {
+            "CONDITION": [
+              2,
+              "playerblock_27"
+            ],
+            "SUBSTACK": [
+              2,
+              "playerblock_28"
+            ]
+          },
+          "fields": {},
+          "shadow": false,
+          "topLevel": false
+        },
+        "playerblock_26": {
+          "opcode": "motion_xposition",
+          "next": null,
+          "parent": "playerblock_25",
+          "inputs": {},
+          "fields": {},
+          "shadow": false,
+          "topLevel": false
+        },
+        "playerblock_27": {
+          "opcode": "operator_lt",
+          "next": null,
+          "parent": "playerblock_25",
+          "inputs": {
+            "OPERAND1": [
+              2,
+              "playerblock_26"
+            ],
+            "OPERAND2": [
+              1,
+              [
+                4,
+                "-220"
+              ]
+            ]
+          },
+          "fields": {},
+          "shadow": false,
+          "topLevel": false
+        },
+        "playerblock_28": {
+          "opcode": "motion_setx",
+          "next": null,
+          "parent": "playerblock_25",
+          "inputs": {
+            "X": [
+              1,
+              [
+                4,
+                "-220"
+              ]
+            ]
+          },
+          "fields": {},
+          "shadow": false,
+          "topLevel": false
+        },
+        "playerblock_29": {
+          "opcode": "control_if",
+          "next": "playerblock_33",
+          "parent": "playerblock_8",
+          "inputs": {
+            "CONDITION": [
+              2,
+              "playerblock_31"
+            ],
+            "SUBSTACK": [
+              2,
+              "playerblock_32"
+            ]
+          },
+          "fields": {},
+          "shadow": false,
+          "topLevel": false
+        },
+        "playerblock_30": {
+          "opcode": "motion_yposition",
+          "next": null,
+          "parent": "playerblock_29",
+          "inputs": {},
+          "fields": {},
+          "shadow": false,
+          "topLevel": false
+        },
+        "playerblock_31": {
+          "opcode": "operator_gt",
+          "next": null,
+          "parent": "playerblock_29",
+          "inputs": {
+            "OPERAND1": [
+              2,
+              "playerblock_30"
+            ],
+            "OPERAND2": [
+              1,
+              [
+                4,
+                "156"
+              ]
+            ]
+          },
+          "fields": {},
+          "shadow": false,
+          "topLevel": false
+        },
+        "playerblock_32": {
+          "opcode": "motion_sety",
+          "next": null,
+          "parent": "playerblock_29",
+          "inputs": {
+            "Y": [
+              1,
+              [
+                4,
+                "156"
+              ]
+            ]
+          },
+          "fields": {},
+          "shadow": false,
+          "topLevel": false
+        },
+        "playerblock_33": {
+          "opcode": "control_if",
+          "next": "playerblock_37",
+          "parent": "playerblock_8",
+          "inputs": {
+            "CONDITION": [
+              2,
+              "playerblock_35"
+            ],
+            "SUBSTACK": [
+              2,
+              "playerblock_36"
+            ]
+          },
+          "fields": {},
+          "shadow": false,
+          "topLevel": false
+        },
+        "playerblock_34": {
+          "opcode": "motion_yposition",
+          "next": null,
+          "parent": "playerblock_33",
+          "inputs": {},
+          "fields": {},
+          "shadow": false,
+          "topLevel": false
+        },
+        "playerblock_35": {
+          "opcode": "operator_lt",
+          "next": null,
+          "parent": "playerblock_33",
+          "inputs": {
+            "OPERAND1": [
+              2,
+              "playerblock_34"
+            ],
+            "OPERAND2": [
+              1,
+              [
+                4,
+                "-156"
+              ]
+            ]
+          },
+          "fields": {},
+          "shadow": false,
+          "topLevel": false
+        },
+        "playerblock_36": {
+          "opcode": "motion_sety",
+          "next": null,
+          "parent": "playerblock_33",
+          "inputs": {
+            "Y": [
+              1,
+              [
+                4,
+                "-156"
+              ]
+            ]
+          },
+          "fields": {},
+          "shadow": false,
+          "topLevel": false
+        },
+        "playerblock_37": {
+          "opcode": "control_if",
+          "next": null,
+          "parent": "playerblock_8",
+          "inputs": {
+            "CONDITION": [
+              2,
+              "playerblock_38"
+            ],
+            "SUBSTACK": [
+              2,
+              "playerblock_39"
+            ]
+          },
+          "fields": {},
+          "shadow": false,
+          "topLevel": false
+        },
+        "playerblock_38": {
+          "opcode": "sensing_keypressed",
+          "next": null,
+          "parent": "playerblock_37",
+          "inputs": {},
+          "fields": {
+            "KEY_OPTION": [
+              "space",
+              null
+            ]
+          },
+          "shadow": false,
+          "topLevel": false
+        },
+        "playerblock_39": {
+          "opcode": "event_broadcast",
+          "next": "playerblock_41",
+          "parent": "playerblock_37",
+          "inputs": {
+            "BROADCAST_INPUT": [
+              1,
+              "playerblock_40"
+            ]
+          },
+          "fields": {},
+          "shadow": false,
+          "topLevel": false
+        },
+        "playerblock_40": {
+          "opcode": "event_broadcast_menu",
+          "next": null,
+          "parent": "playerblock_39",
+          "inputs": {},
+          "fields": {
+            "BROADCAST_OPTION": [
+              "Fire",
+              "broadcast_fire"
+            ]
+          },
+          "shadow": true,
+          "topLevel": false
+        },
+        "playerblock_41": {
+          "opcode": "control_wait",
+          "next": null,
+          "parent": "playerblock_39",
+          "inputs": {
+            "DURATION": [
+              1,
+              [
+                4,
+                "0.12"
+              ]
+            ]
+          },
+          "fields": {},
+          "shadow": false,
+          "topLevel": false
+        }
+      },
+      "comments": {},
+      "currentCostume": 0,
+      "costumes": [
+        {
+          "assetId": "a6237f670256d15f4fb9e79854a6a6ef",
+          "md5ext": "a6237f670256d15f4fb9e79854a6a6ef.svg",
+          "dataFormat": "svg",
+          "name": "Player Ship",
+          "bitmapResolution": 1,
+          "rotationCenterX": 32,
+          "rotationCenterY": 32
+        }
+      ],
+      "sounds": [],
+      "volume": 100,
+      "layerOrder": 4,
+      "visible": true,
+      "x": 0,
+      "y": -128,
+      "size": 88,
+      "direction": 90,
+      "draggable": false,
+      "rotationStyle": "don't rotate",
+      "id": "target_player"
+    },
+    {
+      "isStage": false,
+      "name": "BossCore",
+      "variables": {},
+      "lists": {},
+      "broadcasts": {},
+      "blocks": {
+        "bossblock_1": {
+          "opcode": "event_whenflagclicked",
+          "next": "bossblock_2",
+          "parent": null,
+          "inputs": {},
+          "fields": {},
+          "shadow": false,
+          "topLevel": true,
+          "x": 44,
+          "y": 60
+        },
+        "bossblock_2": {
+          "opcode": "looks_hide",
+          "next": null,
+          "parent": "bossblock_1",
+          "inputs": {},
+          "fields": {},
+          "shadow": false,
+          "topLevel": false
+        },
+        "bossblock_3": {
+          "opcode": "event_whenbroadcastreceived",
+          "next": "bossblock_4",
+          "parent": null,
+          "inputs": {},
+          "fields": {
+            "BROADCAST_OPTION": [
+              "Start Battle",
+              "broadcast_start_battle"
+            ]
+          },
+          "shadow": false,
+          "topLevel": true,
+          "x": 44,
+          "y": 164
+        },
+        "bossblock_4": {
+          "opcode": "looks_show",
+          "next": "bossblock_5",
+          "parent": "bossblock_3",
+          "inputs": {},
+          "fields": {},
+          "shadow": false,
+          "topLevel": false
+        },
+        "bossblock_5": {
+          "opcode": "motion_gotoxy",
+          "next": "bossblock_6",
+          "parent": "bossblock_4",
+          "inputs": {
+            "X": [
+              1,
+              [
+                4,
+                "0"
+              ]
+            ],
+            "Y": [
+              1,
+              [
+                4,
+                "104"
+              ]
+            ]
+          },
+          "fields": {},
+          "shadow": false,
+          "topLevel": false
+        },
+        "bossblock_6": {
+          "opcode": "looks_sayforsecs",
+          "next": null,
+          "parent": "bossblock_5",
+          "inputs": {
+            "MESSAGE": [
+              1,
+              [
+                10,
+                "Target online"
+              ]
+            ],
+            "SECS": [
+              1,
+              [
+                4,
+                "1.5"
+              ]
+            ]
+          },
+          "fields": {},
+          "shadow": false,
+          "topLevel": false
+        },
+        "bossblock_7": {
+          "opcode": "event_whenflagclicked",
+          "next": "bossblock_8",
+          "parent": null,
+          "inputs": {},
+          "fields": {},
+          "shadow": false,
+          "topLevel": true,
+          "x": 428,
+          "y": 60
+        },
+        "bossblock_8": {
+          "opcode": "control_forever",
+          "next": null,
+          "parent": "bossblock_7",
+          "inputs": {
+            "SUBSTACK": [
+              2,
+              "bossblock_14"
+            ]
+          },
+          "fields": {},
+          "shadow": false,
+          "topLevel": false
+        },
+        "bossblock_9": {
+          "opcode": "data_variable",
+          "next": null,
+          "parent": "bossblock_8",
+          "inputs": {},
+          "fields": {
+            "VARIABLE": [
+              "Game State",
+              "var_game_state"
+            ]
+          },
+          "shadow": false,
+          "topLevel": false
+        },
+        "bossblock_10": {
+          "opcode": "operator_equals",
+          "next": null,
+          "parent": "bossblock_8",
+          "inputs": {
+            "OPERAND1": [
+              2,
+              "bossblock_9"
+            ],
+            "OPERAND2": [
+              1,
+              [
+                10,
+                "running"
+              ]
+            ]
+          },
+          "fields": {},
+          "shadow": false,
+          "topLevel": false
+        },
+        "bossblock_11": {
+          "opcode": "data_variable",
+          "next": null,
+          "parent": "bossblock_8",
+          "inputs": {},
+          "fields": {
+            "VARIABLE": [
+              "Boss HP",
+              "var_boss_hp"
+            ]
+          },
+          "shadow": false,
+          "topLevel": false
+        },
+        "bossblock_12": {
+          "opcode": "operator_gt",
+          "next": null,
+          "parent": "bossblock_8",
+          "inputs": {
+            "OPERAND1": [
+              2,
+              "bossblock_11"
+            ],
+            "OPERAND2": [
+              1,
+              [
+                4,
+                "0"
+              ]
+            ]
+          },
+          "fields": {},
+          "shadow": false,
+          "topLevel": false
+        },
+        "bossblock_13": {
+          "opcode": "operator_and",
+          "next": null,
+          "parent": "bossblock_8",
+          "inputs": {
+            "OPERAND1": [
+              2,
+              "bossblock_10"
+            ],
+            "OPERAND2": [
+              2,
+              "bossblock_12"
+            ]
+          },
+          "fields": {},
+          "shadow": false,
+          "topLevel": false
+        },
+        "bossblock_14": {
+          "opcode": "control_if",
+          "next": null,
+          "parent": "bossblock_8",
+          "inputs": {
+            "CONDITION": [
+              2,
+              "bossblock_13"
+            ],
+            "SUBSTACK": [
+              2,
+              "bossblock_16"
+            ]
+          },
+          "fields": {},
+          "shadow": false,
+          "topLevel": false
+        },
+        "bossblock_15": {
+          "opcode": "data_variable",
+          "next": null,
+          "parent": "bossblock_14",
+          "inputs": {},
+          "fields": {
+            "VARIABLE": [
+              "Boss VX",
+              "var_boss_vx"
+            ]
+          },
+          "shadow": false,
+          "topLevel": false
+        },
+        "bossblock_16": {
+          "opcode": "motion_changexby",
+          "next": "bossblock_19",
+          "parent": "bossblock_14",
+          "inputs": {
+            "DX": [
+              2,
+              "bossblock_15"
+            ]
+          },
+          "fields": {},
+          "shadow": false,
+          "topLevel": false
+        },
+        "bossblock_17": {
+          "opcode": "motion_xposition",
+          "next": null,
+          "parent": "bossblock_14",
+          "inputs": {},
+          "fields": {},
+          "shadow": false,
+          "topLevel": false
+        },
+        "bossblock_18": {
+          "opcode": "operator_gt",
+          "next": null,
+          "parent": "bossblock_14",
+          "inputs": {
+            "OPERAND1": [
+              2,
+              "bossblock_17"
+            ],
+            "OPERAND2": [
+              1,
+              [
+                4,
+                "178"
+              ]
+            ]
+          },
+          "fields": {},
+          "shadow": false,
+          "topLevel": false
+        },
+        "bossblock_19": {
+          "opcode": "control_if",
+          "next": "bossblock_26",
+          "parent": "bossblock_14",
+          "inputs": {
+            "CONDITION": [
+              2,
+              "bossblock_18"
+            ],
+            "SUBSTACK": [
+              2,
+              "bossblock_20"
+            ]
+          },
+          "fields": {},
+          "shadow": false,
+          "topLevel": false
+        },
+        "bossblock_20": {
+          "opcode": "motion_setx",
+          "next": "bossblock_23",
+          "parent": "bossblock_19",
+          "inputs": {
+            "X": [
+              1,
+              [
+                4,
+                "178"
+              ]
+            ]
+          },
+          "fields": {},
+          "shadow": false,
+          "topLevel": false
+        },
+        "bossblock_21": {
+          "opcode": "data_variable",
+          "next": null,
+          "parent": "bossblock_20",
+          "inputs": {},
+          "fields": {
+            "VARIABLE": [
+              "Boss VX",
+              "var_boss_vx"
+            ]
+          },
+          "shadow": false,
+          "topLevel": false
+        },
+        "bossblock_22": {
+          "opcode": "operator_subtract",
+          "next": null,
+          "parent": "bossblock_20",
+          "inputs": {
+            "NUM1": [
+              1,
+              [
+                4,
+                "0"
+              ]
+            ],
+            "NUM2": [
+              2,
+              "bossblock_21"
+            ]
+          },
+          "fields": {},
+          "shadow": false,
+          "topLevel": false
+        },
+        "bossblock_23": {
+          "opcode": "data_setvariableto",
+          "next": null,
+          "parent": "bossblock_20",
+          "inputs": {
+            "VALUE": [
+              2,
+              "bossblock_22"
+            ]
+          },
+          "fields": {
+            "VARIABLE": [
+              "Boss VX",
+              "var_boss_vx"
+            ]
+          },
+          "shadow": false,
+          "topLevel": false
+        },
+        "bossblock_24": {
+          "opcode": "motion_xposition",
+          "next": null,
+          "parent": "bossblock_14",
+          "inputs": {},
+          "fields": {},
+          "shadow": false,
+          "topLevel": false
+        },
+        "bossblock_25": {
+          "opcode": "operator_lt",
+          "next": null,
+          "parent": "bossblock_14",
+          "inputs": {
+            "OPERAND1": [
+              2,
+              "bossblock_24"
+            ],
+            "OPERAND2": [
+              1,
+              [
+                4,
+                "-178"
+              ]
+            ]
+          },
+          "fields": {},
+          "shadow": false,
+          "topLevel": false
+        },
+        "bossblock_26": {
+          "opcode": "control_if",
+          "next": null,
+          "parent": "bossblock_14",
+          "inputs": {
+            "CONDITION": [
+              2,
+              "bossblock_25"
+            ],
+            "SUBSTACK": [
+              2,
+              "bossblock_27"
+            ]
+          },
+          "fields": {},
+          "shadow": false,
+          "topLevel": false
+        },
+        "bossblock_27": {
+          "opcode": "motion_setx",
+          "next": "bossblock_30",
+          "parent": "bossblock_26",
+          "inputs": {
+            "X": [
+              1,
+              [
+                4,
+                "-178"
+              ]
+            ]
+          },
+          "fields": {},
+          "shadow": false,
+          "topLevel": false
+        },
+        "bossblock_28": {
+          "opcode": "data_variable",
+          "next": null,
+          "parent": "bossblock_27",
+          "inputs": {},
+          "fields": {
+            "VARIABLE": [
+              "Boss VX",
+              "var_boss_vx"
+            ]
+          },
+          "shadow": false,
+          "topLevel": false
+        },
+        "bossblock_29": {
+          "opcode": "operator_lt",
+          "next": null,
+          "parent": "bossblock_27",
+          "inputs": {
+            "OPERAND1": [
+              2,
+              "bossblock_28"
+            ],
+            "OPERAND2": [
+              1,
+              [
+                4,
+                "0"
+              ]
+            ]
+          },
+          "fields": {},
+          "shadow": false,
+          "topLevel": false
+        },
+        "bossblock_30": {
+          "opcode": "control_if_else",
+          "next": null,
+          "parent": "bossblock_27",
+          "inputs": {
+            "CONDITION": [
+              2,
+              "bossblock_29"
+            ],
+            "SUBSTACK": [
+              2,
+              "bossblock_33"
+            ],
+            "SUBSTACK2": [
+              2,
+              "bossblock_35"
+            ]
+          },
+          "fields": {},
+          "shadow": false,
+          "topLevel": false
+        },
+        "bossblock_31": {
+          "opcode": "data_variable",
+          "next": null,
+          "parent": "bossblock_30",
+          "inputs": {},
+          "fields": {
+            "VARIABLE": [
+              "Boss VX",
+              "var_boss_vx"
+            ]
+          },
+          "shadow": false,
+          "topLevel": false
+        },
+        "bossblock_32": {
+          "opcode": "operator_subtract",
+          "next": null,
+          "parent": "bossblock_30",
+          "inputs": {
+            "NUM1": [
+              1,
+              [
+                4,
+                "0"
+              ]
+            ],
+            "NUM2": [
+              2,
+              "bossblock_31"
+            ]
+          },
+          "fields": {},
+          "shadow": false,
+          "topLevel": false
+        },
+        "bossblock_33": {
+          "opcode": "data_setvariableto",
+          "next": null,
+          "parent": "bossblock_30",
+          "inputs": {
+            "VALUE": [
+              2,
+              "bossblock_32"
+            ]
+          },
+          "fields": {
+            "VARIABLE": [
+              "Boss VX",
+              "var_boss_vx"
+            ]
+          },
+          "shadow": false,
+          "topLevel": false
+        },
+        "bossblock_34": {
+          "opcode": "data_variable",
+          "next": null,
+          "parent": "bossblock_30",
+          "inputs": {},
+          "fields": {
+            "VARIABLE": [
+              "Boss VX",
+              "var_boss_vx"
+            ]
+          },
+          "shadow": false,
+          "topLevel": false
+        },
+        "bossblock_35": {
+          "opcode": "data_setvariableto",
+          "next": null,
+          "parent": "bossblock_30",
+          "inputs": {
+            "VALUE": [
+              2,
+              "bossblock_34"
+            ]
+          },
+          "fields": {
+            "VARIABLE": [
+              "Boss VX",
+              "var_boss_vx"
+            ]
+          },
+          "shadow": false,
+          "topLevel": false
+        }
+      },
+      "comments": {},
+      "currentCostume": 0,
+      "costumes": [
+        {
+          "assetId": "47d7818de6faab2a8e287463a47d3a22",
+          "md5ext": "47d7818de6faab2a8e287463a47d3a22.svg",
+          "dataFormat": "svg",
+          "name": "Boss Core",
+          "bitmapResolution": 1,
+          "rotationCenterX": 60,
+          "rotationCenterY": 60
+        }
+      ],
+      "sounds": [],
+      "volume": 100,
+      "layerOrder": 3,
+      "visible": true,
+      "x": 0,
+      "y": 104,
+      "size": 112,
+      "direction": 90,
+      "draggable": false,
+      "rotationStyle": "all around",
+      "id": "target_boss"
+    },
+    {
+      "isStage": false,
+      "name": "Shot",
+      "variables": {},
+      "lists": {},
+      "broadcasts": {},
+      "blocks": {
+        "shotblock_1": {
+          "opcode": "event_whenflagclicked",
+          "next": "shotblock_2",
+          "parent": null,
+          "inputs": {},
+          "fields": {},
+          "shadow": false,
+          "topLevel": true,
+          "x": 42,
+          "y": 56
+        },
+        "shotblock_2": {
+          "opcode": "looks_hide",
+          "next": null,
+          "parent": "shotblock_1",
+          "inputs": {},
+          "fields": {},
+          "shadow": false,
+          "topLevel": false
+        },
+        "shotblock_3": {
+          "opcode": "event_whenbroadcastreceived",
+          "next": "shotblock_4",
+          "parent": null,
+          "inputs": {},
+          "fields": {
+            "BROADCAST_OPTION": [
+              "Fire",
+              "broadcast_fire"
+            ]
+          },
+          "shadow": false,
+          "topLevel": true,
+          "x": 42,
+          "y": 152
+        },
+        "shotblock_4": {
+          "opcode": "control_create_clone_of",
+          "next": null,
+          "parent": "shotblock_3",
+          "inputs": {
+            "CLONE_OPTION": [
+              1,
+              "shotblock_5"
+            ]
+          },
+          "fields": {},
+          "shadow": false,
+          "topLevel": false
+        },
+        "shotblock_5": {
+          "opcode": "control_create_clone_of_menu",
+          "next": null,
+          "parent": "shotblock_4",
+          "inputs": {},
+          "fields": {
+            "CLONE_OPTION": [
+              "myself",
+              "_myself_"
+            ]
+          },
+          "shadow": true,
+          "topLevel": false
+        },
+        "shotblock_6": {
+          "opcode": "control_start_as_clone",
+          "next": "shotblock_7",
+          "parent": null,
+          "inputs": {},
+          "fields": {},
+          "shadow": false,
+          "topLevel": true,
+          "x": 42,
+          "y": 244
+        },
+        "shotblock_7": {
+          "opcode": "looks_show",
+          "next": "shotblock_8",
+          "parent": "shotblock_6",
+          "inputs": {},
+          "fields": {},
+          "shadow": false,
+          "topLevel": false
+        },
+        "shotblock_8": {
+          "opcode": "motion_goto",
+          "next": "shotblock_10",
+          "parent": "shotblock_7",
+          "inputs": {
+            "TO": [
+              1,
+              "shotblock_9"
+            ]
+          },
+          "fields": {},
+          "shadow": false,
+          "topLevel": false
+        },
+        "shotblock_9": {
+          "opcode": "motion_goto_menu",
+          "next": null,
+          "parent": "shotblock_8",
+          "inputs": {},
+          "fields": {
+            "TO": [
+              "PlayerShip",
+              "target_player"
+            ]
+          },
+          "shadow": true,
+          "topLevel": false
+        },
+        "shotblock_10": {
+          "opcode": "motion_changeyby",
+          "next": "shotblock_11",
+          "parent": "shotblock_8",
+          "inputs": {
+            "DY": [
+              1,
+              [
+                4,
+                "18"
+              ]
+            ]
+          },
+          "fields": {},
+          "shadow": false,
+          "topLevel": false
+        },
+        "shotblock_11": {
+          "opcode": "control_repeat_until",
+          "next": "shotblock_18",
+          "parent": "shotblock_10",
+          "inputs": {
+            "CONDITION": [
+              2,
+              "shotblock_16"
+            ],
+            "SUBSTACK": [
+              2,
+              "shotblock_17"
+            ]
+          },
+          "fields": {},
+          "shadow": false,
+          "topLevel": false
+        },
+        "shotblock_12": {
+          "opcode": "sensing_touchingobject",
+          "next": null,
+          "parent": "shotblock_11",
+          "inputs": {
+            "TOUCHINGOBJECTMENU": [
+              1,
+              "shotblock_13"
+            ]
+          },
+          "fields": {},
+          "shadow": false,
+          "topLevel": false
+        },
+        "shotblock_13": {
+          "opcode": "sensing_touchingobjectmenu",
+          "next": null,
+          "parent": "shotblock_12",
+          "inputs": {},
+          "fields": {
+            "TOUCHINGOBJECTMENU": [
+              "_edge_",
+              "_edge_"
+            ]
+          },
+          "shadow": true,
+          "topLevel": false
+        },
+        "shotblock_14": {
+          "opcode": "sensing_touchingobject",
+          "next": null,
+          "parent": "shotblock_11",
+          "inputs": {
+            "TOUCHINGOBJECTMENU": [
+              1,
+              "shotblock_15"
+            ]
+          },
+          "fields": {},
+          "shadow": false,
+          "topLevel": false
+        },
+        "shotblock_15": {
+          "opcode": "sensing_touchingobjectmenu",
+          "next": null,
+          "parent": "shotblock_14",
+          "inputs": {},
+          "fields": {
+            "TOUCHINGOBJECTMENU": [
+              "BossCore",
+              "target_boss"
+            ]
+          },
+          "shadow": true,
+          "topLevel": false
+        },
+        "shotblock_16": {
+          "opcode": "operator_or",
+          "next": null,
+          "parent": "shotblock_11",
+          "inputs": {
+            "OPERAND1": [
+              2,
+              "shotblock_12"
+            ],
+            "OPERAND2": [
+              2,
+              "shotblock_14"
+            ]
+          },
+          "fields": {},
+          "shadow": false,
+          "topLevel": false
+        },
+        "shotblock_17": {
+          "opcode": "motion_changeyby",
+          "next": null,
+          "parent": "shotblock_11",
+          "inputs": {
+            "DY": [
+              1,
+              [
+                4,
+                "16"
+              ]
+            ]
+          },
+          "fields": {},
+          "shadow": false,
+          "topLevel": false
+        },
+        "shotblock_18": {
+          "opcode": "control_if",
+          "next": "shotblock_23",
+          "parent": "shotblock_11",
+          "inputs": {
+            "CONDITION": [
+              2,
+              "shotblock_19"
+            ],
+            "SUBSTACK": [
+              2,
+              "shotblock_21"
+            ]
+          },
+          "fields": {},
+          "shadow": false,
+          "topLevel": false
+        },
+        "shotblock_19": {
+          "opcode": "sensing_touchingobject",
+          "next": null,
+          "parent": "shotblock_18",
+          "inputs": {
+            "TOUCHINGOBJECTMENU": [
+              1,
+              "shotblock_20"
+            ]
+          },
+          "fields": {},
+          "shadow": false,
+          "topLevel": false
+        },
+        "shotblock_20": {
+          "opcode": "sensing_touchingobjectmenu",
+          "next": null,
+          "parent": "shotblock_19",
+          "inputs": {},
+          "fields": {
+            "TOUCHINGOBJECTMENU": [
+              "BossCore",
+              "target_boss"
+            ]
+          },
+          "shadow": true,
+          "topLevel": false
+        },
+        "shotblock_21": {
+          "opcode": "data_changevariableby",
+          "next": "shotblock_22",
+          "parent": "shotblock_18",
+          "inputs": {
+            "VALUE": [
+              1,
+              [
+                4,
+                "-5"
+              ]
+            ]
+          },
+          "fields": {
+            "VARIABLE": [
+              "Boss HP",
+              "var_boss_hp"
+            ]
+          },
+          "shadow": false,
+          "topLevel": false
+        },
+        "shotblock_22": {
+          "opcode": "data_changevariableby",
+          "next": null,
+          "parent": "shotblock_21",
+          "inputs": {
+            "VALUE": [
+              1,
+              [
+                4,
+                "1"
+              ]
+            ]
+          },
+          "fields": {
+            "VARIABLE": [
+              "Score",
+              "var_score"
+            ]
+          },
+          "shadow": false,
+          "topLevel": false
+        },
+        "shotblock_23": {
+          "opcode": "control_delete_this_clone",
+          "next": null,
+          "parent": "shotblock_18",
+          "inputs": {},
+          "fields": {},
+          "shadow": false,
+          "topLevel": false
+        }
+      },
+      "comments": {},
+      "currentCostume": 0,
+      "costumes": [
+        {
+          "assetId": "96319eef876ad36343edbfd506e83e7b",
+          "md5ext": "96319eef876ad36343edbfd506e83e7b.svg",
+          "dataFormat": "svg",
+          "name": "Player Shot",
+          "bitmapResolution": 1,
+          "rotationCenterX": 10,
+          "rotationCenterY": 18
+        }
+      ],
+      "sounds": [],
+      "volume": 100,
+      "layerOrder": 5,
+      "visible": false,
+      "x": 0,
+      "y": -120,
+      "size": 72,
+      "direction": 90,
+      "draggable": false,
+      "rotationStyle": "all around",
+      "id": "target_shot"
+    },
+    {
+      "isStage": false,
+      "name": "EnemyShot",
+      "variables": {},
+      "lists": {},
+      "broadcasts": {},
+      "blocks": {
+        "enemyblock_1": {
+          "opcode": "event_whenflagclicked",
+          "next": "enemyblock_2",
+          "parent": null,
+          "inputs": {},
+          "fields": {},
+          "shadow": false,
+          "topLevel": true,
+          "x": 46,
+          "y": 56
+        },
+        "enemyblock_2": {
+          "opcode": "looks_hide",
+          "next": "enemyblock_3",
+          "parent": "enemyblock_1",
+          "inputs": {},
+          "fields": {},
+          "shadow": false,
+          "topLevel": false
+        },
+        "enemyblock_3": {
+          "opcode": "control_forever",
+          "next": null,
+          "parent": "enemyblock_2",
+          "inputs": {
+            "SUBSTACK": [
+              2,
+              "enemyblock_6"
+            ]
+          },
+          "fields": {},
+          "shadow": false,
+          "topLevel": false
+        },
+        "enemyblock_4": {
+          "opcode": "data_variable",
+          "next": null,
+          "parent": "enemyblock_3",
+          "inputs": {},
+          "fields": {
+            "VARIABLE": [
+              "Game State",
+              "var_game_state"
+            ]
+          },
+          "shadow": false,
+          "topLevel": false
+        },
+        "enemyblock_5": {
+          "opcode": "operator_equals",
+          "next": null,
+          "parent": "enemyblock_3",
+          "inputs": {
+            "OPERAND1": [
+              2,
+              "enemyblock_4"
+            ],
+            "OPERAND2": [
+              1,
+              [
+                10,
+                "running"
+              ]
+            ]
+          },
+          "fields": {},
+          "shadow": false,
+          "topLevel": false
+        },
+        "enemyblock_6": {
+          "opcode": "control_if",
+          "next": null,
+          "parent": "enemyblock_3",
+          "inputs": {
+            "CONDITION": [
+              2,
+              "enemyblock_5"
+            ],
+            "SUBSTACK": [
+              2,
+              "enemyblock_7"
+            ]
+          },
+          "fields": {},
+          "shadow": false,
+          "topLevel": false
+        },
+        "enemyblock_7": {
+          "opcode": "control_create_clone_of",
+          "next": "enemyblock_10",
+          "parent": "enemyblock_6",
+          "inputs": {
+            "CLONE_OPTION": [
+              1,
+              "enemyblock_8"
+            ]
+          },
+          "fields": {},
+          "shadow": false,
+          "topLevel": false
+        },
+        "enemyblock_8": {
+          "opcode": "control_create_clone_of_menu",
+          "next": null,
+          "parent": "enemyblock_7",
+          "inputs": {},
+          "fields": {
+            "CLONE_OPTION": [
+              "myself",
+              "_myself_"
+            ]
+          },
+          "shadow": true,
+          "topLevel": false
+        },
+        "enemyblock_9": {
+          "opcode": "data_variable",
+          "next": null,
+          "parent": "enemyblock_7",
+          "inputs": {},
+          "fields": {
+            "VARIABLE": [
+              "Boss Fire Delay",
+              "var_boss_fire_delay"
+            ]
+          },
+          "shadow": false,
+          "topLevel": false
+        },
+        "enemyblock_10": {
+          "opcode": "control_wait",
+          "next": null,
+          "parent": "enemyblock_7",
+          "inputs": {
+            "DURATION": [
+              2,
+              "enemyblock_9"
+            ]
+          },
+          "fields": {},
+          "shadow": false,
+          "topLevel": false
+        },
+        "enemyblock_11": {
+          "opcode": "control_start_as_clone",
+          "next": "enemyblock_12",
+          "parent": null,
+          "inputs": {},
+          "fields": {},
+          "shadow": false,
+          "topLevel": true,
+          "x": 46,
+          "y": 226
+        },
+        "enemyblock_12": {
+          "opcode": "looks_show",
+          "next": "enemyblock_13",
+          "parent": "enemyblock_11",
+          "inputs": {},
+          "fields": {},
+          "shadow": false,
+          "topLevel": false
+        },
+        "enemyblock_13": {
+          "opcode": "motion_goto",
+          "next": "enemyblock_15",
+          "parent": "enemyblock_12",
+          "inputs": {
+            "TO": [
+              1,
+              "enemyblock_14"
+            ]
+          },
+          "fields": {},
+          "shadow": false,
+          "topLevel": false
+        },
+        "enemyblock_14": {
+          "opcode": "motion_goto_menu",
+          "next": null,
+          "parent": "enemyblock_13",
+          "inputs": {},
+          "fields": {
+            "TO": [
+              "BossCore",
+              "target_boss"
+            ]
+          },
+          "shadow": true,
+          "topLevel": false
+        },
+        "enemyblock_15": {
+          "opcode": "motion_pointtowards",
+          "next": "enemyblock_17",
+          "parent": "enemyblock_13",
+          "inputs": {
+            "TOWARDS": [
+              1,
+              "enemyblock_16"
+            ]
+          },
+          "fields": {},
+          "shadow": false,
+          "topLevel": false
+        },
+        "enemyblock_16": {
+          "opcode": "motion_pointtowards_menu",
+          "next": null,
+          "parent": "enemyblock_15",
+          "inputs": {},
+          "fields": {
+            "TOWARDS": [
+              "PlayerShip",
+              "target_player"
+            ]
+          },
+          "shadow": true,
+          "topLevel": false
+        },
+        "enemyblock_17": {
+          "opcode": "control_repeat_until",
+          "next": "enemyblock_25",
+          "parent": "enemyblock_15",
+          "inputs": {
+            "CONDITION": [
+              2,
+              "enemyblock_22"
+            ],
+            "SUBSTACK": [
+              2,
+              "enemyblock_24"
+            ]
+          },
+          "fields": {},
+          "shadow": false,
+          "topLevel": false
+        },
+        "enemyblock_18": {
+          "opcode": "sensing_touchingobject",
+          "next": null,
+          "parent": "enemyblock_17",
+          "inputs": {
+            "TOUCHINGOBJECTMENU": [
+              1,
+              "enemyblock_19"
+            ]
+          },
+          "fields": {},
+          "shadow": false,
+          "topLevel": false
+        },
+        "enemyblock_19": {
+          "opcode": "sensing_touchingobjectmenu",
+          "next": null,
+          "parent": "enemyblock_18",
+          "inputs": {},
+          "fields": {
+            "TOUCHINGOBJECTMENU": [
+              "_edge_",
+              "_edge_"
+            ]
+          },
+          "shadow": true,
+          "topLevel": false
+        },
+        "enemyblock_20": {
+          "opcode": "sensing_touchingobject",
+          "next": null,
+          "parent": "enemyblock_17",
+          "inputs": {
+            "TOUCHINGOBJECTMENU": [
+              1,
+              "enemyblock_21"
+            ]
+          },
+          "fields": {},
+          "shadow": false,
+          "topLevel": false
+        },
+        "enemyblock_21": {
+          "opcode": "sensing_touchingobjectmenu",
+          "next": null,
+          "parent": "enemyblock_20",
+          "inputs": {},
+          "fields": {
+            "TOUCHINGOBJECTMENU": [
+              "PlayerShip",
+              "target_player"
+            ]
+          },
+          "shadow": true,
+          "topLevel": false
+        },
+        "enemyblock_22": {
+          "opcode": "operator_or",
+          "next": null,
+          "parent": "enemyblock_17",
+          "inputs": {
+            "OPERAND1": [
+              2,
+              "enemyblock_18"
+            ],
+            "OPERAND2": [
+              2,
+              "enemyblock_20"
+            ]
+          },
+          "fields": {},
+          "shadow": false,
+          "topLevel": false
+        },
+        "enemyblock_23": {
+          "opcode": "data_variable",
+          "next": null,
+          "parent": "enemyblock_17",
+          "inputs": {},
+          "fields": {
+            "VARIABLE": [
+              "Boss Projectile Speed",
+              "var_boss_projectile_speed"
+            ]
+          },
+          "shadow": false,
+          "topLevel": false
+        },
+        "enemyblock_24": {
+          "opcode": "motion_movesteps",
+          "next": null,
+          "parent": "enemyblock_17",
+          "inputs": {
+            "STEPS": [
+              2,
+              "enemyblock_23"
+            ]
+          },
+          "fields": {},
+          "shadow": false,
+          "topLevel": false
+        },
+        "enemyblock_25": {
+          "opcode": "control_if",
+          "next": "enemyblock_30",
+          "parent": "enemyblock_17",
+          "inputs": {
+            "CONDITION": [
+              2,
+              "enemyblock_26"
+            ],
+            "SUBSTACK": [
+              2,
+              "enemyblock_28"
+            ]
+          },
+          "fields": {},
+          "shadow": false,
+          "topLevel": false
+        },
+        "enemyblock_26": {
+          "opcode": "sensing_touchingobject",
+          "next": null,
+          "parent": "enemyblock_25",
+          "inputs": {
+            "TOUCHINGOBJECTMENU": [
+              1,
+              "enemyblock_27"
+            ]
+          },
+          "fields": {},
+          "shadow": false,
+          "topLevel": false
+        },
+        "enemyblock_27": {
+          "opcode": "sensing_touchingobjectmenu",
+          "next": null,
+          "parent": "enemyblock_26",
+          "inputs": {},
+          "fields": {
+            "TOUCHINGOBJECTMENU": [
+              "PlayerShip",
+              "target_player"
+            ]
+          },
+          "shadow": true,
+          "topLevel": false
+        },
+        "enemyblock_28": {
+          "opcode": "event_broadcast",
+          "next": null,
+          "parent": "enemyblock_25",
+          "inputs": {
+            "BROADCAST_INPUT": [
+              1,
+              "enemyblock_29"
+            ]
+          },
+          "fields": {},
+          "shadow": false,
+          "topLevel": false
+        },
+        "enemyblock_29": {
+          "opcode": "event_broadcast_menu",
+          "next": null,
+          "parent": "enemyblock_28",
+          "inputs": {},
+          "fields": {
+            "BROADCAST_OPTION": [
+              "Player Hit",
+              "broadcast_player_hit"
+            ]
+          },
+          "shadow": true,
+          "topLevel": false
+        },
+        "enemyblock_30": {
+          "opcode": "control_delete_this_clone",
+          "next": null,
+          "parent": "enemyblock_25",
+          "inputs": {},
+          "fields": {},
+          "shadow": false,
+          "topLevel": false
+        }
+      },
+      "comments": {},
+      "currentCostume": 0,
+      "costumes": [
+        {
+          "assetId": "d34b50b7e0c532088927a0b61b02ac39",
+          "md5ext": "d34b50b7e0c532088927a0b61b02ac39.svg",
+          "dataFormat": "svg",
+          "name": "Enemy Shot",
+          "bitmapResolution": 1,
+          "rotationCenterX": 11,
+          "rotationCenterY": 11
+        }
+      ],
+      "sounds": [],
+      "volume": 100,
+      "layerOrder": 2,
+      "visible": false,
+      "x": 0,
+      "y": 100,
+      "size": 80,
+      "direction": 180,
+      "draggable": false,
+      "rotationStyle": "all around",
+      "id": "target_enemy_shot"
+    },
+    {
+      "isStage": false,
+      "name": "MenuCursor",
+      "variables": {},
+      "lists": {},
+      "broadcasts": {},
+      "blocks": {
+        "menublock_1": {
+          "opcode": "event_whenflagclicked",
+          "next": "menublock_2",
+          "parent": null,
+          "inputs": {},
+          "fields": {},
+          "shadow": false,
+          "topLevel": true,
+          "x": 40,
+          "y": 52
+        },
+        "menublock_2": {
+          "opcode": "looks_show",
+          "next": "menublock_3",
+          "parent": "menublock_1",
+          "inputs": {},
+          "fields": {},
+          "shadow": false,
+          "topLevel": false
+        },
+        "menublock_3": {
+          "opcode": "control_forever",
+          "next": null,
+          "parent": "menublock_2",
+          "inputs": {
+            "SUBSTACK": [
+              2,
+              "menublock_6"
+            ]
+          },
+          "fields": {},
+          "shadow": false,
+          "topLevel": false
+        },
+        "menublock_4": {
+          "opcode": "data_variable",
+          "next": null,
+          "parent": "menublock_3",
+          "inputs": {},
+          "fields": {
+            "VARIABLE": [
+              "Game State",
+              "var_game_state"
+            ]
+          },
+          "shadow": false,
+          "topLevel": false
+        },
+        "menublock_5": {
+          "opcode": "operator_equals",
+          "next": null,
+          "parent": "menublock_3",
+          "inputs": {
+            "OPERAND1": [
+              2,
+              "menublock_4"
+            ],
+            "OPERAND2": [
+              1,
+              [
+                10,
+                "menu"
+              ]
+            ]
+          },
+          "fields": {},
+          "shadow": false,
+          "topLevel": false
+        },
+        "menublock_6": {
+          "opcode": "control_if",
+          "next": null,
+          "parent": "menublock_3",
+          "inputs": {
+            "CONDITION": [
+              2,
+              "menublock_5"
+            ],
+            "SUBSTACK": [
+              2,
+              "menublock_7"
+            ]
+          },
+          "fields": {},
+          "shadow": false,
+          "topLevel": false
+        },
+        "menublock_7": {
+          "opcode": "control_if",
+          "next": "menublock_17",
+          "parent": "menublock_6",
+          "inputs": {
+            "CONDITION": [
+              2,
+              "menublock_8"
+            ],
+            "SUBSTACK": [
+              2,
+              "menublock_9"
+            ]
+          },
+          "fields": {},
+          "shadow": false,
+          "topLevel": false
+        },
+        "menublock_8": {
+          "opcode": "sensing_keypressed",
+          "next": null,
+          "parent": "menublock_7",
+          "inputs": {},
+          "fields": {
+            "KEY_OPTION": [
+              "left arrow",
+              null
+            ]
+          },
+          "shadow": false,
+          "topLevel": false
+        },
+        "menublock_9": {
+          "opcode": "data_changevariableby",
+          "next": "menublock_12",
+          "parent": "menublock_7",
+          "inputs": {
+            "VALUE": [
+              1,
+              [
+                4,
+                "-1"
+              ]
+            ]
+          },
+          "fields": {
+            "VARIABLE": [
+              "Boss Index",
+              "var_current_boss_index"
+            ]
+          },
+          "shadow": false,
+          "topLevel": false
+        },
+        "menublock_10": {
+          "opcode": "data_variable",
+          "next": null,
+          "parent": "menublock_9",
+          "inputs": {},
+          "fields": {
+            "VARIABLE": [
+              "Boss Index",
+              "var_current_boss_index"
+            ]
+          },
+          "shadow": false,
+          "topLevel": false
+        },
+        "menublock_11": {
+          "opcode": "operator_lt",
+          "next": null,
+          "parent": "menublock_9",
+          "inputs": {
+            "OPERAND1": [
+              2,
+              "menublock_10"
+            ],
+            "OPERAND2": [
+              1,
+              [
+                4,
+                "1"
+              ]
+            ]
+          },
+          "fields": {},
+          "shadow": false,
+          "topLevel": false
+        },
+        "menublock_12": {
+          "opcode": "control_if",
+          "next": null,
+          "parent": "menublock_9",
+          "inputs": {
+            "CONDITION": [
+              2,
+              "menublock_11"
+            ],
+            "SUBSTACK": [
+              2,
+              "menublock_13"
+            ]
+          },
+          "fields": {},
+          "shadow": false,
+          "topLevel": false
+        },
+        "menublock_13": {
+          "opcode": "data_setvariableto",
+          "next": "menublock_14",
+          "parent": "menublock_12",
+          "inputs": {
+            "VALUE": [
+              1,
+              [
+                4,
+                "14"
+              ]
+            ]
+          },
+          "fields": {
+            "VARIABLE": [
+              "Boss Index",
+              "var_current_boss_index"
+            ]
+          },
+          "shadow": false,
+          "topLevel": false
+        },
+        "menublock_14": {
+          "opcode": "event_broadcast",
+          "next": "menublock_16",
+          "parent": "menublock_13",
+          "inputs": {
+            "BROADCAST_INPUT": [
+              1,
+              "menublock_15"
+            ]
+          },
+          "fields": {},
+          "shadow": false,
+          "topLevel": false
+        },
+        "menublock_15": {
+          "opcode": "event_broadcast_menu",
+          "next": null,
+          "parent": "menublock_14",
+          "inputs": {},
+          "fields": {
+            "BROADCAST_OPTION": [
+              "Refresh Selection",
+              "broadcast_refresh_selection"
+            ]
+          },
+          "shadow": true,
+          "topLevel": false
+        },
+        "menublock_16": {
+          "opcode": "control_wait",
+          "next": null,
+          "parent": "menublock_14",
+          "inputs": {
+            "DURATION": [
+              1,
+              [
+                4,
+                "0.18"
+              ]
+            ]
+          },
+          "fields": {},
+          "shadow": false,
+          "topLevel": false
+        },
+        "menublock_17": {
+          "opcode": "control_if",
+          "next": "menublock_27",
+          "parent": "menublock_6",
+          "inputs": {
+            "CONDITION": [
+              2,
+              "menublock_18"
+            ],
+            "SUBSTACK": [
+              2,
+              "menublock_19"
+            ]
+          },
+          "fields": {},
+          "shadow": false,
+          "topLevel": false
+        },
+        "menublock_18": {
+          "opcode": "sensing_keypressed",
+          "next": null,
+          "parent": "menublock_17",
+          "inputs": {},
+          "fields": {
+            "KEY_OPTION": [
+              "right arrow",
+              null
+            ]
+          },
+          "shadow": false,
+          "topLevel": false
+        },
+        "menublock_19": {
+          "opcode": "data_changevariableby",
+          "next": "menublock_22",
+          "parent": "menublock_17",
+          "inputs": {
+            "VALUE": [
+              1,
+              [
+                4,
+                "1"
+              ]
+            ]
+          },
+          "fields": {
+            "VARIABLE": [
+              "Boss Index",
+              "var_current_boss_index"
+            ]
+          },
+          "shadow": false,
+          "topLevel": false
+        },
+        "menublock_20": {
+          "opcode": "data_variable",
+          "next": null,
+          "parent": "menublock_19",
+          "inputs": {},
+          "fields": {
+            "VARIABLE": [
+              "Boss Index",
+              "var_current_boss_index"
+            ]
+          },
+          "shadow": false,
+          "topLevel": false
+        },
+        "menublock_21": {
+          "opcode": "operator_gt",
+          "next": null,
+          "parent": "menublock_19",
+          "inputs": {
+            "OPERAND1": [
+              2,
+              "menublock_20"
+            ],
+            "OPERAND2": [
+              1,
+              [
+                4,
+                "14"
+              ]
+            ]
+          },
+          "fields": {},
+          "shadow": false,
+          "topLevel": false
+        },
+        "menublock_22": {
+          "opcode": "control_if",
+          "next": null,
+          "parent": "menublock_19",
+          "inputs": {
+            "CONDITION": [
+              2,
+              "menublock_21"
+            ],
+            "SUBSTACK": [
+              2,
+              "menublock_23"
+            ]
+          },
+          "fields": {},
+          "shadow": false,
+          "topLevel": false
+        },
+        "menublock_23": {
+          "opcode": "data_setvariableto",
+          "next": "menublock_24",
+          "parent": "menublock_22",
+          "inputs": {
+            "VALUE": [
+              1,
+              [
+                4,
+                "1"
+              ]
+            ]
+          },
+          "fields": {
+            "VARIABLE": [
+              "Boss Index",
+              "var_current_boss_index"
+            ]
+          },
+          "shadow": false,
+          "topLevel": false
+        },
+        "menublock_24": {
+          "opcode": "event_broadcast",
+          "next": "menublock_26",
+          "parent": "menublock_23",
+          "inputs": {
+            "BROADCAST_INPUT": [
+              1,
+              "menublock_25"
+            ]
+          },
+          "fields": {},
+          "shadow": false,
+          "topLevel": false
+        },
+        "menublock_25": {
+          "opcode": "event_broadcast_menu",
+          "next": null,
+          "parent": "menublock_24",
+          "inputs": {},
+          "fields": {
+            "BROADCAST_OPTION": [
+              "Refresh Selection",
+              "broadcast_refresh_selection"
+            ]
+          },
+          "shadow": true,
+          "topLevel": false
+        },
+        "menublock_26": {
+          "opcode": "control_wait",
+          "next": null,
+          "parent": "menublock_24",
+          "inputs": {
+            "DURATION": [
+              1,
+              [
+                4,
+                "0.18"
+              ]
+            ]
+          },
+          "fields": {},
+          "shadow": false,
+          "topLevel": false
+        },
+        "menublock_27": {
+          "opcode": "control_if",
+          "next": "menublock_37",
+          "parent": "menublock_6",
+          "inputs": {
+            "CONDITION": [
+              2,
+              "menublock_28"
+            ],
+            "SUBSTACK": [
+              2,
+              "menublock_29"
+            ]
+          },
+          "fields": {},
+          "shadow": false,
+          "topLevel": false
+        },
+        "menublock_28": {
+          "opcode": "sensing_keypressed",
+          "next": null,
+          "parent": "menublock_27",
+          "inputs": {},
+          "fields": {
+            "KEY_OPTION": [
+              "up arrow",
+              null
+            ]
+          },
+          "shadow": false,
+          "topLevel": false
+        },
+        "menublock_29": {
+          "opcode": "data_changevariableby",
+          "next": "menublock_32",
+          "parent": "menublock_27",
+          "inputs": {
+            "VALUE": [
+              1,
+              [
+                4,
+                "-1"
+              ]
+            ]
+          },
+          "fields": {
+            "VARIABLE": [
+              "Challenge Index",
+              "var_challenge_index"
+            ]
+          },
+          "shadow": false,
+          "topLevel": false
+        },
+        "menublock_30": {
+          "opcode": "data_variable",
+          "next": null,
+          "parent": "menublock_29",
+          "inputs": {},
+          "fields": {
+            "VARIABLE": [
+              "Challenge Index",
+              "var_challenge_index"
+            ]
+          },
+          "shadow": false,
+          "topLevel": false
+        },
+        "menublock_31": {
+          "opcode": "operator_lt",
+          "next": null,
+          "parent": "menublock_29",
+          "inputs": {
+            "OPERAND1": [
+              2,
+              "menublock_30"
+            ],
+            "OPERAND2": [
+              1,
+              [
+                4,
+                "1"
+              ]
+            ]
+          },
+          "fields": {},
+          "shadow": false,
+          "topLevel": false
+        },
+        "menublock_32": {
+          "opcode": "control_if",
+          "next": null,
+          "parent": "menublock_29",
+          "inputs": {
+            "CONDITION": [
+              2,
+              "menublock_31"
+            ],
+            "SUBSTACK": [
+              2,
+              "menublock_33"
+            ]
+          },
+          "fields": {},
+          "shadow": false,
+          "topLevel": false
+        },
+        "menublock_33": {
+          "opcode": "data_setvariableto",
+          "next": "menublock_34",
+          "parent": "menublock_32",
+          "inputs": {
+            "VALUE": [
+              1,
+              [
+                4,
+                "8"
+              ]
+            ]
+          },
+          "fields": {
+            "VARIABLE": [
+              "Challenge Index",
+              "var_challenge_index"
+            ]
+          },
+          "shadow": false,
+          "topLevel": false
+        },
+        "menublock_34": {
+          "opcode": "event_broadcast",
+          "next": "menublock_36",
+          "parent": "menublock_33",
+          "inputs": {
+            "BROADCAST_INPUT": [
+              1,
+              "menublock_35"
+            ]
+          },
+          "fields": {},
+          "shadow": false,
+          "topLevel": false
+        },
+        "menublock_35": {
+          "opcode": "event_broadcast_menu",
+          "next": null,
+          "parent": "menublock_34",
+          "inputs": {},
+          "fields": {
+            "BROADCAST_OPTION": [
+              "Refresh Selection",
+              "broadcast_refresh_selection"
+            ]
+          },
+          "shadow": true,
+          "topLevel": false
+        },
+        "menublock_36": {
+          "opcode": "control_wait",
+          "next": null,
+          "parent": "menublock_34",
+          "inputs": {
+            "DURATION": [
+              1,
+              [
+                4,
+                "0.18"
+              ]
+            ]
+          },
+          "fields": {},
+          "shadow": false,
+          "topLevel": false
+        },
+        "menublock_37": {
+          "opcode": "control_if",
+          "next": "menublock_47",
+          "parent": "menublock_6",
+          "inputs": {
+            "CONDITION": [
+              2,
+              "menublock_38"
+            ],
+            "SUBSTACK": [
+              2,
+              "menublock_39"
+            ]
+          },
+          "fields": {},
+          "shadow": false,
+          "topLevel": false
+        },
+        "menublock_38": {
+          "opcode": "sensing_keypressed",
+          "next": null,
+          "parent": "menublock_37",
+          "inputs": {},
+          "fields": {
+            "KEY_OPTION": [
+              "down arrow",
+              null
+            ]
+          },
+          "shadow": false,
+          "topLevel": false
+        },
+        "menublock_39": {
+          "opcode": "data_changevariableby",
+          "next": "menublock_42",
+          "parent": "menublock_37",
+          "inputs": {
+            "VALUE": [
+              1,
+              [
+                4,
+                "1"
+              ]
+            ]
+          },
+          "fields": {
+            "VARIABLE": [
+              "Challenge Index",
+              "var_challenge_index"
+            ]
+          },
+          "shadow": false,
+          "topLevel": false
+        },
+        "menublock_40": {
+          "opcode": "data_variable",
+          "next": null,
+          "parent": "menublock_39",
+          "inputs": {},
+          "fields": {
+            "VARIABLE": [
+              "Challenge Index",
+              "var_challenge_index"
+            ]
+          },
+          "shadow": false,
+          "topLevel": false
+        },
+        "menublock_41": {
+          "opcode": "operator_gt",
+          "next": null,
+          "parent": "menublock_39",
+          "inputs": {
+            "OPERAND1": [
+              2,
+              "menublock_40"
+            ],
+            "OPERAND2": [
+              1,
+              [
+                4,
+                "8"
+              ]
+            ]
+          },
+          "fields": {},
+          "shadow": false,
+          "topLevel": false
+        },
+        "menublock_42": {
+          "opcode": "control_if",
+          "next": null,
+          "parent": "menublock_39",
+          "inputs": {
+            "CONDITION": [
+              2,
+              "menublock_41"
+            ],
+            "SUBSTACK": [
+              2,
+              "menublock_43"
+            ]
+          },
+          "fields": {},
+          "shadow": false,
+          "topLevel": false
+        },
+        "menublock_43": {
+          "opcode": "data_setvariableto",
+          "next": "menublock_44",
+          "parent": "menublock_42",
+          "inputs": {
+            "VALUE": [
+              1,
+              [
+                4,
+                "1"
+              ]
+            ]
+          },
+          "fields": {
+            "VARIABLE": [
+              "Challenge Index",
+              "var_challenge_index"
+            ]
+          },
+          "shadow": false,
+          "topLevel": false
+        },
+        "menublock_44": {
+          "opcode": "event_broadcast",
+          "next": "menublock_46",
+          "parent": "menublock_43",
+          "inputs": {
+            "BROADCAST_INPUT": [
+              1,
+              "menublock_45"
+            ]
+          },
+          "fields": {},
+          "shadow": false,
+          "topLevel": false
+        },
+        "menublock_45": {
+          "opcode": "event_broadcast_menu",
+          "next": null,
+          "parent": "menublock_44",
+          "inputs": {},
+          "fields": {
+            "BROADCAST_OPTION": [
+              "Refresh Selection",
+              "broadcast_refresh_selection"
+            ]
+          },
+          "shadow": true,
+          "topLevel": false
+        },
+        "menublock_46": {
+          "opcode": "control_wait",
+          "next": null,
+          "parent": "menublock_44",
+          "inputs": {
+            "DURATION": [
+              1,
+              [
+                4,
+                "0.18"
+              ]
+            ]
+          },
+          "fields": {},
+          "shadow": false,
+          "topLevel": false
+        },
+        "menublock_47": {
+          "opcode": "control_if",
+          "next": null,
+          "parent": "menublock_6",
+          "inputs": {
+            "CONDITION": [
+              2,
+              "menublock_48"
+            ],
+            "SUBSTACK": [
+              2,
+              "menublock_49"
+            ]
+          },
+          "fields": {},
+          "shadow": false,
+          "topLevel": false
+        },
+        "menublock_48": {
+          "opcode": "sensing_keypressed",
+          "next": null,
+          "parent": "menublock_47",
+          "inputs": {},
+          "fields": {
+            "KEY_OPTION": [
+              "enter",
+              null
+            ]
+          },
+          "shadow": false,
+          "topLevel": false
+        },
+        "menublock_49": {
+          "opcode": "event_broadcast",
+          "next": "menublock_51",
+          "parent": "menublock_47",
+          "inputs": {
+            "BROADCAST_INPUT": [
+              1,
+              "menublock_50"
+            ]
+          },
+          "fields": {},
+          "shadow": false,
+          "topLevel": false
+        },
+        "menublock_50": {
+          "opcode": "event_broadcast_menu",
+          "next": null,
+          "parent": "menublock_49",
+          "inputs": {},
+          "fields": {
+            "BROADCAST_OPTION": [
+              "Start Battle",
+              "broadcast_start_battle"
+            ]
+          },
+          "shadow": true,
+          "topLevel": false
+        },
+        "menublock_51": {
+          "opcode": "control_wait",
+          "next": null,
+          "parent": "menublock_49",
+          "inputs": {
+            "DURATION": [
+              1,
+              [
+                4,
+                "0.25"
+              ]
+            ]
+          },
+          "fields": {},
+          "shadow": false,
+          "topLevel": false
+        },
+        "menublock_52": {
+          "opcode": "event_whenbroadcastreceived",
+          "next": "menublock_53",
+          "parent": null,
+          "inputs": {},
+          "fields": {
+            "BROADCAST_OPTION": [
+              "Start Battle",
+              "broadcast_start_battle"
+            ]
+          },
+          "shadow": false,
+          "topLevel": true,
+          "x": 424,
+          "y": 52
+        },
+        "menublock_53": {
+          "opcode": "looks_hide",
+          "next": "menublock_54",
+          "parent": "menublock_52",
+          "inputs": {},
+          "fields": {},
+          "shadow": false,
+          "topLevel": false
+        },
+        "menublock_54": {
+          "opcode": "data_setvariableto",
+          "next": null,
+          "parent": "menublock_53",
+          "inputs": {
+            "VALUE": [
+              1,
+              [
+                10,
+                "running"
+              ]
+            ]
+          },
+          "fields": {
+            "VARIABLE": [
+              "Game State",
+              "var_game_state"
+            ]
+          },
+          "shadow": false,
+          "topLevel": false
+        },
+        "menublock_55": {
+          "opcode": "event_whenbroadcastreceived",
+          "next": "menublock_56",
+          "parent": null,
+          "inputs": {},
+          "fields": {
+            "BROADCAST_OPTION": [
+              "Return Menu",
+              "broadcast_return_menu"
+            ]
+          },
+          "shadow": false,
+          "topLevel": true,
+          "x": 424,
+          "y": 184
+        },
+        "menublock_56": {
+          "opcode": "looks_show",
+          "next": null,
+          "parent": "menublock_55",
+          "inputs": {},
+          "fields": {},
+          "shadow": false,
+          "topLevel": false
+        }
+      },
+      "comments": {},
+      "currentCostume": 0,
+      "costumes": [
+        {
+          "assetId": "3f0eb87a7b1580aef8d35bc3c8886ff3",
+          "md5ext": "3f0eb87a7b1580aef8d35bc3c8886ff3.svg",
+          "dataFormat": "svg",
+          "name": "Menu Cursor",
+          "bitmapResolution": 1,
+          "rotationCenterX": 18,
+          "rotationCenterY": 18
+        }
+      ],
+      "sounds": [],
+      "volume": 100,
+      "layerOrder": 6,
+      "visible": true,
+      "x": -190,
+      "y": 126,
+      "size": 60,
+      "direction": 90,
+      "draggable": false,
+      "rotationStyle": "don't rotate",
+      "id": "target_menu_cursor"
+    }
+  ],
+  "monitors": [
+    {
+      "id": "var_current_boss_name",
+      "mode": "default",
+      "opcode": "data_variable",
+      "params": {
+        "VARIABLE": "Current Boss"
+      },
+      "spriteName": null,
+      "value": "Hertz's Harmony",
+      "width": 0,
+      "height": 0,
+      "x": 10,
+      "y": 8,
+      "visible": true
+    },
+    {
+      "id": "var_challenge_name",
+      "mode": "default",
+      "opcode": "data_variable",
+      "params": {
+        "VARIABLE": "Challenge"
+      },
+      "spriteName": null,
+      "value": "Realistic",
+      "width": 0,
+      "height": 0,
+      "x": 10,
+      "y": 36,
+      "visible": true
+    },
+    {
+      "id": "var_game_state",
+      "mode": "default",
+      "opcode": "data_variable",
+      "params": {
+        "VARIABLE": "Game State"
+      },
+      "spriteName": null,
+      "value": "menu",
+      "width": 0,
+      "height": 0,
+      "x": 10,
+      "y": 64,
+      "visible": true
+    },
+    {
+      "id": "var_boss_hp",
+      "mode": "default",
+      "opcode": "data_variable",
+      "params": {
+        "VARIABLE": "Boss HP"
+      },
+      "spriteName": null,
+      "value": 180,
+      "width": 0,
+      "height": 0,
+      "x": 10,
+      "y": 92,
+      "visible": true
+    },
+    {
+      "id": "var_player_hp",
+      "mode": "default",
+      "opcode": "data_variable",
+      "params": {
+        "VARIABLE": "Player HP"
+      },
+      "spriteName": null,
+      "value": 5,
+      "width": 0,
+      "height": 0,
+      "x": 10,
+      "y": 120,
+      "visible": true
+    },
+    {
+      "id": "var_score",
+      "mode": "default",
+      "opcode": "data_variable",
+      "params": {
+        "VARIABLE": "Score"
+      },
+      "spriteName": null,
+      "value": 0,
+      "width": 0,
+      "height": 0,
+      "x": 10,
+      "y": 148,
+      "visible": true
+    },
+    {
+      "id": "var_operations_funds",
+      "mode": "default",
+      "opcode": "data_variable",
+      "params": {
+        "VARIABLE": "Operations Funds"
+      },
+      "spriteName": null,
+      "value": 0,
+      "width": 0,
+      "height": 0,
+      "x": 10,
+      "y": 176,
+      "visible": true
+    }
+  ],
+  "extensions": [],
+  "meta": {
+    "semver": "3.0.0",
+    "vm": "0.2.0",
+    "agent": "Codex"
+  }
+}
